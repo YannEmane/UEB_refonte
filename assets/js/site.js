@@ -99,27 +99,58 @@
 		compteurs.forEach(function (c) { obsCompteur.observe(c); });
 	}
 
-	/* ---------- Diaporama de la bannière ---------- */
-	var diapo = $('[data-diaporama]');
-	if (diapo) {
-		var images = $$('[data-diapo]', diapo), puces = $$('[data-puce]', diapo), courant = 0, minuteur = null, DUREE = 7000;
-		diapo.style.setProperty('--duree', DUREE + 'ms');
-		var montrer = function (n) {
-			images[courant].classList.remove('est-active');
-			puces[courant].removeAttribute('aria-current');
-			courant = (n + images.length) % images.length;
-			/* Les images chargées paresseusement sont demandées juste avant leur tour. */
-			var img = images[courant].querySelector('img'); img.loading = 'eager';
-			images[courant].classList.add('est-active');
-			puces.forEach(function (p, i) { p.classList.toggle('est-vue', i < courant); });
-			puces[courant].setAttribute('aria-current', 'true');
-			programmer();
-		};
+	/* ---------- Carrousel de la bannière ---------- */
+	var carrousel = $('[data-carrousel]');
+	if (carrousel) {
+		var diapos = $$('[data-diapo]', carrousel), traits = $$('[data-trait]', carrousel), bouton = $('[data-pause]', carrousel);
+		var courant = 0, minuteur = null, DUREE = 7000, enPause = false, clavier = false;
+		/* Le défilement tourne tout seul ; le bouton pause l'arrête (le réglage « animations réduites » ne le coupe pas : seuls les effets de transition disparaissent). */
 		var programmer = function () {
 			clearTimeout(minuteur);
-			if (!calme) minuteur = setTimeout(function () { montrer(courant + 1); }, DUREE);
+			if (!enPause && !clavier && !doc.hidden && diapos.length > 1) minuteur = setTimeout(function () { montrer(courant + 1); }, DUREE);
 		};
-		puces.forEach(function (p) { p.addEventListener('click', function () { montrer(+p.dataset.puce); }); });
+		var charger = function (n) {
+			var img = diapos[(n + diapos.length) % diapos.length].querySelector('img');
+			if (img) img.loading = 'eager';
+		};
+		var montrer = function (n) {
+			if (diapos.length < 2) return;
+			diapos[courant].classList.remove('est-active');
+			diapos[courant].toggleAttribute('inert', true);
+			traits[courant].removeAttribute('aria-current');
+			courant = (n + diapos.length) % diapos.length;
+			diapos[courant].classList.add('est-active');
+			diapos[courant].toggleAttribute('inert', false);
+			traits[courant].setAttribute('aria-current', 'true');
+			charger(courant + 1);
+			programmer();
+		};
+		charger(1);
+		traits.forEach(function (t) { t.addEventListener('click', function () { montrer(+t.dataset.trait); }); });
+		if (bouton) {
+			bouton.addEventListener('click', function () {
+				enPause = !enPause;
+				bouton.innerHTML = enPause ? ICONES.lecture : ICONES.pause;
+				bouton.setAttribute('aria-label', enPause ? 'Reprendre le défilement' : 'Mettre le défilement en pause');
+				programmer();
+			});
+		}
+		/* Au clavier, le défilement attend que la personne ait fini de naviguer. */
+		carrousel.addEventListener('focusin', function (e) { if (e.target.matches(':focus-visible')) { clavier = true; clearTimeout(minuteur); } });
+		carrousel.addEventListener('focusout', function () { clavier = false; programmer(); });
+		carrousel.addEventListener('keydown', function (e) {
+			if (e.key === 'ArrowRight') montrer(courant + 1);
+			if (e.key === 'ArrowLeft') montrer(courant - 1);
+		});
+		/* Glisser du doigt sur mobile. */
+		var departX = null;
+		carrousel.addEventListener('touchstart', function (e) { departX = e.touches[0].clientX; }, { passive: true });
+		carrousel.addEventListener('touchend', function (e) {
+			if (departX === null) return;
+			var dx = e.changedTouches[0].clientX - departX;
+			departX = null;
+			if (Math.abs(dx) > 50) montrer(courant + (dx < 0 ? 1 : -1));
+		}, { passive: true });
 		doc.addEventListener('visibilitychange', function () { if (doc.hidden) clearTimeout(minuteur); else programmer(); });
 		programmer();
 	}

@@ -197,3 +197,114 @@ function sueb_personnel_par_corps() {
 	}
 	return $groupes;
 }
+
+/**
+ * Les diapositives de la bannière : les dernières actualités et les
+ * prochains évènements, en alternance (actualité, évènement, actualité…).
+ * Quand il y a moins de trois contenus, la bannière est complétée par des
+ * diapositives d'établissements (et, s'il n'y a rien du tout, par l'accueil
+ * du Customizer en premier) pour qu'elle défile toujours.
+ */
+function sueb_slides_banniere( $nombre = 5, array $arbre = array() ) {
+	$repli_photos = array( 'campus-ebolowa', 'remise-toges', 'amphi', 'bibliotheque', 'vie-etudiante-1' );
+
+	$actus = array();
+	foreach ( get_posts( array( 'post_type' => 'post', 'numberposts' => $nombre ) ) as $p ) {
+		$format = get_post_format( $p );
+		$actus[] = array(
+			'type'      => 'actualite',
+			'etiquette' => 'video' === $format ? 'Vidéo' : ( 'audio' === $format ? 'Audio' : 'Actualité' ),
+			'titre'     => $p->post_title,
+			'texte'     => wp_trim_words( wp_strip_all_tags( get_the_excerpt( $p ) ), 32 ),
+			'url'       => get_permalink( $p ),
+			'lien'      => 'video' === $format ? 'Voir la vidéo' : ( 'audio' === $format ? 'Écouter' : 'Lire la suite' ),
+			'date'      => get_the_date( 'j F Y', $p ),
+			'iso'       => get_the_date( 'c', $p ),
+			'lieu'      => '',
+			'photo'     => sueb_image_url( $p->ID, 'sueb-banniere' ),
+		);
+	}
+
+	/* Évènements à venir seulement : un évènement passé n'a rien à faire à la une. */
+	$evts = array();
+	$prochains = get_posts( array(
+		'post_type'   => 'ueb_evenement',
+		'numberposts' => 2,
+		'meta_key'    => '_sueb_debut',
+		'orderby'     => 'meta_value',
+		'order'       => 'ASC',
+		'meta_query'  => array( array( 'key' => '_sueb_debut', 'value' => current_time( 'Y-m-d\TH:i' ), 'compare' => '>=' ) ),
+	) );
+	foreach ( $prochains as $p ) {
+		/* La date saisie est celle du site : on la lit dans son fuseau, sans décalage. */
+		$dt = date_create_immutable( (string) sueb_meta( $p->ID, 'debut' ), wp_timezone() );
+		$ts = $dt ? $dt->getTimestamp() : 0;
+		$evts[] = array(
+			'type'      => 'evenement',
+			'etiquette' => 'Évènement',
+			'titre'     => $p->post_title,
+			'texte'     => wp_trim_words( wp_strip_all_tags( get_the_excerpt( $p ) ), 32 ),
+			'url'       => get_permalink( $p ),
+			'lien'      => 'En savoir plus',
+			'date'      => $ts ? wp_date( 'j F Y', $ts ) . ' · ' . wp_date( 'G\hi', $ts ) : '',
+			'iso'       => $ts ? wp_date( 'c', $ts ) : '',
+			'lieu'      => (string) sueb_meta( $p->ID, 'lieu' ),
+			'photo'     => sueb_image_url( $p->ID, 'sueb-banniere' ),
+		);
+	}
+
+	$liste = array();
+	for ( $i = 0; count( $liste ) < $nombre && ( $actus || $evts ); $i++ ) {
+		if ( 1 === $i % 2 && $evts ) {
+			$liste[] = array_shift( $evts );
+		} elseif ( $actus ) {
+			$liste[] = array_shift( $actus );
+		} else {
+			$liste[] = array_shift( $evts );
+		}
+	}
+
+	if ( count( $liste ) < 3 ) {
+		if ( ! $liste ) {
+			$liste[] = array(
+				'type'      => 'accueil',
+				'etiquette' => sueb_reglage( 'accueil_surtitre' ),
+				'titre'     => sueb_reglage( 'accueil_titre' ),
+				'texte'     => sueb_reglage( 'accueil_texte' ),
+				'url'       => '#etablissements',
+				'lien'      => 'Nos établissements',
+				'date'      => '',
+				'iso'       => '',
+				'lieu'      => '',
+				'photo'     => '',
+			);
+		}
+		$fixe = sueb_etablissements();
+		foreach ( $arbre as $e ) {
+			if ( count( $liste ) >= $nombre ) {
+				break;
+			}
+			$repli   = $fixe[ strtoupper( $e['sigle'] ) ]['photos'][0] ?? 'campus-ebolowa';
+			$liste[] = array(
+				'type'      => 'etablissement',
+				'etiquette' => 'Établissement',
+				'titre'     => $e['titre'],
+				'texte'     => wp_trim_words( $e['texte'], 32 ) ?: 'Découvrez ses départements, ses filières et ses unités d’enseignement.',
+				'url'       => $e['url'],
+				'lien'      => 'Découvrir l’établissement',
+				'date'      => '',
+				'iso'       => '',
+				'lieu'      => $e['ville'],
+				'photo'     => sueb_image_url( $e['id'], 'sueb-banniere', '', $repli ),
+			);
+		}
+	}
+
+	foreach ( $liste as $i => &$s ) {
+		if ( ! $s['photo'] ) {
+			$s['photo'] = sueb_photo( $repli_photos[ $i % count( $repli_photos ) ] );
+		}
+	}
+	unset( $s );
+	return $liste;
+}

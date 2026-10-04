@@ -1,6 +1,7 @@
 <?php
 /**
- * Bannière plein écran : diaporama lent (effet Ken Burns), titre animé,
+ * Bannière de l'accueil : carrousel « à la une » des actualités et des
+ * évènements (image à gauche coupée en biais, texte sur panneau à droite),
  * puis l'université en chiffres.
  *
  * @package Site_UEB
@@ -10,45 +11,44 @@ defined( 'ABSPATH' ) || exit;
 
 $arbre  = $args['arbre'];
 $villes = array_unique( array_filter( array_column( $arbre, 'ville' ) ) );
-$slides = array(
-	array( 'remise-toges', 'Remise des toges' ),
-	array( 'campus-ebolowa', 'Le campus d’Ebolowa' ),
-	array( 'equipe-fs', 'Faculté des Sciences' ),
-	array( 'visite-port', 'ENSTMO, au port de Kribi' ),
-);
-$mots = preg_split( '/\s+/u', sueb_reglage( 'accueil_titre' ) );
+$slides = sueb_slides_banniere( 5, $arbre );
+$total  = count( $slides );
 ?>
-<section class="banniere" data-diaporama aria-label="Présentation">
-	<div class="banniere__images">
+<section class="banniere" data-carrousel aria-roledescription="carrousel" aria-label="À la une">
+	<h1 class="sr">Université d’Ebolowa : à la une</h1>
+
+	<div class="banniere__scene">
 		<?php foreach ( $slides as $i => $s ) : ?>
-			<figure class="banniere__image<?php echo 0 === $i ? ' est-active' : ''; ?>" data-diapo>
-				<img src="<?php echo esc_url( sueb_photo( $s[0] ) ); ?>" alt="" <?php echo 0 === $i ? 'fetchpriority="high"' : 'loading="lazy"'; ?> decoding="async">
-				<figcaption><?php echo esc_html( $s[1] ); ?></figcaption>
-			</figure>
+			<article class="diapo<?php echo 0 === $i ? ' est-active' : ''; ?>" data-diapo role="group" aria-roledescription="diapositive" aria-label="<?php echo esc_attr( ( $i + 1 ) . ' sur ' . $total ); ?>"<?php echo 0 === $i ? '' : ' inert'; ?>>
+				<figure class="diapo__image">
+					<img src="<?php echo esc_url( $s['photo'] ); ?>" alt="" width="1400" height="940" decoding="async" <?php echo 0 === $i ? 'fetchpriority="high"' : 'loading="lazy"'; ?>>
+				</figure>
+				<div class="diapo__texte">
+					<p class="diapo__etiquette">
+						<span><?php echo esc_html( $s['etiquette'] ); ?></span>
+						<?php if ( $s['date'] ) : ?><time datetime="<?php echo esc_attr( $s['iso'] ); ?>"><?php echo esc_html( $s['date'] ); ?></time><?php endif; ?>
+						<?php if ( $s['lieu'] ) : ?><span class="diapo__lieu"><?php echo sueb_icone( 'lieu', 14 ); ?><?php echo esc_html( $s['lieu'] ); ?></span><?php endif; ?>
+					</p>
+					<h2 class="diapo__titre"><?php echo esc_html( $s['titre'] ); ?></h2>
+					<?php if ( $s['texte'] ) : ?><p class="diapo__resume"><?php echo esc_html( $s['texte'] ); ?></p><?php endif; ?>
+					<a class="btn btn--or diapo__lien" href="<?php echo esc_url( $s['url'] ); ?>"><?php echo esc_html( $s['lien'] ); ?><?php echo sueb_icone( 'fleche', 18 ); ?></a>
+				</div>
+			</article>
 		<?php endforeach; ?>
 	</div>
-	<div class="banniere__voile" aria-hidden="true"></div>
 
-	<div class="conteneur banniere__contenu">
-		<p class="surtitre surtitre--clair anime" style="--d:.1s"><?php echo esc_html( sueb_reglage( 'accueil_surtitre' ) ); ?></p>
-		<h1 class="banniere__titre">
-			<?php foreach ( $mots as $i => $m ) : ?><span class="mot"><span style="--d:<?php echo esc_attr( .25 + $i * .07 ); ?>s"><?php echo esc_html( $m ); ?></span></span> <?php endforeach; ?>
-		</h1>
-		<p class="banniere__texte anime" style="--d:.9s"><?php echo esc_html( sueb_reglage( 'accueil_texte' ) ); ?></p>
-		<div class="banniere__actions anime" style="--d:1.05s">
-			<a class="btn btn--or" href="#etablissements">Nos établissements<?php echo sueb_icone( 'fleche', 18 ); ?></a>
-			<button class="btn btn--verre" type="button" data-ouvrir-video><?php echo sueb_icone( 'lecture', 16 ); ?>Voir la vidéo</button>
+	<?php if ( $total > 1 ) : ?>
+		<div class="banniere__commandes">
+			<ol class="banniere__traits" aria-label="Choisir une diapositive">
+				<?php foreach ( $slides as $i => $s ) : ?>
+					<li><button type="button" data-trait="<?php echo (int) $i; ?>" aria-label="<?php echo esc_attr( ( $i + 1 ) . ' : ' . $s['titre'] ); ?>"<?php echo 0 === $i ? ' aria-current="true"' : ''; ?>><i></i></button></li>
+				<?php endforeach; ?>
+			</ol>
+			<button class="banniere__pause" type="button" data-pause aria-label="Mettre le défilement en pause">
+				<svg class="icone" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
+			</button>
 		</div>
-	</div>
-
-	<div class="conteneur banniere__pied">
-		<ol class="banniere__puces" aria-label="Images">
-			<?php foreach ( $slides as $i => $s ) : ?>
-				<li><button type="button" data-puce="<?php echo (int) $i; ?>"<?php echo 0 === $i ? ' aria-current="true"' : ''; ?>><span class="sr"><?php echo esc_html( $s[1] ); ?></span><i></i></button></li>
-			<?php endforeach; ?>
-		</ol>
-		<a class="banniere__defiler" href="#chiffres"><span>Défiler</span><i aria-hidden="true"></i></a>
-	</div>
+	<?php endif; ?>
 </section>
 
 <section class="chiffres" id="chiffres" aria-label="L’UEb en chiffres">

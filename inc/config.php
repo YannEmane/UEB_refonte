@@ -42,6 +42,35 @@ function sueb_etablissements() {
 }
 
 /**
+ * Les institutions partenaires de l'UEb : sept universités publiques, et le
+ * MINESUP avec lequel l'université a une convention. Le logo de chacune se
+ * dépose dans assets/images/partenaires/<id>.svg (ou .png, .webp, .jpg) ;
+ * sans fichier, le sigle s'affiche à la place.
+ */
+function sueb_institutions_partenaires() {
+	return array(
+		array( 'id' => 'garoua', 'nom' => 'Université de Garoua', 'sigle' => 'UG', 'type' => 'Université' ),
+		array( 'id' => 'bertoua', 'nom' => 'Université de Bertoua', 'sigle' => 'UBe', 'type' => 'Université' ),
+		array( 'id' => 'yaounde-2', 'nom' => 'Université de Yaoundé II', 'sigle' => 'UY2', 'type' => 'Université' ),
+		array( 'id' => 'ngaoundere', 'nom' => 'Université de Ngaoundéré', 'sigle' => 'UN', 'type' => 'Université' ),
+		array( 'id' => 'yaounde-1', 'nom' => 'Université de Yaoundé I', 'sigle' => 'UY1', 'type' => 'Université' ),
+		array( 'id' => 'douala', 'nom' => 'Université de Douala', 'sigle' => 'UDo', 'type' => 'Université' ),
+		array( 'id' => 'dschang', 'nom' => 'Université de Dschang', 'sigle' => 'UDs', 'type' => 'Université' ),
+		array( 'id' => 'minesup', 'nom' => 'Ministère de l’Enseignement Supérieur', 'sigle' => 'MINESUP', 'type' => 'Convention' ),
+	);
+}
+
+/** URL du logo d'une institution partenaire, ou chaîne vide si le fichier n'est pas encore déposé. */
+function sueb_logo_partenaire( $id ) {
+	foreach ( array( 'svg', 'png', 'webp', 'jpg' ) as $ext ) {
+		if ( file_exists( SUEB_DIR . "/assets/images/partenaires/$id.$ext" ) ) {
+			return SUEB_URI . "/assets/images/partenaires/$id.$ext";
+		}
+	}
+	return '';
+}
+
+/**
  * Les fonctions du rectorat, dans l'ordre protocolaire. Les intitulés
  * longs sont à confirmer par le rectorat (voir le compte rendu).
  */

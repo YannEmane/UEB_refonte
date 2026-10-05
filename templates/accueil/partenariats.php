@@ -1,14 +1,21 @@
 <?php
 /**
- * Partenariats et conventions : défilé des logos, puis un carrousel
- * d'articles (photo, date de signature, résumé).
+ * Partenariats et conventions : les logos des institutions partenaires qui
+ * flottent sur la page, puis un carrousel d'articles (photo, date de
+ * signature, résumé).
  *
  * @package Site_UEB
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$partenaires = sueb_partenaires();
+$partenaires  = sueb_partenaires();
+$institutions = sueb_institutions_partenaires();
+
+/* Diamètre, décalage vertical (rem) et durée de flottement : chaque logo a son propre rythme. */
+$tailles   = array( 140, 122, 150, 128, 146, 124, 136, 132 );
+$decalages = array( 0, 2.75, .5, 3.25, 1.5, 0, 2.25, .75 );
+$durees    = array( 7, 8.5, 6.5, 9, 7.5, 8, 6.8, 8.8 );
 ?>
 <section class="section partenariats" id="partenariats" aria-labelledby="titre-part">
 	<div class="conteneur">
@@ -16,7 +23,7 @@ $partenaires = sueb_partenaires();
 			<div>
 				<p class="surtitre">Partenariats et conventions</p>
 				<h2 id="titre-part">Ils avancent avec l’UEb</h2>
-				<p class="section__chapo">Entreprises, institutions de recherche et ministères : des conventions pour professionnaliser les formations et ouvrir nos étudiants au monde du travail.</p>
+				<p class="section__chapo">Sept universités publiques partenaires et le ministère de l’Enseignement Supérieur, avec lequel l’UEb est liée par une convention : des échanges pour renforcer la recherche et les formations.</p>
 			</div>
 			<?php if ( count( $partenaires ) > 2 ) : ?>
 				<div class="fleches" data-fleches="carrousel-partenaires">
@@ -27,17 +34,28 @@ $partenaires = sueb_partenaires();
 		</header>
 	</div>
 
-	<?php if ( ! $partenaires ) : ?>
-		<div class="conteneur"><p class="vide">Les conventions de partenariat seront bientôt présentées ici.</p></div>
-	<?php else : ?>
-		<div class="defile" aria-hidden="true">
-			<div class="defile__piste">
-				<?php for ( $tour = 0; $tour < 2; $tour++ ) : foreach ( $partenaires as $p ) : ?>
-					<span class="defile__item"><?php if ( $p['logo'] ) : ?><img src="<?php echo esc_url( $p['logo'] ); ?>" alt="" loading="lazy"><?php endif; ?><?php echo esc_html( $p['titre'] ); ?></span>
-				<?php endforeach; endfor; ?>
-			</div>
-		</div>
+	<div class="conteneur">
+		<ul class="flotte" aria-label="Institutions partenaires">
+			<?php foreach ( $institutions as $i => $inst ) :
+				$logo = sueb_logo_partenaire( $inst['id'] );
+				$n    = $i % count( $tailles );
+				$conv = 'Convention' === $inst['type'];
+				?>
+				<li class="flotte__item revele" style="--t:<?php echo (int) $tailles[ $n ]; ?>px;--oy:<?php echo esc_attr( $decalages[ $n ] ); ?>rem;--dur:<?php echo esc_attr( $durees[ $n ] ); ?>s;--delai:-<?php echo esc_attr( round( $i * 1.3, 1 ) ); ?>s;--d:<?php echo esc_attr( $i * .08 ); ?>s">
+					<div class="flotte__carte<?php echo $conv ? ' flotte__carte--convention' : ''; ?><?php echo $logo ? '' : ' flotte__carte--texte'; ?>">
+						<?php if ( $logo ) : ?>
+							<img src="<?php echo esc_url( $logo ); ?>" alt="" loading="lazy">
+						<?php else : ?>
+							<span class="flotte__sigle"><?php echo esc_html( $inst['sigle'] ); ?></span>
+						<?php endif; ?>
+					</div>
+					<p class="flotte__nom"><span class="flotte__type"><?php echo esc_html( $inst['type'] ); ?></span><?php echo esc_html( $inst['nom'] ); ?></p>
+				</li>
+			<?php endforeach; ?>
+		</ul>
+	</div>
 
+	<?php if ( $partenaires ) : ?>
 		<div class="carrousel" id="carrousel-partenaires" tabindex="0" aria-label="Partenaires">
 			<ul class="carrousel__piste">
 				<?php foreach ( $partenaires as $i => $p ) : ?>

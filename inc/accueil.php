@@ -80,6 +80,36 @@ function sueb_arbre_formation() {
 		}
 	}
 	unset( $n );
+
+	/* Les neuf établissements sont toujours présentés : une fiche créée dans l'admin remplace
+	   leur carte provisoire (logo, couleur et photos du thème, identifiant négatif). */
+	$presents = array();
+	foreach ( $racines as $r ) {
+		$presents[ strtoupper( $r['sigle'] ) ] = true;
+	}
+	$i = 0;
+	foreach ( $fixe as $sigle => $f ) {
+		--$i;
+		if ( isset( $presents[ $sigle ] ) ) {
+			continue;
+		}
+		$racines[] = array(
+			'id'         => $i,
+			'parent'     => 0,
+			'titre'      => $f['fr'],
+			'sigle'      => $sigle,
+			'url'        => '#etab-' . strtolower( $sigle ),
+			'texte'      => '',
+			'resp'       => '',
+			'enfants'    => array(),
+			'ville'      => $f['ville'],
+			'couleur'    => $f['couleur'],
+			'logo'       => sueb_logo( $sigle ),
+			'photo_g'    => sueb_photo( $f['photos'][0] ),
+			'photo_d'    => sueb_photo( $f['photos'][1] ),
+			'provisoire' => true,
+		);
+	}
 	return $racines;
 }
 
@@ -126,7 +156,7 @@ function sueb_actualites( $nombre = 7 ) {
 			'date'     => get_the_date( 'j M Y', $p ),
 			'iso'      => get_the_date( 'c', $p ),
 			'texte'    => wp_trim_words( wp_strip_all_tags( get_the_excerpt( $p ) ), 28 ),
-			'photo'    => sueb_image_url( $p->ID, 'sueb-carte', '', 'campus-ebolowa' ),
+			'photo'    => sueb_image_url( $p->ID, 'sueb-carte', '', sueb_repli_article() ),
 			'format'   => in_array( $format, array( 'video', 'audio' ), true ) ? $format : 'article',
 			'media'    => $media ? (string) wp_get_attachment_url( $media ) : '',
 			'integre'  => sueb_video_integree( (string) sueb_meta( $p->ID, 'media_url' ) ),
@@ -221,7 +251,7 @@ function sueb_slides_banniere( $nombre = 5, array $arbre = array() ) {
 			'date'      => get_the_date( 'j F Y', $p ),
 			'iso'       => get_the_date( 'c', $p ),
 			'lieu'      => '',
-			'photo'     => sueb_image_url( $p->ID, 'sueb-banniere' ),
+			'photo'     => sueb_image_url( $p->ID, 'sueb-banniere', '', sueb_repli_article() ),
 		);
 	}
 

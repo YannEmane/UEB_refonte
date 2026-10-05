@@ -49,3 +49,14 @@ add_action( 'wp_head', function () {
 		printf( '<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n", esc_url( SUEB_URI . '/assets/fonts/' . $f . '.woff2' ) );
 	}
 }, 1 );
+/**
+ * Retourne l'URL de l'image d'un article,
+ * ou l'image par défaut de l'UEB s'il n'en a pas.
+ */
+function ueb_thumbnail_url( $post_id = null, $size = 'large' ) {
+    $post_id = $post_id ?: get_the_ID();
+    if ( has_post_thumbnail( $post_id ) ) {
+        return get_the_post_thumbnail_url( $post_id, $size );
+    }
+    return get_template_directory_uri() . '/assets/images/ueb-article-par-defaut.jpg';
+}

@@ -13,6 +13,20 @@ function sueb_photo( $nom ) {
 	return SUEB_URI . "/assets/images/photos/$nom.$ext";
 }
 
+/**
+ * Nom de la photo de repli des articles sans image mise en avant : l'image par
+ * défaut de l'UEb (assets/images/photos/article-par-defaut.jpg ou .webp) si
+ * elle est déposée, sinon une photo du campus.
+ */
+function sueb_repli_article() {
+	foreach ( array( 'webp', 'jpg' ) as $ext ) {
+		if ( file_exists( SUEB_DIR . "/assets/images/photos/article-par-defaut.$ext" ) ) {
+			return 'article-par-defaut';
+		}
+	}
+	return 'campus-ebolowa';
+}
+
 /** URL du logo d'un établissement par son sigle, ou de l'université. */
 function sueb_logo( $sigle = 'UEB' ) {
 	$fichier = strtolower( $sigle ) . '.png';

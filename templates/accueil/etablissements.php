@@ -44,7 +44,7 @@ $villes = array_values( array_unique( array_filter( array_column( $arbre, 'ville
 					<figure class="etab__photo etab__photo--g"><img src="<?php echo esc_url( $e['photo_g'] ); ?>" alt="" loading="lazy"></figure>
 					<div class="etab__corps">
 						<div class="etab__entete">
-							<img class="etab__logo" src="<?php echo esc_url( $e['logo'] ); ?>" alt="" width="64" height="64" loading="lazy">
+							<img class="etab__logo" src="<?php echo esc_url( $e['logo'] ); ?>" alt="" width="80" height="80" loading="lazy">
 							<div>
 								<p class="etab__sigle"><?php echo esc_html( $e['sigle'] ); ?> <span><?php echo sueb_icone( 'lieu', 14 ); ?><?php echo esc_html( $e['ville'] ); ?></span></p>
 								<h3 class="etab__nom"><a href="<?php echo esc_url( $e['url'] ); ?>"><?php echo esc_html( $e['titre'] ); ?></a></h3>
@@ -59,10 +59,16 @@ $villes = array_values( array_unique( array_filter( array_column( $arbre, 'ville
 						<?php else : ?>
 							<p class="etab__vide">Départements en cours de publication.</p>
 						<?php endif; ?>
-						<div class="etab__pied">
-							<p class="etab__compte"><span><strong><?php echo (int) $nb_dep; ?></strong> département<?php echo $nb_dep > 1 ? 's' : ''; ?></span><span><strong><?php echo (int) $nb_fil; ?></strong> filière<?php echo $nb_fil > 1 ? 's' : ''; ?></span><span><strong><?php echo (int) $nb_ue; ?></strong> UE</span></p>
-							<button class="btn btn--etab" type="button" data-explorer="<?php echo (int) $e['id']; ?>">Explorer la formation<?php echo sueb_icone( 'fleche', 16 ); ?></button>
-						</div>
+						<?php if ( ! empty( $e['provisoire'] ) ) : ?>
+							<div class="etab__pied">
+								<a class="btn btn--etab" href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription en ligne<?php echo sueb_icone( 'fleche', 16 ); ?></a>
+							</div>
+						<?php else : ?>
+							<div class="etab__pied">
+								<p class="etab__compte"><span><strong><?php echo (int) $nb_dep; ?></strong> département<?php echo $nb_dep > 1 ? 's' : ''; ?></span><span><strong><?php echo (int) $nb_fil; ?></strong> filière<?php echo $nb_fil > 1 ? 's' : ''; ?></span><span><strong><?php echo (int) $nb_ue; ?></strong> UE</span></p>
+								<button class="btn btn--etab" type="button" data-explorer="<?php echo (int) $e['id']; ?>">Explorer la formation<?php echo sueb_icone( 'fleche', 16 ); ?></button>
+							</div>
+						<?php endif; ?>
 					</div>
 					<figure class="etab__photo etab__photo--d"><img src="<?php echo esc_url( $e['photo_d'] ); ?>" alt="" loading="lazy"></figure>
 				</li>

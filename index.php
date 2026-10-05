@@ -19,7 +19,7 @@ get_header();
 	<?php if ( is_singular() ) : ?>
 		<?php while ( have_posts() ) : the_post(); ?>
 			<article class="prose">
-				<?php if ( has_post_thumbnail() && 'ueb_personnel' !== get_post_type() ) : ?><?php the_post_thumbnail( 'large' ); ?><?php endif; ?>
+				<?php if ( has_post_thumbnail() && 'ueb_personnel' !== get_post_type() ) : ?><?php the_post_thumbnail( 'large' ); ?><?php elseif ( 'post' === get_post_type() ) : ?><img class="attachment-large" src="<?php echo esc_url( sueb_photo( sueb_repli_article() ) ); ?>" alt="" width="1600" height="900" loading="lazy"><?php endif; ?>
 				<?php the_content(); ?>
 				<?php if ( ( $lien = sueb_meta( get_the_ID(), 'lien' ) ) ) : ?>
 					<p><a class="lien-fleche" href="<?php echo esc_url( $lien ); ?>" target="_blank" rel="noopener">Lire l’article de presse</a></p>

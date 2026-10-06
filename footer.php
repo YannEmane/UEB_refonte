@@ -29,7 +29,7 @@ $base = is_front_page() ? '' : home_url( '/' );
 			<ul class="pied__liens">
 				<li><a href="<?php echo esc_url( $base . '#message' ); ?>">Message du Recteur</a></li>
 				<li><a href="<?php echo esc_url( $base . '#histoire' ); ?>">Histoire et création</a></li>
-				<li><a href="<?php echo esc_url( $base . '#dirigeants' ); ?>">Les dirigeants</a></li>
+				<li><a href="<?php echo esc_url( sueb_url_dirigeants() ); ?>">Les dirigeants</a></li>
 				<li><a href="<?php echo esc_url( $base . '#partenariats' ); ?>">Partenariats et conventions</a></li>
 				<li><a href="<?php echo esc_url( $base . '#personnel' ); ?>">Personnel</a></li>
 			</ul>

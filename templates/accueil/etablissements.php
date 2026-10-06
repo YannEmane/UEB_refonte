@@ -1,7 +1,8 @@
 <?php
 /**
- * Nos établissements et écoles : une ligne par établissement, photos aux
- * extrémités, puis l'explorateur « poupée russe » : départements >
+ * Nos établissements et écoles : une mosaïque de cartes colorées (couleur
+ * identitaire de chaque établissement) avec son logo, son nom et une photo
+ * d'étudiant(e). Un clic ouvre l'explorateur « poupée russe » : départements >
  * filières > unités d'enseignement > syllabus et crédits.
  *
  * @package Site_UEB
@@ -9,68 +10,65 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$arbre  = $args['arbre'];
-$villes = array_values( array_unique( array_filter( array_column( $arbre, 'ville' ) ) ) );
+$arbre = $args['arbre'];
+
+/* Ordre d'affichage : la première carte est la grande ; les couleurs voisines sont écartées. */
+$ordre  = array( 'FSEG', 'FSJP', 'ISABEE', 'FMSP', 'FALSH', 'FS', 'ENSET', 'ESTLC', 'ENSTMO' );
+$cartes = array();
+$autres = array();
+foreach ( $arbre as $e ) {
+	$rang = array_search( strtoupper( $e['sigle'] ), $ordre, true );
+	if ( false === $rang ) {
+		$autres[] = $e;
+	} else {
+		$cartes[ $rang ] = $e;
+	}
+}
+ksort( $cartes );
+$cartes = array_merge( array_values( $cartes ), $autres );
+$total  = count( $cartes );
+/* Après la grande carte et 4 petites, les cartes se rangent par 3 : le reste s'étire sur la dernière ligne. */
+$reste = $total > 5 ? ( $total - 5 ) % 3 : 0;
 ?>
 <section class="section etablissements" id="etablissements" aria-labelledby="titre-etab">
 	<div class="conteneur">
-		<header class="section__tete section__tete--ligne revele">
-			<div>
-				<p class="surtitre">Nos établissements et écoles</p>
-				<h2 id="titre-etab">Facultés, écoles et institut</h2>
-				<p class="section__chapo">Chaque établissement s’ouvre sur ses départements, puis ses filières, ses unités d’enseignement et enfin le syllabus de chaque cours, avec ses crédits.</p>
-			</div>
-			<?php if ( count( $villes ) > 1 ) : ?>
-				<div class="filtres" role="group" aria-label="Filtrer par ville" data-filtres>
-					<button type="button" aria-pressed="true" data-ville="">Toutes les villes</button>
-					<?php foreach ( $villes as $v ) : ?>
-						<button type="button" aria-pressed="false" data-ville="<?php echo esc_attr( $v ); ?>"><?php echo esc_html( $v ); ?></button>
-					<?php endforeach; ?>
-				</div>
-			<?php endif; ?>
+		<header class="section__tete revele">
+			<p class="surtitre">Nos établissements et écoles</p>
+			<h2 id="titre-etab">Facultés, écoles et institut</h2>
+			<p class="section__chapo">Chaque établissement s’ouvre sur ses départements, puis ses filières, ses unités d’enseignement et enfin le syllabus de chaque cours, avec ses crédits.</p>
 		</header>
 
-		<?php if ( ! $arbre ) : ?>
+		<?php if ( ! $cartes ) : ?>
 			<p class="vide">Les établissements seront bientôt présentés ici.</p>
 		<?php endif; ?>
 
-		<ol class="etabs" data-etabs>
-			<?php foreach ( $arbre as $i => $e ) :
-				$nb_dep = sueb_compter( $e, 1 );
-				$nb_fil = sueb_compter( $e, 2 );
-				$nb_ue  = sueb_compter( $e, 3 );
+		<ol class="mosaique">
+			<?php foreach ( $cartes as $i => $e ) :
+				$classes = 'mosaique__carte revele';
+				if ( 0 === $i && $total > 4 ) {
+					$classes .= ' mosaique__carte--grande';
+				}
+				if ( $reste && $i >= $total - $reste ) {
+					$classes .= 1 === $reste ? ' mosaique__carte--large' : ' mosaique__carte--demi';
+				}
+				if ( strlen( $e['titre'] ) > 46 ) {
+					$classes .= ' mosaique__carte--long';
+				}
+				$etudiant = sueb_photo_etudiant( $e['sigle'] );
+				$etiquette = $e['titre'];
 				?>
-				<li class="etab revele" id="etab-<?php echo esc_attr( strtolower( $e['sigle'] ) ); ?>" data-ville="<?php echo esc_attr( $e['ville'] ); ?>" style="--etab:<?php echo esc_attr( $e['couleur'] ); ?>">
-					<figure class="etab__photo etab__photo--g"><img src="<?php echo esc_url( $e['photo_g'] ); ?>" alt="" loading="lazy"></figure>
-					<div class="etab__corps">
-						<div class="etab__entete">
-							<img class="etab__logo" src="<?php echo esc_url( $e['logo'] ); ?>" alt="" width="80" height="80" loading="lazy">
-							<div>
-								<p class="etab__sigle"><?php echo esc_html( $e['sigle'] ); ?> <span><?php echo sueb_icone( 'lieu', 14 ); ?><?php echo esc_html( $e['ville'] ); ?></span></p>
-								<h3 class="etab__nom"><a href="<?php echo esc_url( $e['url'] ); ?>"><?php echo esc_html( $e['titre'] ); ?></a></h3>
-							</div>
-						</div>
-						<?php if ( $e['enfants'] ) : ?>
-							<ul class="etab__deps">
-								<?php foreach ( $e['enfants'] as $d ) : ?>
-									<li><button type="button" data-explorer="<?php echo (int) $e['id']; ?>" data-chemin="<?php echo (int) $d['id']; ?>"><?php echo esc_html( $d['titre'] ); ?></button></li>
-								<?php endforeach; ?>
-							</ul>
-						<?php else : ?>
-							<p class="etab__vide">Départements en cours de publication.</p>
+				<li class="<?php echo esc_attr( $classes ); ?>" id="etab-<?php echo esc_attr( strtolower( $e['sigle'] ) ); ?>" style="--etab:<?php echo esc_attr( $e['couleur'] ); ?>;--texte:<?php echo esc_attr( sueb_texte_sur( $e['couleur'] ) ); ?>;--d:<?php echo esc_attr( round( $i * .07, 2 ) ); ?>s">
+					<?php if ( ! empty( $e['provisoire'] ) ) : ?>
+						<a class="mosaique__lien" href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>" aria-label="<?php echo esc_attr( $etiquette . ' : préinscription en ligne' ); ?>">
+					<?php else : ?>
+						<button class="mosaique__lien" type="button" data-explorer="<?php echo (int) $e['id']; ?>" aria-label="<?php echo esc_attr( $etiquette . ' : explorer la formation' ); ?>">
+					<?php endif; ?>
+						<span class="mosaique__logo"><img src="<?php echo esc_url( $e['logo'] ); ?>" alt="" width="64" height="64" loading="lazy"></span>
+						<span class="mosaique__nom"><?php echo esc_html( $e['titre'] ); ?></span>
+						<?php if ( $etudiant ) : ?>
+							<img class="mosaique__etudiant" src="<?php echo esc_url( $etudiant ); ?>" alt="" loading="lazy">
 						<?php endif; ?>
-						<?php if ( ! empty( $e['provisoire'] ) ) : ?>
-							<div class="etab__pied">
-								<a class="btn btn--etab" href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription en ligne<?php echo sueb_icone( 'fleche', 16 ); ?></a>
-							</div>
-						<?php else : ?>
-							<div class="etab__pied">
-								<p class="etab__compte"><span><strong><?php echo (int) $nb_dep; ?></strong> département<?php echo $nb_dep > 1 ? 's' : ''; ?></span><span><strong><?php echo (int) $nb_fil; ?></strong> filière<?php echo $nb_fil > 1 ? 's' : ''; ?></span><span><strong><?php echo (int) $nb_ue; ?></strong> UE</span></p>
-								<button class="btn btn--etab" type="button" data-explorer="<?php echo (int) $e['id']; ?>">Explorer la formation<?php echo sueb_icone( 'fleche', 16 ); ?></button>
-							</div>
-						<?php endif; ?>
-					</div>
-					<figure class="etab__photo etab__photo--d"><img src="<?php echo esc_url( $e['photo_d'] ); ?>" alt="" loading="lazy"></figure>
+					<?php echo ! empty( $e['provisoire'] ) ? '</a>' : '</button>'; ?>
 				</li>
 			<?php endforeach; ?>
 		</ol>

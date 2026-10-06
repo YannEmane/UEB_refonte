@@ -156,7 +156,7 @@ function sueb_actualites( $nombre = 7 ) {
 			'date'     => get_the_date( 'j M Y', $p ),
 			'iso'      => get_the_date( 'c', $p ),
 			'texte'    => wp_trim_words( wp_strip_all_tags( get_the_excerpt( $p ) ), 28 ),
-			'photo'    => sueb_image_url( $p->ID, 'sueb-carte', '', sueb_repli_article() ),
+			'photo'    => sueb_image_url( $p->ID, 'sueb-carte' ) ?: sueb_repli_article(),
 			'format'   => in_array( $format, array( 'video', 'audio' ), true ) ? $format : 'article',
 			'media'    => $media ? (string) wp_get_attachment_url( $media ) : '',
 			'integre'  => sueb_video_integree( (string) sueb_meta( $p->ID, 'media_url' ) ),
@@ -251,7 +251,7 @@ function sueb_slides_banniere( $nombre = 5, array $arbre = array() ) {
 			'date'      => get_the_date( 'j F Y', $p ),
 			'iso'       => get_the_date( 'c', $p ),
 			'lieu'      => '',
-			'photo'     => sueb_image_url( $p->ID, 'sueb-banniere', '', sueb_repli_article() ),
+			'photo'     => sueb_image_url( $p->ID, 'sueb-banniere' ) ?: sueb_repli_article(),
 		);
 	}
 

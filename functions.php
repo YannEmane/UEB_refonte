@@ -5,6 +5,10 @@
  * @package Site_UEB
  */
 
+@ini_set('upload_max_size', '128M');
+@ini_set('post_max_size', '128M');
+@ini_set('max_execution_time', '300');
+
 defined( 'ABSPATH' ) || exit;
 
 define( 'SUEB_VERSION', '0.1.0' );

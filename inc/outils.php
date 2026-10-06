@@ -9,22 +9,59 @@ defined( 'ABSPATH' ) || exit;
 
 /** URL d'une photo livrée avec le thème (assets/images/photos). */
 function sueb_photo( $nom ) {
+	if ( false !== strpos( $nom, '://' ) ) {
+		return $nom; // déjà une adresse complète (ex. l'image par défaut des articles)
+	}
 	$ext = file_exists( SUEB_DIR . "/assets/images/photos/$nom.webp" ) ? 'webp' : 'jpg';
 	return SUEB_URI . "/assets/images/photos/$nom.$ext";
 }
 
 /**
- * Nom de la photo de repli des articles sans image mise en avant : l'image par
- * défaut de l'UEb (assets/images/photos/article-par-defaut.jpg ou .webp) si
- * elle est déposée, sinon une photo du campus.
+ * URL de l'image par défaut des articles sans image mise en avant. On la cherche
+ * dans assets/images/photos/ puis assets/images/, sous les noms article-par-defaut,
+ * ueb-article-par-defaut ou ueb-default-article (.webp, .jpg, .jpeg ou .png).
+ * Sans fichier déposé, on affiche une photo du campus.
  */
 function sueb_repli_article() {
-	foreach ( array( 'webp', 'jpg' ) as $ext ) {
-		if ( file_exists( SUEB_DIR . "/assets/images/photos/article-par-defaut.$ext" ) ) {
-			return 'article-par-defaut';
+	$noms = array( 'article-par-defaut', 'ueb-article-par-defaut', 'ueb-default-article' );
+	foreach ( array( 'photos/', '' ) as $dossier ) {
+		foreach ( $noms as $nom ) {
+			foreach ( array( 'webp', 'jpg', 'jpeg', 'png' ) as $ext ) {
+				if ( file_exists( SUEB_DIR . "/assets/images/$dossier$nom.$ext" ) ) {
+					return SUEB_URI . "/assets/images/$dossier$nom.$ext";
+				}
+			}
 		}
 	}
-	return 'campus-ebolowa';
+	return sueb_photo( 'campus-ebolowa' );
+}
+
+/** Photo d'étudiant(e) d'un établissement (assets/images/etudiants/<sigle>.webp ou .png), ou chaîne vide. */
+function sueb_photo_etudiant( $sigle ) {
+	$sigle = strtolower( $sigle );
+	foreach ( array( 'webp', 'png' ) as $ext ) {
+		if ( file_exists( SUEB_DIR . "/assets/images/etudiants/$sigle.$ext" ) ) {
+			return SUEB_URI . "/assets/images/etudiants/$sigle.$ext";
+		}
+	}
+	return '';
+}
+
+/** Couleur de texte lisible (blanc, ou vert très sombre sur les fonds clairs) pour un fond hexadécimal. */
+function sueb_texte_sur( $hex ) {
+	$hex = ltrim( (string) $hex, '#' );
+	if ( 6 !== strlen( $hex ) || ! ctype_xdigit( $hex ) ) {
+		return '#ffffff';
+	}
+	$c   = array_map(
+		function ( $v ) {
+			$v = hexdec( $v ) / 255;
+			return $v <= 0.03928 ? $v / 12.92 : pow( ( $v + 0.055 ) / 1.055, 2.4 );
+		},
+		str_split( $hex, 2 )
+	);
+	$lum = 0.2126 * $c[0] + 0.7152 * $c[1] + 0.0722 * $c[2];
+	return ( 1.05 / ( $lum + 0.05 ) ) >= 4.5 ? '#ffffff' : '#0f2c1f';
 }
 
 /** URL du logo d'un établissement par son sigle, ou de l'université. */

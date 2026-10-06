@@ -13,7 +13,7 @@ $menu    = array(
 	array( 'Découvrir l’UEb', '#decouvrir', array(
 		array( 'Message du Recteur', '#message' ),
 		array( 'Histoire et création', '#histoire' ),
-		array( 'Les dirigeants', '#dirigeants' ),
+		array( 'Les dirigeants', sueb_url_dirigeants() ),
 		array( 'Vidéo de présentation', '#video' ),
 	) ),
 	array( 'Établissements et écoles', '#etablissements', array() ),
@@ -71,7 +71,7 @@ foreach ( sueb_etablissements() as $sigle => $e ) {
 							<div class="sous-menu<?php echo 1 === $i ? ' sous-menu--large' : ''; ?>">
 								<ul>
 									<?php foreach ( $item[2] as $s ) : ?>
-										<li><a href="<?php echo esc_url( $base . $s[1] ); ?>"><?php if ( isset( $s[2] ) ) : ?><img src="<?php echo esc_url( sueb_logo( $s[0] ) ); ?>" alt="" width="32" height="32" loading="lazy"><span><strong><?php echo esc_html( $s[0] ); ?></strong><small><?php echo esc_html( $s[2] ); ?></small></span><?php else : ?><?php echo esc_html( $s[0] ); ?><?php endif; ?></a></li>
+										<li><a href="<?php echo esc_url( 0 === strpos( $s[1], '#' ) ? $base . $s[1] : $s[1] ); ?>"><?php if ( isset( $s[2] ) ) : ?><img src="<?php echo esc_url( sueb_logo( $s[0] ) ); ?>" alt="" width="32" height="32" loading="lazy"><span><strong><?php echo esc_html( $s[0] ); ?></strong><small><?php echo esc_html( $s[2] ); ?></small></span><?php else : ?><?php echo esc_html( $s[0] ); ?><?php endif; ?></a></li>
 									<?php endforeach; ?>
 								</ul>
 							</div>

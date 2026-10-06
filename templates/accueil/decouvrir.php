@@ -1,6 +1,6 @@
 <?php
 /**
- * Découvrir l'UEb : message du Recteur, histoire, dirigeants, vidéo.
+ * Découvrir l'UEb : message du Recteur, histoire, vidéo (les dirigeants ont leur propre page).
  *
  * @package Site_UEB
  */
@@ -44,7 +44,7 @@ $affiche       = $affiche ? wp_get_attachment_image_url( $affiche, 'full' ) : su
 			<p class="surtitre">Découvrir l’UEb</p>
 			<h2 id="titre-decouvrir">Une jeune université, ancrée dans son territoire</h2>
 			<nav class="pastilles" aria-label="Dans cette rubrique">
-				<a href="#message">Message du Recteur</a><a href="#histoire">Histoire</a><a href="#dirigeants">Les dirigeants</a><a href="#video">Vidéo</a>
+				<a href="#message">Message du Recteur</a><a href="#histoire">Histoire</a><a href="<?php echo esc_url( sueb_url_dirigeants() ); ?>">Les dirigeants</a><a href="#video">Vidéo</a>
 			</nav>
 		</header>
 
@@ -98,35 +98,6 @@ $affiche       = $affiche ? wp_get_attachment_image_url( $affiche, 'full' ) : su
 				<?php endforeach; ?>
 			</ol>
 		</div>
-	</div>
-
-	<!-- Dirigeants -->
-	<div class="conteneur dirigeants" id="dirigeants">
-		<header class="section__tete section__tete--ligne revele">
-			<div>
-				<p class="surtitre">Les dirigeants de l’UEb</p>
-				<h3 class="section__titre-2">Le rectorat</h3>
-			</div>
-			<?php if ( $editeur ) : ?>
-				<a class="lien-fleche" href="<?php echo esc_url( admin_url( 'edit.php?post_type=ueb_dirigeant' ) ); ?>">Modifier les noms et les photos<?php echo sueb_icone( 'fleche', 18 ); ?></a>
-			<?php endif; ?>
-		</header>
-		<ul class="dirigeants__grille">
-			<?php foreach ( array_values( $dirigeants ) as $i => $d ) : ?>
-				<li class="dirigeant revele" style="--d:<?php echo esc_attr( ( $i % 5 ) * .07 ); ?>s">
-					<div class="dirigeant__photo">
-						<?php if ( $d['photo'] ) : ?>
-							<img src="<?php echo esc_url( $d['photo'] ); ?>" alt="<?php echo esc_attr( $d['nom'] ); ?>" loading="lazy">
-						<?php else : ?>
-							<span class="portrait-vide" aria-hidden="true"><?php echo esc_html( $d['sigle'] ?: sueb_initiales( $d['nom'] ) ); ?></span>
-						<?php endif; ?>
-						<?php if ( $d['sigle'] ) : ?><span class="dirigeant__sigle"><?php echo esc_html( $d['sigle'] ); ?></span><?php endif; ?>
-					</div>
-					<p class="dirigeant__nom"><?php echo esc_html( $d['nom'] ); ?></p>
-					<p class="dirigeant__fonction"><?php echo esc_html( $d['fonction'] ); ?></p>
-				</li>
-			<?php endforeach; ?>
-		</ul>
 	</div>
 
 	<!-- Vidéo de présentation -->

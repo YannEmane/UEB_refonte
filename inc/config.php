@@ -24,6 +24,15 @@ const SUEB_LIENS = array(
 );
 
 /**
+ * Adresse de la page des dirigeants, qui ne figure plus sur l'accueil. Il suffira de
+ * créer une page WordPress intitulée « Dirigeants » (adresse /dirigeants/) ; une autre
+ * adresse se règle avec le filtre « sueb_url_dirigeants ».
+ */
+function sueb_url_dirigeants() {
+	return apply_filters( 'sueb_url_dirigeants', home_url( '/dirigeants/' ) );
+}
+
+/**
  * Les neuf établissements, repris du site des inscriptions.
  * Sert à créer les fiches à l'installation et de repli (logo, couleur).
  */

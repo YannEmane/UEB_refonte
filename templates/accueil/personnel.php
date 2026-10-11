@@ -1,77 +1,90 @@
 <?php
 /**
- * Personnel de l'UEb : accordéon par catégorie (doyens et directeurs,
- * chefs de département, enseignants…), filtrable par établissement.
- * Chaque fiche : photo, nom, fonction, cours dispensés.
+ * Personnel de l'UEb : un annuaire à portraits, à la manière des grands sites
+ * institutionnels (GOV.UK, Commission européenne, Harvard, Stanford) : une
+ * recherche (nom, fonction, cours), un filtre par établissement, les membres
+ * groupés par catégorie, chacun avec son portrait, sa fonction et sa fiche.
+ * Le filtrage se fait dans la page (site.js).
  *
  * @package Site_UEB
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$groupes = sueb_personnel_par_corps();
+$groupes = array_values( array_filter( sueb_personnel_par_corps(), function ( $g ) {
+	return (bool) $g['membres'];
+} ) );
+$apercu  = 12; // au-delà, une catégorie se déplie à la demande
+$total   = 0;
 $etabs   = array();
 foreach ( $groupes as $g ) {
+	$total += count( $g['membres'] );
 	foreach ( $g['membres'] as $m ) {
-		$etabs[ $m['etab'] ] = true;
+		$etabs[ $m['etab'] ] = $m['etab_nom'];
 	}
 }
-ksort( $etabs );
 ?>
-<section class="section personnel" id="personnel" aria-labelledby="titre-perso">
-	<div class="conteneur personnel__grille">
-		<div class="personnel__intro revele revele--gauche">
-			<p class="surtitre">Personnels de l’UEb</p>
-			<h2 id="titre-perso">Celles et ceux qui font l’université</h2>
-			<p class="section__chapo">Doyens, directeurs, chefs de département et enseignants de chaque établissement : leur fonction et les cours qu’ils dispensent.</p>
-			<?php if ( count( $etabs ) > 1 ) : ?>
-				<label class="choix">
-					<span>Établissement</span>
-					<select data-filtre-personnel>
-						<option value="">Tous les établissements</option>
-						<?php foreach ( array_keys( $etabs ) as $e ) : ?>
-							<option value="<?php echo esc_attr( $e ); ?>"><?php echo esc_html( $e ); ?></option>
-						<?php endforeach; ?>
-					</select>
+<section class="section personnel" id="personnel" aria-labelledby="titre-perso" data-annuaire>
+	<div class="conteneur">
+		<header class="section__tete section__tete--ligne personnel__tete revele">
+			<div>
+				<p class="surtitre">Personnels de l’UEb</p>
+				<h2 id="titre-perso">Celles et ceux qui font l’université</h2>
+				<p class="section__chapo">Doyens, directeurs, chefs de département, enseignants et personnel d’appui : retrouvez chacun, sa fonction, son établissement et les cours qu’il dispense.</p>
+			</div>
+			<?php if ( $total > 1 ) : ?>
+			<div class="annuaire__outils" role="search">
+				<label class="annuaire__recherche">
+					<span class="sr">Rechercher un membre du personnel</span>
+					<?php echo sueb_icone( 'recherche', 20 ); ?>
+					<input type="search" placeholder="Nom, fonction ou cours" autocomplete="off" data-annuaire-recherche>
 				</label>
+				<?php if ( count( $etabs ) > 1 ) : ?>
+					<label class="annuaire__choix">
+						<span class="sr">Établissement</span>
+						<select data-annuaire-etab>
+							<option value="">Tous les établissements</option>
+							<?php foreach ( $etabs as $sigle => $nom ) : ?>
+								<option value="<?php echo esc_attr( $sigle ); ?>"><?php echo esc_html( $sigle ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</label>
+				<?php endif; ?>
+			</div>
 			<?php endif; ?>
-		</div>
+		</header>
 
-		<div class="accordeon revele revele--droite">
-			<p class="accordeon__fil"><strong>Membres du personnel</strong> <span aria-hidden="true">/</span> Vous cherchez…</p>
-			<?php if ( ! $groupes ) : ?>
-				<p class="vide">Les fiches du personnel seront bientôt publiées.</p>
+		<?php if ( ! $groupes ) : ?>
+			<p class="vide">Les fiches du personnel seront bientôt publiées.</p>
+		<?php else : ?>
+			<?php if ( count( $groupes ) > 1 ) : ?>
+				<div class="filtres annuaire__corps" role="group" aria-label="Catégorie de personnel" data-annuaire-corps>
+					<button type="button" aria-pressed="true" data-corps="">Tout le personnel</button>
+					<?php foreach ( $groupes as $g ) : ?>
+						<button type="button" aria-pressed="false" data-corps="<?php echo esc_attr( $g['slug'] ); ?>"><?php echo esc_html( $g['nom'] ); ?></button>
+					<?php endforeach; ?>
+				</div>
 			<?php endif; ?>
-			<?php foreach ( $groupes as $i => $g ) : ?>
-				<details class="accordeon__item" name="personnel"<?php echo 0 === $i && $g['membres'] ? ' open' : ''; ?>>
-					<summary><span><?php echo esc_html( $g['nom'] ); ?><small><?php echo count( $g['membres'] ); ?></small></span><?php echo $g['membres'] ? sueb_icone( 'chevron', 22 ) : ''; ?></summary>
-					<div class="accordeon__contenu">
-						<?php if ( ! $g['membres'] ) : ?>
-							<p class="accordeon__vide">Fiches en cours de publication.</p>
-						<?php else : ?>
-							<ul class="membres">
-								<?php foreach ( $g['membres'] as $m ) : ?>
-									<li class="membre" data-etab="<?php echo esc_attr( $m['etab'] ); ?>">
-										<div class="membre__photo">
-											<?php if ( $m['photo'] ) : ?>
-												<img src="<?php echo esc_url( $m['photo'] ); ?>" alt="" loading="lazy">
-											<?php else : ?>
-												<span class="portrait-vide" aria-hidden="true"><?php echo esc_html( sueb_initiales( $m['nom'] ) ); ?></span>
-											<?php endif; ?>
-										</div>
-										<div class="membre__texte">
-											<span class="membre__etab"><?php echo esc_html( $m['etab'] ); ?></span>
-											<p class="membre__nom"><?php echo esc_html( $m['nom'] ); ?></p>
-											<p class="membre__fonction"><?php echo esc_html( $m['fonction'] ); ?></p>
-											<?php if ( $m['cours'] ) : ?><p class="membre__cours"><?php echo sueb_icone( 'livre', 15 ); ?><?php echo esc_html( $m['cours'] ); ?></p><?php endif; ?>
-										</div>
-									</li>
-								<?php endforeach; ?>
-							</ul>
-						<?php endif; ?>
-					</div>
-				</details>
+			<p class="annuaire__compte" aria-live="polite" data-annuaire-compte></p>
+
+			<?php foreach ( $groupes as $g ) : $n = count( $g['membres'] ); ?>
+				<section class="annuaire__groupe" aria-labelledby="groupe-<?php echo esc_attr( $g['slug'] ); ?>" data-groupe="<?php echo esc_attr( $g['slug'] ); ?>">
+					<h3 class="annuaire__titre" id="groupe-<?php echo esc_attr( $g['slug'] ); ?>"><?php echo esc_html( $g['nom'] ); ?><small data-groupe-compte><?php echo (int) $n; ?></small></h3>
+					<ul class="profils">
+						<?php foreach ( $g['membres'] as $i => $m ) : ?>
+							<?php echo sueb_carte_personnel( $m, $i >= $apercu ? 'est-replie' : '' ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?>
+						<?php endforeach; ?>
+					</ul>
+					<?php if ( $n > $apercu ) : ?>
+						<button class="annuaire__plus" type="button" data-annuaire-plus><?php echo esc_html( sprintf( 'Afficher les %d autres', $n - $apercu ) ); ?><?php echo sueb_icone( 'chevron', 18 ); ?></button>
+					<?php endif; ?>
+				</section>
 			<?php endforeach; ?>
-		</div>
+
+			<div class="annuaire__vide" data-annuaire-vide hidden>
+				<p><strong>Aucun membre ne correspond à cette recherche.</strong> Vérifiez l’orthographe du nom, ou cherchez dans tous les établissements.</p>
+				<button class="btn btn--plein" type="button" data-annuaire-effacer>Effacer la recherche</button>
+			</div>
+		<?php endif; ?>
 	</div>
 </section>

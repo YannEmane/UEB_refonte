@@ -14,10 +14,18 @@ $p       = $args['page'];
 $sigle   = $p['sigle'];
 $slug    = strtolower( $sigle );
 $texte   = sueb_texte_sur( $p['couleur'] );
-$artcl   = $p['feminin'] ? 'la' : 'l’';
+/* « la FSJP », « l’ENSET », « l’ISABEE » : élision devant une voyelle. */
+$le_sigle = ( preg_match( '/^[AEIOUY]/i', $sigle ) ? 'l’' : ( $p['feminin'] ? 'la ' : 'le ' ) ) . $sigle;
+/* L'arborescence part du logo : les départements (ou les cycles) en branches, leurs filières en feuilles. Un
+   établissement dont les départements ne sont pas encore connus n'a qu'un groupe « Filières » : chaque filière
+   devient alors une branche, et ses niveaux en sont les feuilles. */
+$a_departements = (bool) array_filter( $p['departements'], function ( $d ) {
+	return ! $d['groupe'];
+} );
+$par_filiere = ! $a_departements && 1 === count( $p['departements'] );
 $rubriques = array_filter( array(
 	'presentation' => 'Présentation',
-	'formations'   => 'Départements et filières',
+	'formations'   => $a_departements ? 'Départements et filières' : 'Filières',
 	'tutelle'      => $p['tutelle'] ? 'Sous sa tutelle' : '',
 	'equipe'       => 'Équipe',
 	'campus'       => $p['photos'] ? 'Campus' : '',
@@ -103,41 +111,74 @@ $chiffres = array_filter( $p['chiffres'] );
 	<section class="etab-section etab-formations" id="formations" aria-labelledby="titre-formations">
 		<div class="conteneur">
 			<?php
-			/* Chaque filière reçoit un identifiant : la branche, la carte et la liste A–Z ouvrent la même fiche. */
+			/* Chaque filière reçoit un identifiant : sa branche ou sa feuille et la liste A–Z ouvrent la même fiche. */
 			$entrees = array();
-			$libres  = array(); // filières des établissements dont les départements ne sont pas encore connus
 			foreach ( $p['departements'] as $i => $d ) {
 				if ( ! $d['groupe'] ) {
 					$entrees[] = array( 'titre' => $d['titre'], 'url' => $d['url'], 'filiere' => '', 'sous' => count( $d['filieres'] ) . ( count( $d['filieres'] ) > 1 ? ' filières' : ' filière' ) );
 				}
 				foreach ( $d['filieres'] as $k => $f ) {
 					$p['departements'][ $i ]['filieres'][ $k ]['cle'] = 'filiere-' . $i . '-' . $k;
-					$entrees[] = array( 'titre' => $f['titre'], 'url' => '', 'filiere' => 'filiere-' . $i . '-' . $k, 'sous' => $d['groupe'] ? implode( ', ', array_keys( $f['niveaux'] ) ) : $d['titre'] );
-					if ( $d['groupe'] ) {
-						$libres[] = $p['departements'][ $i ]['filieres'][ $k ];
-					}
+					$entrees[] = array( 'titre' => $f['titre'], 'url' => '', 'filiere' => 'filiere-' . $i . '-' . $k, 'sous' => $par_filiere ? implode( ', ', array_keys( $f['niveaux'] ) ) : $d['titre'] );
 				}
 			}
 			usort( $entrees, function ( $a, $b ) {
 				return strcoll( remove_accents( $a['titre'] ), remove_accents( $b['titre'] ) );
 			} );
-			$vrais = array_values( array_filter( $p['departements'], function ( $d ) {
-				return ! $d['groupe'];
-			} ) );
+
+			$branches = array();
+			if ( $par_filiere ) {
+				foreach ( $p['departements'][0]['filieres'] as $f ) {
+					$feuilles = array();
+					foreach ( array_keys( $f['niveaux'] ) as $n => $niveau ) {
+						$ues        = count( $f['niveaux'][ $niveau ] );
+						$feuilles[] = array( 'titre' => sueb_nom_niveau( $niveau ), 'detail' => $ues ? $ues . ' UE' : '', 'filiere' => $f['cle'], 'onglet' => $n );
+					}
+					$nn         = count( $f['niveaux'] );
+					$branches[] = array(
+						'titre'    => $f['titre'],
+						'url'      => '',
+						'filiere'  => $f['cle'],
+						'sigle'    => '',
+						'meta'     => implode( ', ', array_filter( array( $f['diplome'], $nn ? $nn . ( $nn > 1 ? ' niveaux' : ' niveau' ) : '' ) ) ),
+						'feuilles' => $feuilles,
+						'vide'     => 'Niveaux en cours de publication.',
+					);
+				}
+			} else {
+				foreach ( $p['departements'] as $d ) {
+					$feuilles = array();
+					foreach ( $d['filieres'] as $f ) {
+						$feuilles[] = array( 'titre' => $f['titre'], 'detail' => implode( ', ', array_keys( $f['niveaux'] ) ), 'filiere' => $f['cle'], 'onglet' => null );
+					}
+					$nf         = count( $d['filieres'] );
+					$branches[] = array(
+						'titre'    => $d['titre'],
+						'url'      => $d['url'],
+						'filiere'  => '',
+						'sigle'    => $d['sigle'],
+						'meta'     => ( $nf ? $nf . ( $nf > 1 ? ' filières' : ' filière' ) : 'Aucune filière publiée' ) . ( $d['responsable'] ? ', chef : ' . $d['responsable'] : '' ),
+						'feuilles' => $feuilles,
+						'vide'     => 'Filières en cours de publication.',
+					);
+				}
+			}
 			$offre = (bool) $entrees;
 			?>
 			<header class="etab-section__tete etab-formations__tete revele">
 				<div>
-					<h2 class="etab-titre" id="titre-formations"><?php echo $vrais || ! $libres ? 'Départements et filières' : 'Filières'; ?></h2>
-					<?php if ( $vrais ) : ?>
+					<h2 class="etab-titre" id="titre-formations"><?php echo $a_departements ? 'Départements et filières' : 'Filières'; ?></h2>
+					<?php if ( $a_departements ) : ?>
 						<p>Chaque département et ses filières. Choisissez une filière pour voir ses niveaux et ses unités d’enseignement, avec leurs crédits et leur syllabus.</p>
-					<?php elseif ( $libres ) : ?>
-						<p>Les filières de <?php echo esc_html( $artcl . ' ' . $sigle ); ?> et leurs niveaux. Choisissez une filière pour voir ses unités d’enseignement ; ses départements seront bientôt présentés.</p>
+					<?php elseif ( $par_filiere && $offre ) : ?>
+						<p>Chaque filière de <?php echo esc_html( $le_sigle ); ?> et ses niveaux. Choisissez un niveau pour voir ses unités d’enseignement, avec leurs crédits et leur syllabus.</p>
+					<?php elseif ( $offre ) : ?>
+						<p>Les filières de <?php echo esc_html( $le_sigle ); ?>, cycle par cycle. Choisissez une filière pour voir ses niveaux et ses unités d’enseignement.</p>
 					<?php endif; ?>
 				</div>
 				<?php if ( $offre ) : ?>
 					<div class="vues" role="group" aria-label="Affichage des filières" data-vues>
-						<button type="button" aria-pressed="true" data-vue="arbre"><?php if ( $vrais ) : ?><svg class="icone" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V20M12 12H6v4M12 16h6v4"/></svg>Arborescence<?php else : ?><svg class="icone" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>Cartes<?php endif; ?></button>
+						<button type="button" aria-pressed="true" data-vue="arbre"><svg class="icone" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V20M12 12H6v4M12 16h6v4"/></svg>Arborescence</button>
 						<button type="button" aria-pressed="false" data-vue="az"><svg class="icone" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18 7.5 6 11 18M5.2 14h4.6M14 6h6l-6 12h6"/></svg>A–Z</button>
 					</div>
 				<?php endif; ?>
@@ -145,51 +186,40 @@ $chiffres = array_filter( $p['chiffres'] );
 
 			<?php if ( ! $offre ) : ?>
 				<div class="etab-vide revele">
-					<p><strong>Les départements et filières de <?php echo esc_html( $artcl . ' ' . $sigle ); ?> sont en cours de publication.</strong></p>
+					<p><strong>Les départements et filières de <?php echo esc_html( $le_sigle ); ?> sont en cours de publication.</strong></p>
 					<p><?php echo $p['tutelle'] ? esc_html( 'En attendant, découvrez plus bas les filières des établissements privés placés sous sa tutelle.' ) : esc_html( 'Pour toute question sur les formations, la préinscription en ligne présente l’offre de chaque établissement.' ); ?></p>
 				</div>
 			<?php else : ?>
 				<div data-vue-panneau="arbre">
-					<?php if ( $vrais ) : ?>
-						<div class="arbre revele">
-							<span class="arbre__sceau"><img src="<?php echo esc_url( $p['logo'] ); ?>" alt="" width="56" height="56" loading="lazy"></span>
-							<ol class="arbre__branches">
-								<?php $j = -1; foreach ( $p['departements'] as $d ) : if ( $d['groupe'] ) { continue; } ++$j; ?>
-									<li class="branche branche--<?php echo 0 === $j % 2 ? 'gauche' : 'droite'; ?>" style="--i:<?php echo (int) $j; ?>;grid-row:<?php echo (int) $j + 1; ?> / span 2">
-										<h3 class="branche__titre"><a href="<?php echo esc_url( $d['url'] ); ?>"><?php echo esc_html( $d['titre'] ); ?><?php echo sueb_icone( 'externe', 14 ); ?></a></h3>
-										<p class="branche__meta">
-											<?php if ( $d['sigle'] ) : ?><span class="branche__sigle"><?php echo esc_html( $d['sigle'] ); ?></span><?php endif; ?>
-											<span><?php echo esc_html( count( $d['filieres'] ) ? count( $d['filieres'] ) . ( count( $d['filieres'] ) > 1 ? ' filières' : ' filière' ) : 'Aucune filière publiée' ); ?><?php echo $d['responsable'] ? esc_html( ', chef : ' . $d['responsable'] ) : ''; ?></span>
-										</p>
-										<?php if ( $d['filieres'] ) : ?>
-											<ul class="branche__filieres">
-												<?php foreach ( $d['filieres'] as $f ) : ?>
-													<li><button type="button" class="branche__filiere" data-ouvrir-filiere="<?php echo esc_attr( $f['cle'] ); ?>"><?php echo esc_html( $f['titre'] ); ?><?php if ( $f['niveaux'] ) : ?><small><?php echo esc_html( implode( ', ', array_keys( $f['niveaux'] ) ) ); ?></small><?php endif; ?></button></li>
-												<?php endforeach; ?>
-											</ul>
+					<div class="arbre<?php echo $par_filiere ? ' arbre--filieres' : ''; ?> revele">
+						<span class="arbre__sceau"><img src="<?php echo esc_url( $p['logo'] ); ?>" alt="" width="56" height="56" loading="lazy"></span>
+						<ol class="arbre__branches">
+							<?php foreach ( $branches as $j => $b ) : ?>
+								<li class="branche branche--<?php echo 0 === $j % 2 ? 'gauche' : 'droite'; ?>" style="--i:<?php echo (int) $j; ?>;grid-row:<?php echo (int) $j + 1; ?> / span 2">
+									<h3 class="branche__titre">
+										<?php if ( $b['filiere'] ) : ?>
+											<button type="button" data-ouvrir-filiere="<?php echo esc_attr( $b['filiere'] ); ?>"><?php echo esc_html( $b['titre'] ); ?></button>
 										<?php else : ?>
-											<p class="branche__vide">Filières en cours de publication.</p>
+											<a href="<?php echo esc_url( $b['url'] ); ?>"><?php echo esc_html( $b['titre'] ); ?><?php echo sueb_icone( 'externe', 14 ); ?></a>
 										<?php endif; ?>
-									</li>
-								<?php endforeach; ?>
-							</ol>
-						</div>
-					<?php endif; ?>
-					<?php if ( $libres ) : ?>
-						<?php if ( $vrais ) : ?><h3 class="filieres-cartes__titre">Autres filières</h3><?php endif; ?>
-						<ul class="filieres-cartes" data-cascade>
-							<?php foreach ( $libres as $k => $f ) : ?>
-								<li>
-									<button type="button" class="filiere-carte" data-ouvrir-filiere="<?php echo esc_attr( $f['cle'] ); ?>">
-										<span class="filiere-carte__titre"><?php echo esc_html( $f['titre'] ); ?></span>
-										<?php if ( $f['diplome'] ) : ?><span class="filiere-carte__diplome"><?php echo esc_html( $f['diplome'] ); ?></span><?php endif; ?>
-										<?php if ( $f['niveaux'] ) : ?><span class="filiere-carte__niveaux"><?php foreach ( array_keys( $f['niveaux'] ) as $n ) : ?><span><?php echo esc_html( $n ); ?></span><?php endforeach; ?></span><?php endif; ?>
-										<span class="filiere-carte__fleche" aria-hidden="true"><?php echo sueb_icone( 'droite', 18 ); ?></span>
-									</button>
+									</h3>
+									<p class="branche__meta">
+										<?php if ( $b['sigle'] ) : ?><span class="branche__sigle"><?php echo esc_html( $b['sigle'] ); ?></span><?php endif; ?>
+										<span><?php echo esc_html( $b['meta'] ); ?></span>
+									</p>
+									<?php if ( $b['feuilles'] ) : ?>
+										<ul class="branche__filieres">
+											<?php foreach ( $b['feuilles'] as $fe ) : ?>
+												<li><button type="button" class="branche__filiere" data-ouvrir-filiere="<?php echo esc_attr( $fe['filiere'] ); ?>"<?php echo null === $fe['onglet'] ? '' : ' data-niveau="' . (int) $fe['onglet'] . '"'; ?>><?php echo esc_html( $fe['titre'] ); ?><?php if ( $fe['detail'] ) : ?><small><?php echo esc_html( $fe['detail'] ); ?></small><?php endif; ?></button></li>
+											<?php endforeach; ?>
+										</ul>
+									<?php else : ?>
+										<p class="branche__vide"><?php echo esc_html( $b['vide'] ); ?></p>
+									<?php endif; ?>
 								</li>
 							<?php endforeach; ?>
-						</ul>
-					<?php endif; ?>
+						</ol>
+					</div>
 				</div>
 
 				<div class="az" data-vue-panneau="az" hidden>
@@ -209,7 +239,7 @@ $chiffres = array_filter( $p['chiffres'] );
 				<?php foreach ( $p['departements'] as $d ) : foreach ( $d['filieres'] as $f ) : $id_f = $f['cle']; ?>
 					<dialog class="fiche-filiere" id="<?php echo esc_attr( $id_f ); ?>" aria-labelledby="<?php echo esc_attr( $id_f . '-titre' ); ?>">
 						<div class="fiche-filiere__tete">
-							<p class="fiche-filiere__dep"><?php echo esc_html( $d['groupe'] ? $p['nom'] : $d['titre'] ); ?></p>
+							<p class="fiche-filiere__dep"><?php echo esc_html( $par_filiere ? $p['nom'] : $d['titre'] ); ?></p>
 							<h3 class="fiche-filiere__titre" id="<?php echo esc_attr( $id_f . '-titre' ); ?>"><?php echo esc_html( $f['titre'] ); ?></h3>
 							<p class="filiere__meta">
 								<?php if ( $f['diplome'] ) : ?><span class="filiere__diplome"><?php echo esc_html( $f['diplome'] ); ?></span><?php endif; ?>
@@ -273,7 +303,7 @@ $chiffres = array_filter( $p['chiffres'] );
 			<div class="conteneur">
 				<header class="etab-section__tete revele">
 					<h2 class="etab-titre" id="titre-tutelle">Établissements privés sous sa tutelle</h2>
-					<p><?php echo esc_html( ucfirst( $artcl ) . ' ' . $sigle . ' assure l’encadrement académique de ces établissements : programmes, examens et diplômes des filières suivantes.' ); ?></p>
+					<p><?php echo esc_html( ucfirst( $le_sigle ) . ' assure l’encadrement académique de ces établissements : programmes, examens et diplômes des filières suivantes.' ); ?></p>
 				</header>
 				<ul class="tutelles" data-cascade="logos">
 					<?php foreach ( $p['tutelle'] as $t ) : ?>
@@ -318,7 +348,7 @@ $chiffres = array_filter( $p['chiffres'] );
 			<header class="etab-section__tete etab-equipe__tete revele">
 				<div>
 					<h2 class="etab-titre" id="titre-equipe">L’équipe</h2>
-					<p>Direction, chefs de département et enseignants de <?php echo esc_html( $artcl . ' ' . $sigle ); ?>. Choisissez une personne pour lire son CV.</p>
+					<p>Direction, chefs de département et enseignants de <?php echo esc_html( $le_sigle ); ?>. Choisissez une personne pour lire son CV.</p>
 				</div>
 				<?php if ( $nb_equipe > 8 ) : ?>
 					<label class="annuaire__recherche etab-equipe__recherche">
@@ -354,7 +384,7 @@ $chiffres = array_filter( $p['chiffres'] );
 			<div class="conteneur">
 				<header class="etab-section__tete revele">
 					<h2 class="etab-titre" id="titre-campus">Campus</h2>
-					<?php if ( $p['ville'] ) : ?><p><?php echo esc_html( ucfirst( $artcl ) . ' ' . $sigle . ' accueille ses étudiants à ' . $p['ville'] . '.' ); ?></p><?php endif; ?>
+					<?php if ( $p['ville'] ) : ?><p><?php echo esc_html( ucfirst( $le_sigle ) . ' accueille ses étudiants à ' . $p['ville'] . '.' ); ?></p><?php endif; ?>
 				</header>
 				<ul class="galerie galerie--<?php echo (int) count( $p['photos'] ); ?>" data-cascade="galerie">
 					<?php foreach ( $p['photos'] as $ph ) : ?>

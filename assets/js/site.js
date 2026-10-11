@@ -484,7 +484,12 @@
 		var ouvrir = e.target.closest('[data-ouvrir-filiere]');
 		if (ouvrir) {
 			var fiche = doc.getElementById(ouvrir.dataset.ouvrirFiliere);
-			if (fiche && fiche.showModal) { fiche.showModal(); fiche.dataset.retour = ouvrir.dataset.ouvrirFiliere; fiche.retour = ouvrir; }
+			if (fiche && fiche.showModal) {
+				/* une feuille « niveau » ouvre la fiche sur l'onglet de ce niveau */
+				var onglet = ouvrir.dataset.niveau ? $$('[role="tab"]', fiche)[+ouvrir.dataset.niveau] : null;
+				if (onglet) onglet.click();
+				fiche.showModal(); fiche.dataset.retour = ouvrir.dataset.ouvrirFiliere; fiche.retour = ouvrir;
+			}
 			return;
 		}
 		var dialogue = e.target.closest('.fiche-filiere');

@@ -58,7 +58,11 @@ function sueb_appliquer_offre_formation( array $offre ) {
 			continue;
 		}
 		foreach ( $liste as $i => $d ) {
-			$deps[ $d['code'] ] = $enregistrer( 'dep:' . $d['code'], array( 'post_parent' => $etabs[ $sigle ], 'post_title' => $d['titre'], 'menu_order' => $i ), array( 'sigle' => $d['sigle'], 'groupe' => $d['groupe'] ? '1' : '' ) );
+			$metas = array( 'sigle' => $d['sigle'], 'groupe' => $d['groupe'] ? '1' : '' );
+			if ( isset( $d['responsable'] ) ) { // sinon, le chef saisi dans l'admin est gardé
+				$metas['responsable'] = $d['responsable'];
+			}
+			$deps[ $d['code'] ] = $enregistrer( 'dep:' . $d['code'], array( 'post_parent' => $etabs[ $sigle ], 'post_title' => $d['titre'], 'menu_order' => $i ), $metas );
 		}
 	}
 	$n = 0;

@@ -44,6 +44,14 @@ function sueb_niveau_ue( $semestre, $diplome ) {
 	return 'Année ' . $annee;
 }
 
+/** Nom complet d'un niveau : L1 donne « Licence 1 », M1 pro « Master 1 professionnel » ; les autres restent tels quels. */
+function sueb_nom_niveau( $niveau ) {
+	if ( preg_match( '/^([LM])(\d)( pro)?$/i', trim( $niveau ), $m ) ) {
+		return ( 'L' === strtoupper( $m[1] ) ? 'Licence ' : 'Master ' ) . $m[2] . ( empty( $m[3] ) ? '' : ' professionnel' );
+	}
+	return $niveau;
+}
+
 /**
  * Tout un établissement : identité, présentation, direction, départements >
  * filières > niveaux > UE, équipe, établissements privés sous sa tutelle,

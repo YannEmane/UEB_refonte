@@ -5,7 +5,12 @@
  * Sources : fichiers Filieres.xlsx et NiveauFilieres.xlsx remis par l'université
  * (octobre 2026) ; départements de la FS donnés par l'utilisateur ; départements de
  * l'ENSET d'après l'arrêté du concours 2025-2026 (MINESUP, visa du 13 janvier 2026).
- * Les intitulés AA et ESB de l'ENSET restent à confirmer. Pour la FALSH, la FMSP,
+ * Les intitulés AA et ESB de l'ENSET restent à confirmer. ESTLC : départements, chefs
+ * de département, filières et niveaux d'après son site (estlc.unv-ebolowa.cm, rubriques
+ * « Nos départements », « Nos parcours » et emplois du temps, octobre 2026). ENSTMO : les
+ * deux domaines du tronc commun d'après la décision MINESUP du concours 2023-2024, les
+ * neuf spécialités d'ingénieur d'après l'avis du concours de 3e année 2026-2027 relayé
+ * par la presse (à confirmer sur la décision officielle). Pour la FALSH, la FMSP,
  * la FSEG, la FSJP et l'ISABEE, les départements ne sont pas publiés : leurs filières
  * sont rangées dans un groupe « Filières » (méta groupe), en attendant.
  *
@@ -41,6 +46,21 @@ return array(
 			array( 'code' => 'ENSET-DDSE', 'sigle' => 'DDSE', 'titre' => 'Département de Didactique des disciplines, des sciences de l’éducation, de la pédagogie et de la formation bilingue', 'groupe' => false ),
 			array( 'code' => 'ENSET-AA', 'sigle' => 'AA', 'titre' => 'Département d’Agriculture', 'groupe' => false ),
 			array( 'code' => 'ENSET-ESB', 'sigle' => 'ESB', 'titre' => 'Département des Sciences de base', 'groupe' => false ),
+		),
+		'ESTLC' => array(
+			array( 'code' => 'ESTLC-EG', 'sigle' => 'EG', 'titre' => 'Département des Enseignements généraux', 'groupe' => false, 'responsable' => 'M. Mballa Eloundou Aimé Christel' ),
+			array( 'code' => 'ESTLC-ESB', 'sigle' => 'ESB', 'titre' => 'Département des Enseignements scientifiques de base', 'groupe' => false ),
+			array( 'code' => 'ESTLC-GI', 'sigle' => 'GI', 'titre' => 'Département de Génie informatique', 'groupe' => false, 'responsable' => 'M. Messi Nguele Thomas' ),
+			array( 'code' => 'ESTLC-GL', 'sigle' => 'GL', 'titre' => 'Département de Génie logistique', 'groupe' => false ),
+			array( 'code' => 'ESTLC-GME', 'sigle' => 'GME', 'titre' => 'Département de Génie mécatronique', 'groupe' => false, 'responsable' => 'M. Kibong Marius Tony' ),
+			array( 'code' => 'ESTLC-GT', 'sigle' => 'GT', 'titre' => 'Département de Génie des transports', 'groupe' => false, 'responsable' => 'Dr Diboma Benjamin Salomon' ),
+			array( 'code' => 'ESTLC-RO', 'sigle' => 'RO', 'titre' => 'Département de Recherche opérationnelle', 'groupe' => false, 'responsable' => 'M. Kenmoe Siyou Romuald Noël' ),
+			array( 'code' => 'ESTLC-EC', 'sigle' => 'EC', 'titre' => 'Département d’E-commerce', 'groupe' => false ),
+			array( 'code' => 'ESTLC-UFD', 'sigle' => 'UFD-TSI', 'titre' => 'Unité de formation doctorale en technologies et sciences de l’innovation', 'groupe' => true ),
+		),
+		'ENSTMO' => array(
+			array( 'code' => 'ENSTMO-TC', 'sigle' => '', 'titre' => 'Tronc commun', 'groupe' => true ),
+			array( 'code' => 'ENSTMO-ING', 'sigle' => '', 'titre' => 'Cycle ingénieur', 'groupe' => true ),
 		),
 		'FALSH' => array(
 			array( 'code' => 'FALSH-FILIERES', 'sigle' => '', 'titre' => 'Filières', 'groupe' => true ),
@@ -163,5 +183,28 @@ return array(
 		array( 'code' => 'ISABEE-HSTE', 'titre' => 'Hydraulique, sciences et technologies de l’eau', 'etab' => 'ISABEE', 'departement' => 'ISABEE-FILIERES', 'diplome' => 'Licence', 'niveaux' => 'L1' ),
 		array( 'code' => 'ISABEE-MC', 'titre' => 'Météorologie et climatologie', 'etab' => 'ISABEE', 'departement' => 'ISABEE-FILIERES', 'diplome' => 'Licence', 'niveaux' => 'L1' ),
 		array( 'code' => 'ISABEE-SE', 'titre' => 'Sciences de l’environnement', 'etab' => 'ISABEE', 'departement' => 'ISABEE-FILIERES', 'diplome' => 'Licence', 'niveaux' => 'L1' ),
+		array( 'code' => 'ESTLC-GLTCO', 'titre' => 'Gestion logistique, transport et commerce (GLTCO)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-EG', 'diplome' => 'Tronc commun du premier cycle', 'niveaux' => 'Niveau 1, Niveau 2' ),
+		array( 'code' => 'ESTLC-TTL', 'titre' => 'Technologies de transport et de logistique (TTL)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-ESB', 'diplome' => 'Tronc commun du premier cycle', 'niveaux' => 'Niveau 1, Niveau 2' ),
+		array( 'code' => 'ESTLC-GSI', 'titre' => 'Génie informatique des systèmes logistiques intelligents (GSI)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-GI', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4' ),
+		array( 'code' => 'ESTLC-GSA', 'titre' => 'Génie informatique des systèmes audiovisuels et logistiques (GSA)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-GI', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4' ),
+		array( 'code' => 'ESTLC-GSJ', 'titre' => 'Génie informatique des systèmes de jeux vidéo (GSJ)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-GI', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => '' ),
+		array( 'code' => 'ESTLC-MLSC', 'titre' => 'Management logistique et supply chain (MLSC)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-GL', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4' ),
+		array( 'code' => 'ESTLC-AMA', 'titre' => 'Assemblage et mécatronique automobile (AMA)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-GME', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4' ),
+		array( 'code' => 'ESTLC-TCT', 'titre' => 'Technico-commercial des transports (TCT)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-GME', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4' ),
+		array( 'code' => 'ESTLC-GDT', 'titre' => 'Gestion des transports (GDT)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-GT', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4' ),
+		array( 'code' => 'ESTLC-MFT', 'titre' => 'Marché financier et trading (MFT)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-RO', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4' ),
+		array( 'code' => 'ESTLC-GCIM', 'titre' => 'Génie commercial et intelligence marketing (GCIM)', 'etab' => 'ESTLC', 'departement' => 'ESTLC-EC', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4' ),
+		array( 'code' => 'ESTLC-TSI', 'titre' => 'Technologies et sciences de l’innovation', 'etab' => 'ESTLC', 'departement' => 'ESTLC-UFD', 'diplome' => 'Doctorat (Ph.D)', 'niveaux' => '' ),
+		array( 'code' => 'ENSTMO-STMO', 'titre' => 'Sciences et technologies maritimes et océaniques (STMO)', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-TC', 'diplome' => 'Tronc commun du cursus ingénieur', 'niveaux' => 'Niveau 1, Niveau 2' ),
+		array( 'code' => 'ENSTMO-SGMP', 'titre' => 'Sciences de gestion maritime et portuaire (SGMP)', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-TC', 'diplome' => 'Tronc commun du cursus ingénieur', 'niveaux' => 'Niveau 1, Niveau 2' ),
+		array( 'code' => 'ENSTMO-ACRN', 'titre' => 'Architecture, construction et réparations navales', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
+		array( 'code' => 'ENSTMO-GC', 'titre' => 'Génie côtier', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
+		array( 'code' => 'ENSTMO-GEM', 'titre' => 'Génie énergétique de marine', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
+		array( 'code' => 'ENSTMO-GMM', 'titre' => 'Génie mécanique de marine', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
+		array( 'code' => 'ENSTMO-OHM', 'titre' => 'Océanographie, hydrographie et météorologie', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
+		array( 'code' => 'ENSTMO-GMP', 'titre' => 'Gestion maritime et portuaire', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
+		array( 'code' => 'ENSTMO-NMSI', 'titre' => 'Navigation maritime et systèmes d’information', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
+		array( 'code' => 'ENSTMO-PM', 'titre' => 'Pêche et mariculture', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
+		array( 'code' => 'ENSTMO-SSIP', 'titre' => 'Sûreté et sécurité des installations portuaires et plateformes pétrolières', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
 	),
 );

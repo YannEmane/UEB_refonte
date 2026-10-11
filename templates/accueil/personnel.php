@@ -4,6 +4,8 @@
  * institutionnels (GOV.UK, Commission européenne, Harvard, Stanford) : une
  * recherche (nom, fonction, cours), un filtre par établissement, les membres
  * groupés par catégorie, chacun avec son portrait, sa fonction et sa fiche.
+ * Les chefs de département et les enseignants n'y figurent pas : ils sont sur la
+ * page de leur établissement (templates/etablissement.php, rubrique Équipe).
  * Le filtrage se fait dans la page (site.js).
  *
  * @package Site_UEB
@@ -11,8 +13,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
+/* Les chefs de département et les enseignants sont présentés sur la page de leur établissement, pas ici. */
 $groupes = array_values( array_filter( sueb_personnel_par_corps(), function ( $g ) {
-	return (bool) $g['membres'];
+	return $g['membres'] && ! in_array( $g['slug'], array( 'chefs-departement', 'enseignants' ), true );
 } ) );
 $apercu  = 12; // au-delà, une catégorie se déplie à la demande
 $total   = 0;
@@ -30,14 +33,14 @@ foreach ( $groupes as $g ) {
 			<div>
 				<p class="surtitre">Personnels de l’UEb</p>
 				<h2 id="titre-perso">Celles et ceux qui font l’université</h2>
-				<p class="section__chapo">Doyens, directeurs, chefs de département, enseignants et personnel d’appui : retrouvez chacun, sa fonction, son établissement et les cours qu’il dispense.</p>
+				<p class="section__chapo">Les doyens et directeurs des neuf établissements : retrouvez chacun, sa fonction et son établissement. Les chefs de département et les enseignants sont présentés sur la page de leur établissement.</p>
 			</div>
 			<?php if ( $total > 1 ) : ?>
 			<div class="annuaire__outils" role="search">
 				<label class="annuaire__recherche">
 					<span class="sr">Rechercher un membre du personnel</span>
 					<?php echo sueb_icone( 'recherche', 20 ); ?>
-					<input type="search" placeholder="Nom, fonction ou cours" autocomplete="off" data-annuaire-recherche>
+					<input type="search" placeholder="Nom ou fonction" autocomplete="off" data-annuaire-recherche>
 				</label>
 				<?php if ( count( $etabs ) > 1 ) : ?>
 					<label class="annuaire__choix">

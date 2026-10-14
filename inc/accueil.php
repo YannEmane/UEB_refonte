@@ -470,7 +470,7 @@ function sueb_carte_personnel( array $m, $classe = '', $chargement = 'lazy' ) {
  * du Customizer en premier) pour qu'elle défile toujours.
  */
 function sueb_slides_banniere( $nombre = 5, array $arbre = array() ) {
-	$repli_photos = sueb_photos_repli();
+	$repli_photos = array( 'campus-ebolowa', 'remise-toges', 'amphi', 'bibliotheque', 'vie-etudiante-1' );
 
 	$actus = array();
 	foreach ( get_posts( array( 'post_type' => 'post', 'numberposts' => $nombre ) ) as $p ) {
@@ -485,7 +485,7 @@ function sueb_slides_banniere( $nombre = 5, array $arbre = array() ) {
 			'date'      => get_the_date( 'j F Y', $p ),
 			'iso'       => get_the_date( 'c', $p ),
 			'lieu'      => '',
-			'photo'     => sueb_image_url( $p->ID, 'sueb-banniere' ),
+			'photo'     => sueb_image_url( $p->ID, 'sueb-banniere' ) ?: sueb_repli_article(),
 		);
 	}
 
@@ -510,7 +510,7 @@ function sueb_slides_banniere( $nombre = 5, array $arbre = array() ) {
 			'texte'     => wp_trim_words( wp_strip_all_tags( get_the_excerpt( $p ) ), 32 ),
 			'url'       => get_permalink( $p ),
 			'lien'      => 'En savoir plus',
-			'date'      => $ts ? wp_date( 'j F Y', $ts ) . ' à ' . wp_date( 'G\hi', $ts ) : '',
+			'date'      => $ts ? wp_date( 'j F Y', $ts ) . ' · ' . wp_date( 'G\hi', $ts ) : '',
 			'iso'       => $ts ? wp_date( 'c', $ts ) : '',
 			'lieu'      => (string) sueb_meta( $p->ID, 'lieu' ),
 			'photo'     => sueb_image_url( $p->ID, 'sueb-banniere' ),

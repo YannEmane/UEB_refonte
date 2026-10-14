@@ -1,8 +1,8 @@
 <?php
 /**
- * Bannière de l'accueil : le nom de l'université en grand, puis le carrousel
- * « à la une » des actualités et des évènements (texte sur un panneau vert uni
- * à gauche, photo à droite découpée en pointe arrondie), puis l'université en chiffres.
+ * Bannière de l'accueil : carrousel « à la une » des actualités et des
+ * évènements (image à gauche coupée en biais, texte sur panneau à droite),
+ * puis l'université en chiffres.
  *
  * @package Site_UEB
  */
@@ -15,30 +15,21 @@ $slides = sueb_slides_banniere( 5, $arbre );
 $total  = count( $slides );
 ?>
 <section class="banniere" data-carrousel aria-roledescription="carrousel" aria-label="À la une">
-	<!-- Forme de la photo : bord gauche en pointe arrondie, en coordonnées relatives à l'image. -->
-	<svg class="banniere__defs" width="0" height="0" aria-hidden="true" focusable="false">
-		<clipPath id="banniere-forme" clipPathUnits="objectBoundingBox"><path d="M.16 0H1V1H.54L.06.73Q.01.7.024.64Z"/></clipPath>
-	</svg>
+	<h1 class="sr">Université d’Ebolowa : à la une</h1>
 
 	<div class="banniere__scene">
-		<h1 class="banniere__titre">Université d’Ebolowa</h1>
-		<?php foreach ( $slides as $i => $s ) :
-			/* « Actualité du 8 septembre 2026 », « Évènement le 12 novembre 2026 à 9h00, Amphi A », « Établissement à Kribi » */
-			$quand = esc_html( $s['etiquette'] );
-			if ( $s['date'] ) {
-				$quand .= ( 'evenement' === $s['type'] ? ' le ' : ' du ' ) . '<time datetime="' . esc_attr( $s['iso'] ) . '">' . esc_html( $s['date'] ) . '</time>';
-			}
-			if ( $s['lieu'] ) {
-				$quand .= esc_html( ( $s['date'] ? ', ' : ' à ' ) . $s['lieu'] );
-			}
-			?>
+		<?php foreach ( $slides as $i => $s ) : ?>
 			<article class="diapo<?php echo 0 === $i ? ' est-active' : ''; ?>" data-diapo role="group" aria-roledescription="diapositive" aria-label="<?php echo esc_attr( ( $i + 1 ) . ' sur ' . $total ); ?>"<?php echo 0 === $i ? '' : ' inert'; ?>>
 				<figure class="diapo__image">
 					<img src="<?php echo esc_url( $s['photo'] ); ?>" alt="" width="1400" height="940" decoding="async" <?php echo 0 === $i ? 'fetchpriority="high"' : 'loading="lazy"'; ?>>
 				</figure>
 				<div class="diapo__texte">
+					<p class="diapo__etiquette">
+						<span><?php echo esc_html( $s['etiquette'] ); ?></span>
+						<?php if ( $s['date'] ) : ?><time datetime="<?php echo esc_attr( $s['iso'] ); ?>"><?php echo esc_html( $s['date'] ); ?></time><?php endif; ?>
+						<?php if ( $s['lieu'] ) : ?><span class="diapo__lieu"><?php echo sueb_icone( 'lieu', 14 ); ?><?php echo esc_html( $s['lieu'] ); ?></span><?php endif; ?>
+					</p>
 					<h2 class="diapo__titre"><?php echo esc_html( $s['titre'] ); ?></h2>
-					<?php if ( $quand ) : ?><p class="diapo__quand"><?php echo $quand; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé ci-dessus ?></p><?php endif; ?>
 					<?php if ( $s['texte'] ) : ?><p class="diapo__resume"><?php echo esc_html( $s['texte'] ); ?></p><?php endif; ?>
 					<a class="btn btn--or diapo__lien" href="<?php echo esc_url( $s['url'] ); ?>"><?php echo esc_html( $s['lien'] ); ?><?php echo sueb_icone( 'fleche', 18 ); ?></a>
 				</div>
@@ -47,14 +38,16 @@ $total  = count( $slides );
 	</div>
 
 	<?php if ( $total > 1 ) : ?>
-		<ol class="banniere__traits" aria-label="Choisir une diapositive">
-			<?php foreach ( $slides as $i => $s ) : ?>
-				<li><button type="button" data-trait="<?php echo (int) $i; ?>" aria-label="<?php echo esc_attr( ( $i + 1 ) . ' : ' . $s['titre'] ); ?>"<?php echo 0 === $i ? ' aria-current="true"' : ''; ?>><i></i></button></li>
-			<?php endforeach; ?>
-		</ol>
-		<button class="banniere__pause" type="button" data-pause aria-label="Mettre le défilement en pause">
-			<svg class="icone" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
-		</button>
+		<div class="banniere__commandes">
+			<ol class="banniere__traits" aria-label="Choisir une diapositive">
+				<?php foreach ( $slides as $i => $s ) : ?>
+					<li><button type="button" data-trait="<?php echo (int) $i; ?>" aria-label="<?php echo esc_attr( ( $i + 1 ) . ' : ' . $s['titre'] ); ?>"<?php echo 0 === $i ? ' aria-current="true"' : ''; ?>><i></i></button></li>
+				<?php endforeach; ?>
+			</ol>
+			<button class="banniere__pause" type="button" data-pause aria-label="Mettre le défilement en pause">
+				<svg class="icone" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
+			</button>
+		</div>
 	<?php endif; ?>
 </section>
 

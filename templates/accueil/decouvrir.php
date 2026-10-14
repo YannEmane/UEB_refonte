@@ -17,6 +17,8 @@ foreach ( $dirigeants as $i => $d ) {
 	}
 }
 $message  = sueb_page( 'message-du-recteur' );
+/* Photo du Recteur : celle de sa fiche dans l'admin, sinon celle livrée avec le thème. */
+$photo_recteur = $recteur && $recteur['photo'] ? $recteur['photo'] : sueb_photo( 'recteur' );
 $histoire = sueb_page( 'histoire' );
 $editeur  = current_user_can( 'edit_posts' );
 $arrete   = sueb_reglage( 'arrete' );
@@ -52,13 +54,12 @@ $affiche       = $affiche ? wp_get_attachment_image_url( $affiche, 'full' ) : su
 		<article class="message" id="message">
 			<div class="message__portrait revele revele--gauche">
 				<div class="message__cadre" data-parallaxe="0.06">
-					<?php if ( $recteur && $recteur['photo'] ) : ?>
-						<img src="<?php echo esc_url( $recteur['photo'] ); ?>" alt="<?php echo esc_attr( $recteur['nom'] ); ?>" loading="lazy">
-					<?php else : ?>
-						<span class="portrait-vide portrait-vide--grand" aria-hidden="true"><?php echo esc_html( sueb_initiales( $recteur['nom'] ?? 'UEb' ) ); ?></span>
-					<?php endif; ?>
+					<img src="<?php echo esc_url( $photo_recteur ); ?>" alt="<?php echo esc_attr( $recteur['nom'] ?? 'Le Recteur de l’Université d’Ebolowa' ); ?>" width="576" height="720" loading="lazy">
 				</div>
-				<span class="message__motif" aria-hidden="true"></span>
+				<div class="message__badge">
+					<img src="<?php echo esc_url( sueb_logo() ); ?>" alt="" width="42" height="40">
+					<p><strong>Recteur</strong><span>Installé le 4 août 2022</span></p>
+				</div>
 			</div>
 			<div class="message__texte revele revele--droite">
 				<p class="surtitre">Message du Recteur</p>
@@ -103,15 +104,18 @@ $affiche       = $affiche ? wp_get_attachment_image_url( $affiche, 'full' ) : su
 	<!-- Vidéo de présentation -->
 	<div class="conteneur">
 		<div class="video revele revele--zoom" id="video">
-			<img class="video__affiche" src="<?php echo esc_url( $affiche ); ?>" alt="" loading="lazy" data-parallaxe="0.05">
-			<div class="video__voile" aria-hidden="true"></div>
 			<div class="video__contenu">
 				<p class="surtitre surtitre--clair">Vidéo de présentation</p>
 				<h3><?php echo esc_html( sueb_reglage( 'video_titre' ) ); ?></h3>
-				<p><?php echo esc_html( sueb_reglage( 'video_texte' ) ); ?></p>
+				<p class="video__texte"><?php echo esc_html( sueb_reglage( 'video_texte' ) ); ?></p>
+				<button class="video__bouton" type="button" data-ouvrir-video>
+					<span class="video__bouton-icone" aria-hidden="true"><?php echo sueb_icone( 'lecture', 16 ); ?></span>Regarder la vidéo
+				</button>
 			</div>
-			<button class="video__lecture" type="button" data-ouvrir-video aria-label="Lire la vidéo de présentation">
-				<span class="video__ondes" aria-hidden="true"></span><?php echo sueb_icone( 'lecture', 34 ); ?>
+			<!-- L'écran ouvre aussi la vidéo à la souris ; au clavier, c'est le bouton ci-dessus. -->
+			<button class="video__ecran" type="button" data-ouvrir-video tabindex="-1" aria-hidden="true">
+				<img class="video__affiche" src="<?php echo esc_url( $affiche ); ?>" alt="" loading="lazy">
+				<span class="video__lecture"><?php echo sueb_icone( 'lecture', 30 ); ?></span>
 			</button>
 		</div>
 	</div>

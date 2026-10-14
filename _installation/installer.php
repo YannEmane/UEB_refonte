@@ -160,19 +160,21 @@ foreach ( $pages as $slug => $p ) {
 
 /* ---------- Partenariats (sources de presse vérifiées) ---------- */
 $partenaires = array(
-	array( 'Port Autonome de Kribi', 'Entreprise publique', '2024-11-18', 'https://pak.cm/en/pak-and-the-university-of-ebolowa-sign-a-strategic-partnership-agreement/', 'Convention-cadre signée par le Directeur général du PAK et le Recteur : recherche appliquée dans les secteurs portuaire, logistique et industriel, et insertion professionnelle des étudiants et jeunes diplômés.', 'visite-port', '' ),
-	array( 'Centre Pasteur du Cameroun', 'Institut de recherche', '2024-09-09', 'https://cameroon-tribune.cm/article.html/66974/fr.html/details_2', 'Convention signée à Yaoundé : professionnalisation des enseignements, renforcement mutuel des compétences de recherche et projets de recherche multicentriques.', '', 'partenaires/centre-pasteur.png' ),
-	array( 'CCA Bank', 'Banque', '2024-06-06', 'https://ecomatin.net/cameroun-cca-bank-sassocie-a-luniversite-debolowa-pour-ameliorer-lacces-aux-services-financiers-en-milieu-estudiantin', 'Convention pour faciliter l’accès des étudiants et du personnel aux services financiers et numériser la gestion financière de l’université.', '', 'partenaires/cca-bank.png' ),
-	array( 'Ministère du Tourisme et des Loisirs', 'Ministère', '2026-07-07', 'https://cameroon-tribune.cm/article.html/78601/fr.html/details_2', 'Accord-cadre signé par le ministre et le Recteur pour former des ressources humaines qualifiées dans les métiers du tourisme et de l’hôtellerie.', '', '' ),
-	array( 'Institut Sapientia', 'Établissement privé d’enseignement supérieur', '2026-09-08', 'https://cameroon-tribune.cm/article.html/80632/fr.html/details_2', 'Convention de tutelle académique : la FS, la FSEG et la FSJP accompagnent la formation des étudiants de l’institut, établi à Akonolinga.', '', '' ),
+	array( 'Port Autonome de Kribi', 'Entreprise publique', '2024-11-18', 'https://pak.cm/en/pak-and-the-university-of-ebolowa-sign-a-strategic-partnership-agreement/', 'Convention-cadre signée par le Directeur général du PAK et le Recteur : recherche appliquée dans les secteurs portuaire, logistique et industriel, et insertion professionnelle des étudiants et jeunes diplômés.', 'visite-port', '', 'Kribi' ),
+	array( 'Centre Pasteur du Cameroun', 'Institut de recherche', '2024-09-09', 'https://cameroon-tribune.cm/article.html/66974/fr.html/details_2', 'Convention signée à Yaoundé : professionnalisation des enseignements, renforcement mutuel des compétences de recherche et projets de recherche multicentriques.', '', 'partenaires/centre-pasteur.png', 'Yaoundé' ),
+	array( 'CCA Bank', 'Banque', '2024-06-06', 'https://ecomatin.net/cameroun-cca-bank-sassocie-a-luniversite-debolowa-pour-ameliorer-lacces-aux-services-financiers-en-milieu-estudiantin', 'Convention pour faciliter l’accès des étudiants et du personnel aux services financiers et numériser la gestion financière de l’université.', '', 'partenaires/cca-bank.png', 'Yaoundé' ),
+	array( 'Ministère du Tourisme et des Loisirs', 'Ministère', '2026-07-07', 'https://cameroon-tribune.cm/article.html/78601/fr.html/details_2', 'Accord-cadre signé par le ministre et le Recteur pour former des ressources humaines qualifiées dans les métiers du tourisme et de l’hôtellerie.', '', '', 'Yaoundé', 'MINTOUL' ),
+	array( 'Institut Sapientia', 'Établissement privé sous tutelle académique', '2026-09-08', 'https://cameroon-tribune.cm/article.html/80632/fr.html/details_2', 'Convention de tutelle académique : la FS, la FSEG et la FSJP accompagnent la formation des étudiants de l’institut, établi à Akonolinga.', '', '', 'Akonolinga', '', 'FS, FSEG, FSJP' ),
 );
+/* Les établissements privés sous tutelle académique de l'UEb. */
+$partenaires = array_merge( $partenaires, require __DIR__ . '/partenaires-tutelle.php' );
 foreach ( $partenaires as $i => $p ) {
 	if ( ! $si_absent( 'ueb_partenaire', $p[0] ) ) {
 		continue;
 	}
 	$id = $creer(
 		array( 'post_type' => 'ueb_partenaire', 'post_title' => $p[0], 'post_excerpt' => $p[4], 'post_content' => '<p>' . $p[4] . '</p>', 'menu_order' => $i + 1 ),
-		array( 'type' => $p[1], 'signature' => $p[2], 'lien' => $p[3] )
+		array( 'type' => $p[1], 'signature' => $p[2], 'lien' => $p[3], 'ville' => $p[7] ?? '', 'sigle' => $p[8] ?? '', 'tutelle' => $p[9] ?? '' )
 	);
 	if ( $p[5] ) {
 		set_post_thumbnail( $id, $photo( $p[5] ) );
@@ -181,6 +183,18 @@ foreach ( $partenaires as $i => $p ) {
 		update_post_meta( $id, '_sueb_logo', sueb_installer_media( SUEB_DIR . '/assets/images/' . $p[6], $p[0] ) );
 	}
 }
+
+/* ---------- Offre de formation : départements et filières (Filieres.xlsx, NiveauFilieres.xlsx) ---------- */
+require __DIR__ . '/appliquer-offre.php';
+sueb_appliquer_offre_formation( require __DIR__ . '/offre-formation.php' );
+
+/* ---------- Deux enseignants d'exemple (FS), pour montrer la fiche CV ---------- */
+require __DIR__ . '/enseignants-exemple.php';
+sueb_enseignants_exemple();
+
+/* ---------- Filières des établissements sous tutelle (document « Les filières concernées ») ---------- */
+require __DIR__ . '/appliquer-filieres.php';
+sueb_appliquer_filieres_tutelle( require __DIR__ . '/filieres-tutelle.php' );
 
 /* ---------- Actualités (tirées des mêmes sources) ---------- */
 $cat = term_exists( 'Coopération', 'category' ) ?: wp_insert_term( 'Coopération', 'category' );
@@ -212,8 +226,16 @@ if ( ! get_posts( array( 'post_type' => 'ueb_personnel', 'numberposts' => 1, 'po
 	$corps = get_term_by( 'slug', 'doyens-directeurs', 'ueb_corps' );
 	foreach ( sueb_etablissements() as $sigle => $e ) {
 		$titre = str_starts_with( $e['fr'], 'Faculté' ) ? 'Doyen' : 'Directeur';
-		$id    = $creer( array( 'post_type' => 'ueb_personnel', 'post_title' => 'Nom à renseigner' ), array( 'fonction' => $titre . ( str_starts_with( $e['fr'], 'Faculté' ) ? ' de la ' : ' de l’' ) . $e['fr'], 'etablissement' => $etabs[ $sigle ], 'demo' => 1 ) );
+		$metas = array( 'fonction' => $titre . ( str_starts_with( $e['fr'], 'Faculté' ) ? ' de la ' : ' de l’' ) . $e['fr'], 'etablissement' => $etabs[ $sigle ] );
+		if ( empty( $e['responsable'] ) ) {
+			$metas['demo'] = 1;
+		}
+		$id = $creer( array( 'post_type' => 'ueb_personnel', 'post_title' => $e['responsable'] ?? 'Nom à renseigner' ), $metas );
 		wp_set_object_terms( $id, $corps->term_id, 'ueb_corps' );
+		$portrait = SUEB_DIR . '/assets/images/personnel/' . strtolower( $sigle ) . '.webp';
+		if ( ! empty( $e['responsable'] ) && file_exists( $portrait ) ) {
+			set_post_thumbnail( $id, sueb_installer_media( $portrait, $e['responsable'] ) );
+		}
 	}
 }
 

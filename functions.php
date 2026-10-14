@@ -21,6 +21,8 @@ require SUEB_DIR . '/inc/types.php';
 require SUEB_DIR . '/inc/champs.php';
 require SUEB_DIR . '/inc/personnaliser.php';
 require SUEB_DIR . '/inc/accueil.php';
+require SUEB_DIR . '/inc/carte.php';
+require SUEB_DIR . '/inc/etablissement.php';
 
 add_action( 'after_setup_theme', function () {
 	add_theme_support( 'title-tag' );

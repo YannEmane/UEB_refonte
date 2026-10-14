@@ -1,7 +1,8 @@
 <?php
 /**
- * Page d'un établissement, d'un département, d'une filière ou d'une UE :
- * fil d'Ariane jusqu'à l'établissement, puis le niveau suivant.
+ * Page d'un établissement, d'un département, d'une filière ou d'une UE.
+ * Un établissement a sa propre page complète (templates/etablissement.php) ;
+ * les autres niveaux : fil d'Ariane jusqu'à l'établissement, puis le niveau suivant.
  *
  * @package Site_UEB
  */
@@ -10,6 +11,12 @@ defined( 'ABSPATH' ) || exit;
 
 get_header();
 the_post();
+
+if ( 0 === sueb_profondeur( get_the_ID() ) ) {
+	get_template_part( 'templates/etablissement', null, array( 'page' => sueb_page_etablissement( get_the_ID() ) ) );
+	get_footer();
+	return;
+}
 
 $id       = get_the_ID();
 $niveaux  = sueb_niveaux();

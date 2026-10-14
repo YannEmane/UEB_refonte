@@ -21,6 +21,9 @@ const SUEB_UNIVERSITE = array(
 const SUEB_LIENS = array(
 	'preinscription' => 'https://preinscription.unv-ebolowa.cm/',
 	'inscription'    => '#',
+	/* Réseaux officiels, repris du site de préinscription. */
+	'facebook'       => 'https://facebook.com/share/18i1CQ2QuY',
+	'youtube'        => 'https://www.youtube.com/@universiteebolowa',
 );
 
 /**
@@ -35,18 +38,21 @@ function sueb_url_dirigeants() {
 /**
  * Les neuf établissements, repris du site des inscriptions.
  * Sert à créer les fiches à l'installation et de repli (logo, couleur).
+ * « responsable » : doyen ou directeur en poste au 11 octobre 2026, avec son
+ * portrait dans assets/images/personnel/<sigle>.webp (installation seulement :
+ * ensuite, les noms et photos se changent dans Personnel, dans l'admin).
  */
 function sueb_etablissements() {
 	return array(
-		'FS'     => array( 'fr' => 'Faculté des Sciences', 'couleur' => '#1f5aa6', 'ville' => 'Ebolowa', 'photos' => array( 'equipe-fs', 'amphi-cours' ) ),
-		'FSJP'   => array( 'fr' => 'Faculté des Sciences Juridiques et Politiques', 'couleur' => '#8B1E1E', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-4', 'salle' ) ),
-		'FSEG'   => array( 'fr' => 'Faculté des Sciences Économiques et de Gestion', 'couleur' => '#16803C', 'ville' => 'Ebolowa', 'photos' => array( 'amphi', 'campus-batiments' ) ),
-		'FALSH'  => array( 'fr' => 'Faculté des Arts, Lettres et Sciences Humaines', 'couleur' => '#6A1B6D', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-1', 'bibliotheque' ) ),
-		'FMSP'   => array( 'fr' => 'Faculté de Médecine et des Sciences Pharmaceutiques', 'couleur' => '#0077B6', 'ville' => 'Sangmélima', 'photos' => array( 'campus-sangmelima', 'salle' ) ),
-		'ENSET'  => array( 'fr' => "École Normale Supérieure d'Enseignement Technique", 'couleur' => '#006B3C', 'ville' => 'Ebolowa', 'photos' => array( 'remise-toges', 'amphi-cours' ) ),
-		'ISABEE' => array( 'fr' => "Institut Supérieur d'Agriculture, du Bois, de l'Eau et de l'Environnement", 'couleur' => '#3A7D44', 'ville' => 'Ebolowa', 'photos' => array( 'campus-ebolowa', 'vie-etudiante-3' ) ),
-		'ESTLC'  => array( 'fr' => 'École Supérieure de Transport, de Logistique et de Commerce', 'couleur' => '#4E7F1D', 'ville' => 'Ambam', 'photos' => array( 'campus-ambam', 'diplomes' ) ),
-		'ENSTMO' => array( 'fr' => 'École Nationale Supérieure des Sciences et Techniques Maritimes et Océaniques', 'couleur' => '#1b2c5a', 'ville' => 'Kribi', 'photos' => array( 'visite-port', 'vie-etudiante-12' ) ),
+		'FS'     => array( 'fr' => 'Faculté des Sciences', 'couleur' => '#1f5aa6', 'ville' => 'Ebolowa', 'photos' => array( 'equipe-fs', 'amphi-cours' ), 'responsable' => 'Pr Carole Edima Durant' ),
+		'FSJP'   => array( 'fr' => 'Faculté des Sciences Juridiques et Politiques', 'couleur' => '#8B1E1E', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-4', 'salle' ), 'responsable' => 'Pr Manassé Aboya Endong' ),
+		'FSEG'   => array( 'fr' => 'Faculté des Sciences Économiques et de Gestion', 'couleur' => '#16803C', 'ville' => 'Ebolowa', 'photos' => array( 'amphi', 'campus-batiments' ), 'responsable' => 'Pr Sigismond Mvele' ),
+		'FALSH'  => array( 'fr' => 'Faculté des Arts, Lettres et Sciences Humaines', 'couleur' => '#6A1B6D', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-1', 'bibliotheque' ), 'responsable' => 'Pr Nomo Etaba' ),
+		'FMSP'   => array( 'fr' => 'Faculté de Médecine et des Sciences Pharmaceutiques', 'couleur' => '#0077B6', 'ville' => 'Sangmélima', 'photos' => array( 'campus-sangmelima', 'salle' ), 'responsable' => 'Pr Pascal Foumane' ),
+		'ENSET'  => array( 'fr' => "École Normale Supérieure d'Enseignement Technique", 'couleur' => '#006B3C', 'ville' => 'Ebolowa', 'photos' => array( 'remise-toges', 'amphi-cours' ), 'responsable' => 'Pr Léandre Nneme Nneme' ),
+		'ISABEE' => array( 'fr' => "Institut Supérieur d'Agriculture, du Bois, de l'Eau et de l'Environnement", 'couleur' => '#3A7D44', 'ville' => 'Ebolowa', 'photos' => array( 'campus-ebolowa', 'vie-etudiante-3' ), 'responsable' => 'Pr Philippe Kosma' ),
+		'ESTLC'  => array( 'fr' => 'École Supérieure de Transport, de Logistique et de Commerce', 'couleur' => '#4E7F1D', 'ville' => 'Ambam', 'photos' => array( 'campus-ambam', 'diplomes' ), 'responsable' => 'Pr Jean Gaston Tamba' ),
+		'ENSTMO' => array( 'fr' => 'École Nationale Supérieure des Sciences et Techniques Maritimes et Océaniques', 'couleur' => '#1b2c5a', 'ville' => 'Kribi', 'photos' => array( 'visite-port', 'vie-etudiante-12' ), 'responsable' => 'Pr Achille Pandong' ),
 	);
 }
 
@@ -58,14 +64,38 @@ function sueb_etablissements() {
  */
 function sueb_institutions_partenaires() {
 	return array(
-		array( 'id' => 'garoua', 'nom' => 'Université de Garoua', 'sigle' => 'UG', 'type' => 'Université' ),
-		array( 'id' => 'bertoua', 'nom' => 'Université de Bertoua', 'sigle' => 'UBe', 'type' => 'Université' ),
-		array( 'id' => 'yaounde-2', 'nom' => 'Université de Yaoundé II', 'sigle' => 'UY2', 'type' => 'Université' ),
-		array( 'id' => 'ngaoundere', 'nom' => 'Université de Ngaoundéré', 'sigle' => 'UN', 'type' => 'Université' ),
-		array( 'id' => 'yaounde-1', 'nom' => 'Université de Yaoundé I', 'sigle' => 'UY1', 'type' => 'Université' ),
-		array( 'id' => 'douala', 'nom' => 'Université de Douala', 'sigle' => 'UDo', 'type' => 'Université' ),
-		array( 'id' => 'dschang', 'nom' => 'Université de Dschang', 'sigle' => 'UDs', 'type' => 'Université' ),
-		array( 'id' => 'minesup', 'nom' => 'Ministère de l’Enseignement Supérieur', 'sigle' => 'MINESUP', 'type' => 'Convention' ),
+		array( 'id' => 'garoua', 'nom' => 'Université de Garoua', 'sigle' => 'UG', 'type' => 'Université', 'ville' => 'Garoua' ),
+		array( 'id' => 'bertoua', 'nom' => 'Université de Bertoua', 'sigle' => 'UBe', 'type' => 'Université', 'ville' => 'Bertoua' ),
+		array( 'id' => 'yaounde-2', 'nom' => 'Université de Yaoundé II', 'sigle' => 'UY2', 'type' => 'Université', 'ville' => 'Yaoundé' ),
+		array( 'id' => 'ngaoundere', 'nom' => 'Université de Ngaoundéré', 'sigle' => 'UN', 'type' => 'Université', 'ville' => 'Ngaoundéré' ),
+		array( 'id' => 'yaounde-1', 'nom' => 'Université de Yaoundé I', 'sigle' => 'UY1', 'type' => 'Université', 'ville' => 'Yaoundé' ),
+		array( 'id' => 'douala', 'nom' => 'Université de Douala', 'sigle' => 'UDo', 'type' => 'Université', 'ville' => 'Douala' ),
+		array( 'id' => 'dschang', 'nom' => 'Université de Dschang', 'sigle' => 'UDs', 'type' => 'Université', 'ville' => 'Dschang' ),
+		array( 'id' => 'minesup', 'nom' => 'Ministère de l’Enseignement Supérieur', 'sigle' => 'MINESUP', 'type' => 'Convention', 'ville' => 'Yaoundé' ),
+	);
+}
+
+/**
+ * Villes du Cameroun placées sur la carte des partenariats (latitude, longitude).
+ * Une convention dont la ville figure ici apparaît sur la carte.
+ */
+function sueb_villes() {
+	return array(
+		'Ebolowa'    => array( 2.9157, 11.1543 ),
+		'Yaoundé'    => array( 3.8480, 11.5021 ),
+		'Douala'     => array( 4.0511, 9.7679 ),
+		'Kribi'      => array( 2.9373, 9.9077 ),
+		'Akonolinga' => array( 3.7667, 12.2500 ),
+		'Bertoua'    => array( 4.5772, 13.6846 ),
+		'Dschang'    => array( 5.4440, 10.0530 ),
+		'Bafoussam'  => array( 5.4781, 10.4176 ),
+		'Bamenda'    => array( 5.9631, 10.1591 ),
+		'Buea'       => array( 4.1527, 9.2410 ),
+		'Ngaoundéré' => array( 7.3167, 13.5833 ),
+		'Garoua'     => array( 9.3017, 13.3921 ),
+		'Maroua'     => array( 10.5956, 14.3247 ),
+		'Sangmélima' => array( 2.9333, 11.9833 ),
+		'Ambam'      => array( 2.3833, 11.2833 ),
 	);
 }
 

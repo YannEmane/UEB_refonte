@@ -15,6 +15,11 @@ function sueb_champs() {
 		$fonctions[ $sigle ] = $sigle . ' — ' . $titre;
 	}
 
+	$villes = array( '' => '— Hors carte —' );
+	foreach ( array_keys( sueb_villes() ) as $v ) {
+		$villes[ $v ] = $v;
+	}
+
 	return array(
 		'ueb_dirigeant'  => array(
 			'titre'  => 'Fonction au rectorat',
@@ -34,6 +39,7 @@ function sueb_champs() {
 				'photo_droite' => array( 'Seconde photo', 'media', 'Photo de l’extrémité droite dans la liste (la photo de gauche est l’image mise en avant).' ),
 				'responsable'  => array( 'Responsable', 'text', 'Doyen, directeur, chef de département ou coordonnateur.' ),
 				'diplome'      => array( 'Diplôme délivré', 'text', 'Filière seulement (ex. Licence, Master).' ),
+				'niveaux'      => array( 'Niveaux ouverts', 'text', 'Filière seulement, séparés par des virgules (ex. L1, L2, L3, M1).' ),
 				'code'         => array( 'Code de l’UE', 'text', 'UE seulement (ex. MAT 111).' ),
 				'credits'      => array( 'Crédits', 'number', 'UE seulement.' ),
 				'semestre'     => array( 'Semestre', 'text', 'UE seulement (ex. S1).' ),
@@ -46,6 +52,10 @@ function sueb_champs() {
 			'champs' => array(
 				'logo'      => array( 'Logo du partenaire', 'media', '' ),
 				'type'      => array( 'Type de partenaire', 'text', 'Ex. Entreprise publique, Institut de recherche, Ministère.' ),
+				'ville'     => array( 'Ville (pour la carte)', 'select', $villes ),
+				'sigle'     => array( 'Sigle', 'text', 'Facultatif, affiché quand il n’y a pas de logo (ex. MINTOUL). Sinon, tiré du nom.' ),
+				'tutelle'   => array( 'Tutelle à l’UEb', 'text', 'Pour un établissement sous tutelle académique : le ou les établissements de l’UEb qui l’assurent (ex. ESTLC ; FS, FSEG, FSJP).' ),
+				'filieres'  => array( 'Filières sous tutelle', 'textarea', 'Une filière par ligne, précédée du sigle de l’établissement de l’UEb qui en assure la tutelle (ex. « FSEG : Banque »). Elle apparaît alors dans la section Établissements.' ),
 				'signature' => array( 'Date de signature', 'date', '' ),
 				'lien'      => array( 'Lien vers l’article de presse', 'url', '' ),
 			),
@@ -65,6 +75,14 @@ function sueb_champs() {
 				'etablissement' => array( 'Établissement', 'etablissement', '' ),
 				'cours'         => array( 'Cours dispensé(s)', 'text', 'Séparer par des virgules.' ),
 				'courriel'      => array( 'Courriel', 'email', 'Facultatif.' ),
+				'grade'         => array( 'Grade', 'select', array( '' => '— Choisir —', 'Professeur' => 'Professeur', 'Maître de conférences' => 'Maître de conférences', 'Chargé de cours' => 'Chargé de cours', 'Assistant' => 'Assistant', 'Enseignant vacataire' => 'Enseignant vacataire', 'Personnel administratif' => 'Personnel administratif' ) ),
+				'departement'   => array( 'Département', 'departement', 'Pour un chef de département ou un enseignant.' ),
+				'specialite'    => array( 'Spécialité', 'text', 'Ex. Mathématiques appliquées, Droit des affaires.' ),
+				'recherche'     => array( 'Domaines de recherche', 'text', 'Séparer par des virgules.' ),
+				'diplomes'      => array( 'Formation et diplômes', 'textarea', 'Un diplôme par ligne, l’année d’abord : « 2014 : Doctorat en mathématiques, Université de Yaoundé I ».' ),
+				'parcours'      => array( 'Parcours professionnel', 'textarea', 'Un poste par ligne, la période d’abord : « 2018-2022 : Chargé de cours, Université de Douala ».' ),
+				'publications'  => array( 'Publications choisies', 'textarea', 'Une publication par ligne.' ),
+				'cv'            => array( 'CV complet (PDF)', 'media', 'Facultatif : proposé au téléchargement sur la fiche.' ),
 			),
 		),
 		'post'           => array(
@@ -121,6 +139,22 @@ function sueb_boite_champs( $post, $boite ) {
 				echo '</select>';
 				break;
 
+			case 'departement':
+				printf( '<select id="%s" name="%s"><option value="">— Aucun —</option>', esc_attr( $id ), esc_attr( $nom ) );
+				foreach ( get_posts( array( 'post_type' => 'ueb_structure', 'post_parent' => 0, 'numberposts' => -1, 'orderby' => 'menu_order title', 'order' => 'ASC' ) ) as $e ) {
+					$deps = get_children( array( 'post_parent' => $e->ID, 'post_type' => 'ueb_structure', 'orderby' => 'menu_order title', 'order' => 'ASC' ) );
+					if ( ! $deps ) {
+						continue;
+					}
+					printf( '<optgroup label="%s">', esc_attr( sueb_meta( $e->ID, 'sigle' ) ?: $e->post_title ) );
+					foreach ( $deps as $d ) {
+						printf( '<option value="%d"%s>%s</option>', $d->ID, selected( (int) $val, $d->ID, false ), esc_html( $d->post_title ) );
+					}
+					echo '</optgroup>';
+				}
+				echo '</select>';
+				break;
+
 			case 'media':
 				$apercu = '';
 				if ( $val ) {
@@ -134,6 +168,10 @@ function sueb_boite_champs( $post, $boite ) {
 
 			case 'color':
 				printf( '<input type="color" id="%s" name="%s" value="%s">', esc_attr( $id ), esc_attr( $nom ), esc_attr( $val ?: '#0f2c1f' ) );
+				break;
+
+			case 'textarea':
+				printf( '<textarea id="%s" name="%s" rows="8" class="large-text">%s</textarea>', esc_attr( $id ), esc_attr( $nom ), esc_textarea( $val ) );
 				break;
 
 			default:
@@ -165,6 +203,7 @@ add_action( 'save_post', function ( $post_id, $post ) {
 		switch ( $c[1] ) {
 			case 'media':
 			case 'etablissement':
+			case 'departement':
 			case 'number':
 				$v = '' === $v ? '' : absint( $v );
 				break;
@@ -176,6 +215,9 @@ add_action( 'save_post', function ( $post_id, $post ) {
 				break;
 			case 'color':
 				$v = sanitize_hex_color( $v );
+				break;
+			case 'textarea':
+				$v = sanitize_textarea_field( $v );
 				break;
 			default:
 				$v = sanitize_text_field( $v );

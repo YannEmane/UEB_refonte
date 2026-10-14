@@ -25,8 +25,17 @@ $menu    = array(
 	array( 'Personnel', '#personnel', array() ),
 );
 foreach ( sueb_etablissements() as $sigle => $e ) {
-	$menu[1][2][] = array( $sigle, '#etab-' . strtolower( $sigle ), $e['fr'] );
+	$menu[1][2][] = array( $sigle, sueb_lien_etablissement( $sigle ), $e['fr'] );
 }
+/* Icône de chaque entrée des sous-menus simples. */
+$icones = array(
+	'Message du Recteur'    => 'guillemet',
+	'Histoire et création'  => 'livre',
+	'Les dirigeants'        => 'personnes',
+	'Vidéo de présentation' => 'video',
+	'Toutes les actualités' => 'article',
+	'Agenda'                => 'calendrier',
+);
 ?><!doctype html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -42,10 +51,10 @@ foreach ( sueb_etablissements() as $sigle => $e ) {
 
 <div class="bandeau-haut">
 	<div class="conteneur bandeau-haut__int">
-		<p class="bandeau-haut__devise"><span>République du Cameroun</span> <span aria-hidden="true">·</span> <em>Paix – Travail – Patrie</em></p>
+		<p class="bandeau-haut__devise"><span>République du Cameroun</span><em>Paix – Travail – Patrie</em></p>
 		<ul class="bandeau-haut__liens">
-			<li><a href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription</a></li>
-			<li><a href="<?php echo esc_url( SUEB_LIENS['inscription'] ); ?>">Inscription</a></li>
+			<li class="bandeau-haut__acces"><a href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription</a></li>
+			<li class="bandeau-haut__acces"><a href="<?php echo esc_url( SUEB_LIENS['inscription'] ); ?>">Inscription</a></li>
 			<li><a href="<?php echo esc_url( $base . '#agenda' ); ?>">Agenda</a></li>
 			<li><a href="<?php echo esc_url( $base . '#contact' ); ?>">Contact</a></li>
 		</ul>
@@ -70,20 +79,23 @@ foreach ( sueb_etablissements() as $sigle => $e ) {
 						<?php if ( $item[2] ) : ?>
 							<div class="sous-menu<?php echo 1 === $i ? ' sous-menu--large' : ''; ?>">
 								<ul>
-									<?php foreach ( $item[2] as $s ) : ?>
-										<li><a href="<?php echo esc_url( 0 === strpos( $s[1], '#' ) ? $base . $s[1] : $s[1] ); ?>"><?php if ( isset( $s[2] ) ) : ?><img src="<?php echo esc_url( sueb_logo( $s[0] ) ); ?>" alt="" width="32" height="32" loading="lazy"><span><strong><?php echo esc_html( $s[0] ); ?></strong><small><?php echo esc_html( $s[2] ); ?></small></span><?php else : ?><?php echo esc_html( $s[0] ); ?><?php endif; ?></a></li>
+									<?php foreach ( $item[2] as $k => $s ) : ?>
+										<li style="--i:<?php echo (int) $k; ?>"><a href="<?php echo esc_url( 0 === strpos( $s[1], '#' ) ? $base . $s[1] : $s[1] ); ?>"><?php if ( isset( $s[2] ) ) : ?><span class="sous-menu__logo"><img src="<?php echo esc_url( sueb_logo( $s[0] ) ); ?>" alt="" width="30" height="30" loading="lazy"></span><span class="sous-menu__texte"><strong><?php echo esc_html( $s[0] ); ?></strong><small><?php echo esc_html( $s[2] ); ?></small></span><?php else : ?><span class="sous-menu__icone"><?php echo sueb_icone( $icones[ $s[0] ] ?? 'droite', 18 ); ?></span><?php echo esc_html( $s[0] ); ?><?php endif; ?></a></li>
 									<?php endforeach; ?>
 								</ul>
 							</div>
 						<?php endif; ?>
 					</li>
+					<?php if ( 0 === $i ) : ?>
+						<li class="nav__item nav__item--mobile"><a class="nav__lien" href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription</a></li>
+						<li class="nav__item nav__item--mobile"><a class="nav__lien" href="<?php echo esc_url( SUEB_LIENS['inscription'] ); ?>">Inscription</a></li>
+					<?php endif; ?>
 				<?php endforeach; ?>
 			</ul>
-			<a class="btn btn--or nav__appel" href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Candidater<?php echo sueb_icone( 'fleche', 16 ); ?></a>
 		</nav>
 
 		<button class="entete__menu" type="button" aria-expanded="false" aria-controls="nav" data-menu>
-			<span class="sr">Menu</span><?php echo sueb_icone( 'menu', 26 ); ?>
+			<span class="sr">Menu</span><?php echo sueb_icone( 'menu', 24 ) . sueb_icone( 'fermer', 24 ); ?>
 		</button>
 	</div>
 	<div class="entete__progression" data-progression aria-hidden="true"></div>

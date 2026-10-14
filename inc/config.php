@@ -141,6 +141,7 @@ function sueb_niveaux() {
 /** Catégories du personnel, créées à l'installation (taxonomie modifiable). */
 function sueb_corps_personnel() {
 	return array(
+		'direction'           => 'Direction de l’université',
 		'doyens-directeurs'   => 'Doyens et directeurs',
 		'chefs-departement'   => 'Chefs de département',
 		'enseignants'         => 'Enseignants',

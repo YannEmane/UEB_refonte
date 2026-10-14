@@ -239,4 +239,8 @@ if ( ! get_posts( array( 'post_type' => 'ueb_personnel', 'numberposts' => 1, 'po
 	}
 }
 
+/* ---------- Personnel : la direction de l'université ---------- */
+require __DIR__ . '/direction-universite.php';
+sueb_appliquer_direction();
+
 echo "Installation terminée.\n";

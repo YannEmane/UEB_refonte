@@ -33,7 +33,7 @@ foreach ( $groupes as $g ) {
 			<div>
 				<p class="surtitre">Personnels de l’UEb</p>
 				<h2 id="titre-perso">Celles et ceux qui font l’université</h2>
-				<p class="section__chapo">Les doyens et directeurs des neuf établissements : retrouvez chacun, sa fonction et son établissement. Les chefs de département et les enseignants sont présentés sur la page de leur établissement.</p>
+				<p class="section__chapo">La direction de l’université, puis les doyens et directeurs des neuf établissements : retrouvez chacun, sa fonction et son établissement. Les chefs de département et les enseignants sont présentés sur la page de leur établissement.</p>
 			</div>
 			<?php if ( $total > 1 ) : ?>
 			<div class="annuaire__outils" role="search">

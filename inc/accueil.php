@@ -315,6 +315,11 @@ function sueb_personnel_par_corps() {
 		} );
 		$groupes[] = array( 'nom' => $t->name, 'slug' => $t->slug, 'membres' => $membres );
 	}
+	/* Les catégories du thème d'abord, dans leur ordre (la direction en tête), puis celles ajoutées dans l'admin. */
+	$ordre = array_flip( array_keys( sueb_corps_personnel() ) );
+	usort( $groupes, function ( $a, $b ) use ( $ordre ) {
+		return ( $ordre[ $a['slug'] ] ?? 99 ) <=> ( $ordre[ $b['slug'] ] ?? 99 );
+	} );
 	return $groupes;
 }
 
@@ -322,7 +327,7 @@ function sueb_personnel_par_corps() {
 function sueb_membre_personnel( $p, array $etabs = array(), $corps = '' ) {
 	$p    = get_post( $p );
 	$etab = (int) sueb_meta( $p->ID, 'etablissement' );
-	$e    = $etabs[ $etab ] ?? ( $etab ? array( 'sigle' => sueb_meta( $etab, 'sigle' ) ?: get_the_title( $etab ), 'nom' => get_the_title( $etab ), 'couleur' => sueb_meta( $etab, 'couleur' ) ?: ( sueb_etablissements()[ strtoupper( (string) sueb_meta( $etab, 'sigle' ) ) ]['couleur'] ?? '#163d2b' ) ) : array( 'sigle' => 'Rectorat', 'nom' => 'Rectorat', 'couleur' => '#163d2b' ) );
+	$e    = $etabs[ $etab ] ?? ( $etab ? array( 'sigle' => sueb_meta( $etab, 'sigle' ) ?: get_the_title( $etab ), 'nom' => get_the_title( $etab ), 'couleur' => sueb_meta( $etab, 'couleur' ) ?: ( sueb_etablissements()[ strtoupper( (string) sueb_meta( $etab, 'sigle' ) ) ]['couleur'] ?? '#163d2b' ) ) : array( 'sigle' => 'UEb', 'nom' => SUEB_UNIVERSITE['fr'], 'couleur' => '#163d2b' ) );
 	if ( ! $corps ) {
 		$termes = get_the_terms( $p, 'ueb_corps' );
 		$corps  = $termes && ! is_wp_error( $termes ) ? $termes[0]->name : '';

@@ -690,6 +690,12 @@ html:not(.js) .carte__nom { opacity: 1; }
 /* L'annuaire, à la manière des grands sites institutionnels : recherche et établissement en tête,
    membres groupés par catégorie, portraits uniformes en 4:5, nom et fonction, fiche au clic. */
 .personnel__tete { align-items: end; }
+
+/* Sur l'accueil : la direction seule, en grands portraits sur toute la largeur, puis le lien vers l'annuaire. */
+.profils.profils--direction { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem clamp(1.25rem, .5rem + 2vw, 2.5rem); }
+.profils--direction .profil__nom { font-size: clamp(1.3rem, 1.05rem + .7vw, 1.65rem); }
+.profils--direction .profil__fonction { font-size: 1.0625rem; }
+.personnel__suite { margin: clamp(2.5rem, 2rem + 1.5vw, 3.5rem) 0 0; text-align: center; }
 .annuaire__outils { display: flex; flex-wrap: wrap; gap: .6rem; flex: 0 1 34rem; }
 .annuaire__recherche { position: relative; flex: 1 1 16rem; }
 .annuaire__recherche .icone { position: absolute; left: 1.05rem; top: 50%; translate: 0 -50%; color: var(--gris); pointer-events: none; }
@@ -1251,6 +1257,7 @@ html:not(.js) .carte__nom { opacity: 1; }
 	.banniere__pause { right: auto; left: 100%; margin: 0 0 0 1rem; }
 	.histoire__intro { position: static; }
 	.profils { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.profils.profils--direction { gap: 2rem 1rem; }
 	.pied__grille { grid-template-columns: 1fr 1fr; }
 	.pied__marque { grid-column: 1 / -1; }
 }
@@ -1319,6 +1326,12 @@ html:not(.js) .carte__nom { opacity: 1; }
 	.profil__initiales { font-size: 1.4rem; }
 	.profil__nom { align-self: end; margin-top: 0; font-size: 1.08rem; }
 	.profil__fonction { align-self: start; margin-top: .2rem; font-size: .875rem; }
+	/* La direction, sur l'accueil, garde ses trois portraits côte à côte. */
+	.profils.profils--direction { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem .75rem; }
+	.profils--direction .profil { border-top: 0; }
+	.profils--direction .profil__lien { display: block; padding-block: 0; }
+	.profils--direction .profil__nom { margin-top: .7rem; font-size: 1rem; }
+	.profils--direction .profil__fonction { font-size: .8125rem; }
 	.fiche-tete__int { grid-template-columns: 1fr; align-items: start; }
 	.fiche-tete__portrait { width: 150px; border-radius: var(--r-carte); }
 	.fiche-ue dl { grid-template-columns: 1fr 1fr; }

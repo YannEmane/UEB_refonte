@@ -38,13 +38,14 @@ function sueb_url_dirigeants() {
 /**
  * Les neuf établissements, repris du site des inscriptions.
  * Sert à créer les fiches à l'installation et de repli (logo, couleur).
+ * « presentation » : texte de présentation de la page (repli tant que la fiche n'a pas de texte dans l'admin).
  * « responsable » : doyen ou directeur en poste au 11 octobre 2026, avec son
  * portrait dans assets/images/personnel/<sigle>.webp (installation seulement :
  * ensuite, les noms et photos se changent dans Personnel, dans l'admin).
  */
 function sueb_etablissements() {
 	return array(
-		'FS'     => array( 'fr' => 'Faculté des Sciences', 'couleur' => '#1f5aa6', 'ville' => 'Ebolowa', 'photos' => array( 'equipe-fs', 'amphi-cours' ), 'responsable' => 'Pr Carole Edima Durant' ),
+		'FS'     => array( 'fr' => 'Faculté des Sciences', 'couleur' => '#1f5aa6', 'ville' => 'Ebolowa', 'photos' => array( 'equipe-fs', 'amphi-cours' ), 'responsable' => 'Pr EDIMA DURANT Carole', 'presentation' => "Laboratoires, travaux pratiques, rigueur expérimentale : la Faculté des Sciences vous donne le socle scientifique solide qu'exigent les métiers techniques, de santé et de recherche. Fidèles à la philosophie « un étudiant, une formation », ses programmes associent fondamentaux, pratique et ouverture vers l'emploi, avec des pôles d'excellence en mathématiques appliquées, sciences biomédicales et agriculture biologique." ),
 		'FSJP'   => array( 'fr' => 'Faculté des Sciences Juridiques et Politiques', 'couleur' => '#8B1E1E', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-4', 'salle' ), 'responsable' => 'Pr Manassé Aboya Endong' ),
 		'FSEG'   => array( 'fr' => 'Faculté des Sciences Économiques et de Gestion', 'couleur' => '#16803C', 'ville' => 'Ebolowa', 'photos' => array( 'amphi', 'campus-batiments' ), 'responsable' => 'Pr Sigismond Mvele' ),
 		'FALSH'  => array( 'fr' => 'Faculté des Arts, Lettres et Sciences Humaines', 'couleur' => '#6A1B6D', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-1', 'bibliotheque' ), 'responsable' => 'Pr Nomo Etaba' ),

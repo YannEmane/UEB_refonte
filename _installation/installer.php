@@ -97,7 +97,7 @@ foreach ( sueb_etablissements() as $sigle => $e ) {
 	$ordre++;
 	$deja = get_posts( array( 'post_type' => 'ueb_structure', 'post_parent' => 0, 'meta_key' => '_sueb_sigle', 'meta_value' => $sigle, 'numberposts' => 1 ) );
 	$etabs[ $sigle ] = $deja ? $deja[0]->ID : $creer(
-		array( 'post_type' => 'ueb_structure', 'post_title' => $e['fr'], 'menu_order' => $ordre, 'post_name' => strtolower( $sigle ) ),
+		array( 'post_type' => 'ueb_structure', 'post_title' => $e['fr'], 'post_content' => isset( $e['presentation'] ) ? '<p>' . $e['presentation'] . '</p>' : '', 'menu_order' => $ordre, 'post_name' => strtolower( $sigle ) ),
 		array( 'sigle' => $sigle, 'ville' => $e['ville'] )
 	);
 }

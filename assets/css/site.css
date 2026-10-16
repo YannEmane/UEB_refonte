@@ -1357,3 +1357,26 @@ html:not(.js) .carte__nom { opacity: 1; }
 	.medaillon[aria-hidden="true"], .defile__pause { display: none; }
 	.medaillon__disque { animation: none; }
 }
+/* ---------- Toutes les actualités (/actualites/) ---------- */
+.actualites__voir { margin-top: 1.25rem; }
+.liste-actus { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1.25rem, .8rem + 1.5vw, 2rem); }
+.liste-actus__item { display: flex; }
+.liste-actus__lien { display: flex; flex-direction: column; width: 100%; overflow: hidden; border: 1px solid var(--filet); border-radius: var(--r-carte); background: var(--blanc); color: inherit; text-decoration: none; box-shadow: var(--ombre-1); transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
+.liste-actus__lien:hover { transform: translateY(-4px); box-shadow: var(--ombre-2); color: inherit; }
+.liste-actus__photo { position: relative; display: block; aspect-ratio: 3 / 2; overflow: hidden; background: var(--sable); }
+.liste-actus__photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
+.liste-actus__lien:hover .liste-actus__photo img { transform: scale(1.05); }
+.liste-actus__photo .badge-format { position: absolute; left: .75rem; top: .75rem; }
+.liste-actus__corps { display: flex; flex: 1; flex-direction: column; gap: .5rem; padding: 1.15rem 1.25rem 1.35rem; }
+.liste-actus__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .75rem; font-size: .8125rem; color: var(--gris); }
+.liste-actus__meta span { padding: .1rem .6rem; border-radius: 999px; background: var(--sable); color: var(--foret-900); font-weight: 600; }
+.liste-actus__titre { font-family: var(--f-titre); font-weight: 500; font-size: 1.35rem; line-height: 1.2; color: var(--foret-900); text-wrap: balance; }
+.liste-actus__resume { color: var(--gris); font-size: .96875rem; line-height: 1.55; }
+.liste-actus__corps .lien-fleche { margin-top: auto; padding-top: .5rem; }
+.pagination { margin-top: clamp(2rem, 1.5rem + 2vw, 3.5rem); }
+.pagination .nav-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
+.pagination .page-numbers { display: inline-flex; align-items: center; justify-content: center; min-width: 2.75rem; height: 2.75rem; padding: 0 1rem; border: 1px solid var(--filet-fort); border-radius: 999px; background: var(--blanc); color: var(--foret-900); font-weight: 600; text-decoration: none; }
+.pagination a.page-numbers:hover { border-color: var(--foret-900); }
+.pagination .page-numbers.current { background: var(--foret-900); border-color: var(--foret-900); color: var(--blanc); }
+@media (max-width: 980px) { .liste-actus { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .liste-actus { grid-template-columns: 1fr; } }

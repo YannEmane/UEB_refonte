@@ -20,6 +20,7 @@ $menu    = array(
 	array( 'Partenariats', '#partenariats', array() ),
 	array( 'Nouvelles et évènements', '#actualites', array(
 		array( 'Toutes les actualités', '#actualites' ),
+		array( 'Tous les articles', sueb_url_actualites() ),
 		array( 'Agenda', '#agenda' ),
 	) ),
 	array( 'Personnel', '#personnel', array() ),

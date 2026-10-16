@@ -1,0 +1,81 @@
+From 9ac8dac2fe4d3a70cae0745a2073b0a79884b887 Mon Sep 17 00:00:00 2001
+From: Yann <yannemane53@gmail.com>
+Date: Thu, 15 Oct 2026 11:32:02 +0000
+Subject: [PATCH] =?UTF-8?q?Pr=C3=A9sentations=20des=209=20=C3=A9tablisseme?=
+ =?UTF-8?q?nts=20(texte=20de=20repli)=20et=20nom=20de=20la=20doyenne=20de?=
+ =?UTF-8?q?=20la=20FS?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ _installation/installer.php |  2 +-
+ inc/config.php              | 19 ++++++++++---------
+ inc/etablissement.php       |  2 +-
+ 3 files changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/_installation/installer.php b/_installation/installer.php
+index 53162680..2524c844 100644
+--- a/_installation/installer.php
++++ b/_installation/installer.php
+@@ -97,7 +97,7 @@ foreach ( sueb_etablissements() as $sigle => $e ) {
+ 	$ordre++;
+ 	$deja = get_posts( array( 'post_type' => 'ueb_structure', 'post_parent' => 0, 'meta_key' => '_sueb_sigle', 'meta_value' => $sigle, 'numberposts' => 1 ) );
+ 	$etabs[ $sigle ] = $deja ? $deja[0]->ID : $creer(
+-		array( 'post_type' => 'ueb_structure', 'post_title' => $e['fr'], 'menu_order' => $ordre, 'post_name' => strtolower( $sigle ) ),
++		array( 'post_type' => 'ueb_structure', 'post_title' => $e['fr'], 'post_content' => isset( $e['presentation'] ) ? '<p>' . $e['presentation'] . '</p>' : '', 'menu_order' => $ordre, 'post_name' => strtolower( $sigle ) ),
+ 		array( 'sigle' => $sigle, 'ville' => $e['ville'] )
+ 	);
+ }
+diff --git a/inc/config.php b/inc/config.php
+index bf3fbf40..ec8f6140 100644
+--- a/inc/config.php
++++ b/inc/config.php
+@@ -38,21 +38,22 @@ function sueb_url_dirigeants() {
+ /**
+  * Les neuf établissements, repris du site des inscriptions.
+  * Sert à créer les fiches à l'installation et de repli (logo, couleur).
++ * « presentation » : texte de présentation de la page (repli tant que la fiche n'a pas de texte dans l'admin).
+  * « responsable » : doyen ou directeur en poste au 11 octobre 2026, avec son
+  * portrait dans assets/images/personnel/<sigle>.webp (installation seulement :
+  * ensuite, les noms et photos se changent dans Personnel, dans l'admin).
+  */
+ function sueb_etablissements() {
+ 	return array(
+-		'FS'     => array( 'fr' => 'Faculté des Sciences', 'couleur' => '#1f5aa6', 'ville' => 'Ebolowa', 'photos' => array( 'equipe-fs', 'amphi-cours' ), 'responsable' => 'Pr Carole Edima Durant' ),
+-		'FSJP'   => array( 'fr' => 'Faculté des Sciences Juridiques et Politiques', 'couleur' => '#8B1E1E', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-4', 'salle' ), 'responsable' => 'Pr Manassé Aboya Endong' ),
+-		'FSEG'   => array( 'fr' => 'Faculté des Sciences Économiques et de Gestion', 'couleur' => '#16803C', 'ville' => 'Ebolowa', 'photos' => array( 'amphi', 'campus-batiments' ), 'responsable' => 'Pr Sigismond Mvele' ),
+-		'FALSH'  => array( 'fr' => 'Faculté des Arts, Lettres et Sciences Humaines', 'couleur' => '#6A1B6D', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-1', 'bibliotheque' ), 'responsable' => 'Pr Nomo Etaba' ),
+-		'FMSP'   => array( 'fr' => 'Faculté de Médecine et des Sciences Pharmaceutiques', 'couleur' => '#0077B6', 'ville' => 'Sangmélima', 'photos' => array( 'campus-sangmelima', 'salle' ), 'responsable' => 'Pr Pascal Foumane' ),
+-		'ENSET'  => array( 'fr' => "École Normale Supérieure d'Enseignement Technique", 'couleur' => '#006B3C', 'ville' => 'Ebolowa', 'photos' => array( 'remise-toges', 'amphi-cours' ), 'responsable' => 'Pr Léandre Nneme Nneme' ),
+-		'ISABEE' => array( 'fr' => "Institut Supérieur d'Agriculture, du Bois, de l'Eau et de l'Environnement", 'couleur' => '#3A7D44', 'ville' => 'Ebolowa', 'photos' => array( 'campus-ebolowa', 'vie-etudiante-3' ), 'responsable' => 'Pr Philippe Kosma' ),
+-		'ESTLC'  => array( 'fr' => 'École Supérieure de Transport, de Logistique et de Commerce', 'couleur' => '#4E7F1D', 'ville' => 'Ambam', 'photos' => array( 'campus-ambam', 'diplomes' ), 'responsable' => 'Pr Jean Gaston Tamba' ),
+-		'ENSTMO' => array( 'fr' => 'École Nationale Supérieure des Sciences et Techniques Maritimes et Océaniques', 'couleur' => '#1b2c5a', 'ville' => 'Kribi', 'photos' => array( 'visite-port', 'vie-etudiante-12' ), 'responsable' => 'Pr Achille Pandong' ),
++		'FS'     => array( 'fr' => 'Faculté des Sciences', 'couleur' => '#1f5aa6', 'ville' => 'Ebolowa', 'photos' => array( 'equipe-fs', 'amphi-cours' ), 'responsable' => 'Pr EDIMA DURANT Carole' , 'presentation' => 'Laboratoires, travaux pratiques, rigueur expérimentale : la Faculté des Sciences vous donne le socle scientifique solide qu’exigent les métiers techniques, de santé et de recherche. Fidèles à la philosophie « un étudiant, une formation », ses programmes associent fondamentaux, pratique et ouverture vers l’emploi, avec des pôles d’excellence en mathématiques appliquées, sciences biomédicales et agriculture biologique.' ),
++		'FSJP'   => array( 'fr' => 'Faculté des Sciences Juridiques et Politiques', 'couleur' => '#8B1E1E', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-4', 'salle' ), 'responsable' => 'Pr Manassé Aboya Endong' , 'presentation' => 'Magistrat, avocat, notaire, juriste d’entreprise, cadre de l’administration ou des collectivités territoriales : votre avenir se construit à la Faculté des Sciences Juridiques et Politiques. Au campus de Mekalat, la faculté met l’accent sur le droit des affaires OHADA, la gouvernance et la décentralisation, des compétences recherchées par l’État, les entreprises et les communes.' ),
++		'FSEG'   => array( 'fr' => 'Faculté des Sciences Économiques et de Gestion', 'couleur' => '#16803C', 'ville' => 'Ebolowa', 'photos' => array( 'amphi', 'campus-batiments' ), 'responsable' => 'Pr Sigismond Mvele' , 'presentation' => 'Vous rêvez de diriger, d’analyser, de financer ou d’entreprendre ? La Faculté des Sciences Économiques et de Gestion forme les économistes, gestionnaires, financiers et managers dont ont besoin les entreprises, les banques, les administrations et les organisations. Fidèle à la vision entrepreneuriale de l’Université d’Ebolowa, elle prépare des diplômés capables de piloter une organisation ou de créer leur propre activité.' ),
++		'FALSH'  => array( 'fr' => 'Faculté des Arts, Lettres et Sciences Humaines', 'couleur' => '#6A1B6D', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-1', 'bibliotheque' ), 'responsable' => 'Pr Nomo Etaba' , 'presentation' => 'Journaliste, traducteur, communicant, guide touristique, artiste ou gestionnaire du patrimoine : la Faculté des Arts, Lettres et Sciences Humaines transforme votre passion en profession. Avec huit départements et des parcours professionnalisants, elle forme des diplômés capables de communiquer, de transmettre et de valoriser les richesses culturelles du Cameroun.' ),
++		'FMSP'   => array( 'fr' => 'Faculté de Médecine et des Sciences Pharmaceutiques', 'couleur' => '#0077B6', 'ville' => 'Sangmélima', 'photos' => array( 'campus-sangmelima', 'salle' ), 'responsable' => 'Pr Pascal Foumane' , 'presentation' => 'La Faculté de Médecine et des Sciences Pharmaceutiques forme les médecins et les pharmaciens de demain, selon le programme national de formation médicale, pharmaceutique et odontostomatologique. Adossée à l’Hôpital de référence de Sangmélima pour la formation clinique, elle associe enseignements théoriques, apprentissage au chevet du patient et respect de l’éthique des professions de santé.' ),
++		'ENSET'  => array( 'fr' => "École Normale Supérieure d'Enseignement Technique", 'couleur' => '#006B3C', 'ville' => 'Ebolowa', 'photos' => array( 'remise-toges', 'amphi-cours' ), 'responsable' => 'Pr Léandre Nneme Nneme' , 'presentation' => 'Vous voulez faire de votre passion technique un métier utile et respecté ? L’École Normale Supérieure d’Enseignement Technique d’Ebolowa forme les professeurs de l’enseignement secondaire technique et professionnel dont le Cameroun a besoin pour réussir son industrialisation. Maîtrise de la discipline, pédagogie et pratique en établissement : vous êtes opérationnel dès votre prise de fonction.' ),
++		'ISABEE' => array( 'fr' => "Institut Supérieur d'Agriculture, du Bois, de l'Eau et de l'Environnement", 'couleur' => '#3A7D44', 'ville' => 'Ebolowa', 'photos' => array( 'campus-ebolowa', 'vie-etudiante-3' ), 'responsable' => 'Pr Philippe Kosma' , 'presentation' => 'Au cœur d’une région de forêt équatoriale aux ressources exceptionnelles, l’ISABEE forme les ingénieurs qui produiront, transformeront et protégeront les richesses naturelles du Cameroun. Sciences de l’ingénieur, travaux pratiques, stages de terrain et projet de fin d’études : à l’ISABEE, vous apprenez en faisant, au plus près des exploitations, des forêts et des cours d’eau.' ),
++		'ESTLC'  => array( 'fr' => 'École Supérieure de Transport, de Logistique et de Commerce', 'couleur' => '#4E7F1D', 'ville' => 'Ambam', 'photos' => array( 'campus-ambam', 'diplomes' ), 'responsable' => 'Pr Jean Gaston Tamba' , 'presentation' => 'Vous êtes jeune, ambitieux et vous souhaitez donner une véritable dimension professionnelle à votre parcours universitaire ? À Ambam, carrefour du Cameroun, du Gabon et de la Guinée équatoriale, l’ESTLC vous forme aux métiers du transport, de la logistique, du commerce et des technologies. Ici, la formation ne se limite pas à la théorie : chaque étudiant développe le savoir, le savoir-faire et le savoir-être qu’exige son futur métier.' ),
++		'ENSTMO' => array( 'fr' => 'École Nationale Supérieure des Sciences et Techniques Maritimes et Océaniques', 'couleur' => '#1b2c5a', 'ville' => 'Kribi', 'photos' => array( 'visite-port', 'vie-etudiante-12' ), 'responsable' => 'Pr Achille Pandong' , 'presentation' => 'Installée à Kribi, ville portuaire en plein essor, l’ENSTMO vous ouvre les métiers de la mer et de l’économie bleue : pêche, construction navale, transport maritime, océanographie, exploitation et gestion portuaire. La proximité du complexe industrialo-portuaire offre aux étudiants un environnement d’apprentissage directement connecté aux réalités du secteur maritime.' ),
+ 	);
+ }
+ 
+diff --git a/inc/etablissement.php b/inc/etablissement.php
+index e541e347..5a8df6c2 100644
+--- a/inc/etablissement.php
++++ b/inc/etablissement.php
+@@ -163,7 +163,7 @@ function sueb_page_etablissement( $id ) {
+ 
+ 	$nom      = $e->post_title;
+ 	$feminin  = ! preg_match( '/^institut/i', $nom );
+-	$presente = trim( (string) $e->post_content );
++	$presente = trim( (string) $e->post_content ) ?: (string) ( $fixe['presentation'] ?? '' );
+ 
+ 	return array(
+ 		'id'           => $id,
+-- 
+2.43.0
+

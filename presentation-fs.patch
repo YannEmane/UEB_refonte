@@ -1,0 +1,64 @@
+From 4fc0e3c7071ea7bfeb50df07138d4e9711e628c8 Mon Sep 17 00:00:00 2001
+From: Yann <yannemane53@gmail.com>
+Date: Thu, 15 Oct 2026 10:51:27 +0000
+Subject: [PATCH] =?UTF-8?q?FS=20:=20texte=20de=20pr=C3=A9sentation=20et=20?=
+ =?UTF-8?q?nom=20de=20la=20doyenne=20(Pr=20EDIMA=20DURANT=20Carole)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ _installation/installer.php | 2 +-
+ inc/config.php              | 3 ++-
+ inc/etablissement.php       | 2 +-
+ 3 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/_installation/installer.php b/_installation/installer.php
+index 53162680..2524c844 100644
+--- a/_installation/installer.php
++++ b/_installation/installer.php
+@@ -97,7 +97,7 @@ foreach ( sueb_etablissements() as $sigle => $e ) {
+ 	$ordre++;
+ 	$deja = get_posts( array( 'post_type' => 'ueb_structure', 'post_parent' => 0, 'meta_key' => '_sueb_sigle', 'meta_value' => $sigle, 'numberposts' => 1 ) );
+ 	$etabs[ $sigle ] = $deja ? $deja[0]->ID : $creer(
+-		array( 'post_type' => 'ueb_structure', 'post_title' => $e['fr'], 'menu_order' => $ordre, 'post_name' => strtolower( $sigle ) ),
++		array( 'post_type' => 'ueb_structure', 'post_title' => $e['fr'], 'post_content' => isset( $e['presentation'] ) ? '<p>' . $e['presentation'] . '</p>' : '', 'menu_order' => $ordre, 'post_name' => strtolower( $sigle ) ),
+ 		array( 'sigle' => $sigle, 'ville' => $e['ville'] )
+ 	);
+ }
+diff --git a/inc/config.php b/inc/config.php
+index bf3fbf40..36330fd6 100644
+--- a/inc/config.php
++++ b/inc/config.php
+@@ -38,13 +38,14 @@ function sueb_url_dirigeants() {
+ /**
+  * Les neuf établissements, repris du site des inscriptions.
+  * Sert à créer les fiches à l'installation et de repli (logo, couleur).
++ * « presentation » : texte de présentation de la page (repli tant que la fiche n'a pas de texte dans l'admin).
+  * « responsable » : doyen ou directeur en poste au 11 octobre 2026, avec son
+  * portrait dans assets/images/personnel/<sigle>.webp (installation seulement :
+  * ensuite, les noms et photos se changent dans Personnel, dans l'admin).
+  */
+ function sueb_etablissements() {
+ 	return array(
+-		'FS'     => array( 'fr' => 'Faculté des Sciences', 'couleur' => '#1f5aa6', 'ville' => 'Ebolowa', 'photos' => array( 'equipe-fs', 'amphi-cours' ), 'responsable' => 'Pr Carole Edima Durant' ),
++		'FS'     => array( 'fr' => 'Faculté des Sciences', 'couleur' => '#1f5aa6', 'ville' => 'Ebolowa', 'photos' => array( 'equipe-fs', 'amphi-cours' ), 'responsable' => 'Pr EDIMA DURANT Carole', 'presentation' => "Laboratoires, travaux pratiques, rigueur expérimentale : la Faculté des Sciences vous donne le socle scientifique solide qu'exigent les métiers techniques, de santé et de recherche. Fidèles à la philosophie « un étudiant, une formation », ses programmes associent fondamentaux, pratique et ouverture vers l'emploi, avec des pôles d'excellence en mathématiques appliquées, sciences biomédicales et agriculture biologique." ),
+ 		'FSJP'   => array( 'fr' => 'Faculté des Sciences Juridiques et Politiques', 'couleur' => '#8B1E1E', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-4', 'salle' ), 'responsable' => 'Pr Manassé Aboya Endong' ),
+ 		'FSEG'   => array( 'fr' => 'Faculté des Sciences Économiques et de Gestion', 'couleur' => '#16803C', 'ville' => 'Ebolowa', 'photos' => array( 'amphi', 'campus-batiments' ), 'responsable' => 'Pr Sigismond Mvele' ),
+ 		'FALSH'  => array( 'fr' => 'Faculté des Arts, Lettres et Sciences Humaines', 'couleur' => '#6A1B6D', 'ville' => 'Ebolowa', 'photos' => array( 'vie-etudiante-1', 'bibliotheque' ), 'responsable' => 'Pr Nomo Etaba' ),
+diff --git a/inc/etablissement.php b/inc/etablissement.php
+index e541e347..5a8df6c2 100644
+--- a/inc/etablissement.php
++++ b/inc/etablissement.php
+@@ -163,7 +163,7 @@ function sueb_page_etablissement( $id ) {
+ 
+ 	$nom      = $e->post_title;
+ 	$feminin  = ! preg_match( '/^institut/i', $nom );
+-	$presente = trim( (string) $e->post_content );
++	$presente = trim( (string) $e->post_content ) ?: (string) ( $fixe['presentation'] ?? '' );
+ 
+ 	return array(
+ 		'id'           => $id,
+-- 
+2.43.0
+

@@ -338,7 +338,7 @@ html:not(.js) .revele { opacity: 1; transform: none; }
 
 /* ---------- Découvrir : message du Recteur ---------- */
 
-.decouvrir { background: var(--blanc); padding-bottom: 0; }
+.decouvrir { background: var(--blanc); padding-bottom: var(--esp-section, clamp(3rem, 2rem + 4vw, 5.5rem)); }
 .message { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2.5rem, 2rem + 4vw, 6rem); align-items: center; padding-bottom: var(--esp-section); }
 /* Portrait du Recteur : photo aux grands arrondis, avec une carte flottante. */
 .message__portrait { position: relative; }
@@ -412,7 +412,7 @@ html:not(.js) .revele { opacity: 1; transform: none; }
 
 .video {
 	display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: clamp(1rem, .5rem + 2vw, 2.5rem);
-	margin-block: var(--esp-section); padding: clamp(.75rem, .5rem + .8vw, 1.25rem);
+	margin-block: var(--esp-section, clamp(3rem, 2rem + 4vw, 5.5rem)) 0; padding: clamp(.75rem, .5rem + .8vw, 1.25rem);
 	border-radius: var(--r-panneau); background: var(--foret-900); color: var(--blanc);
 }
 .video__contenu { padding: clamp(1.25rem, .75rem + 2vw, 2.75rem); }

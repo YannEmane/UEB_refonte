@@ -163,7 +163,7 @@ function sueb_page_etablissement( $id ) {
 
 	$nom      = $e->post_title;
 	$feminin  = ! preg_match( '/^institut/i', $nom );
-	$presente = trim( (string) $e->post_content );
+	$presente = trim( (string) $e->post_content ) ?: (string) ( $fixe['presentation'] ?? '' );
 
 	return array(
 		'id'           => $id,

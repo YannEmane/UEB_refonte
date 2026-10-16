@@ -1,0 +1,31 @@
+From a627ac42e94c861c1f271ca162379e0981ce9f39 Mon Sep 17 00:00:00 2001
+From: Yann <yannemane53@gmail.com>
+Date: Thu, 15 Oct 2026 10:36:47 +0000
+Subject: [PATCH] =?UTF-8?q?Pages=20d'=C3=A9tablissement=20:=20aligne=20les?=
+ =?UTF-8?q?=20chiffres=20cl=C3=A9s=20sur=20la=20m=C3=AAme=20ligne?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ assets/css/site.css | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/assets/css/site.css b/assets/css/site.css
+index 4588c3e2..92b0c39a 100644
+--- a/assets/css/site.css
++++ b/assets/css/site.css
+@@ -813,8 +813,8 @@ html:not(.js) .carte__nom { opacity: 1; }
+ .etab-presentation__grille { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(2rem, 1rem + 4vw, 5rem); align-items: start; }
+ .etab-presentation__texte { max-width: 64ch; margin-top: 1.25rem; font-size: 1.125rem; line-height: 1.7; color: var(--encre); }
+ .etab-presentation__texte p { margin: 0 0 1rem; }
+-.etab-chiffres { display: flex; flex-wrap: wrap; gap: 1.25rem 2.5rem; margin: 2rem 0 0; padding-top: 1.75rem; border-top: 1px solid var(--filet); }
+-.etab-chiffres div { display: flex; flex-direction: column-reverse; gap: .25rem; max-width: 14ch; }
++.etab-chiffres { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.25rem 2.5rem; margin: 2rem 0 0; padding-top: 1.75rem; border-top: 1px solid var(--filet); }
++.etab-chiffres div { display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: .25rem; max-width: 14ch; }
+ .etab-chiffres dd { margin: 0; font-family: var(--f-titre); font-size: clamp(2.4rem, 1.9rem + 1.4vw, 3.2rem); font-weight: 500; line-height: 1; color: var(--etab); font-variant-numeric: tabular-nums; }
+ .etab-chiffres dt { font-size: .9375rem; line-height: 1.35; color: var(--gris); }
+ .etab-direction__carte { display: flex; flex-direction: column; gap: 1rem; max-width: 320px; color: inherit; text-decoration: none; }
+-- 
+2.43.0
+

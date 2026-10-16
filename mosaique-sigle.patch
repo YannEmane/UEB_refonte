@@ -1,0 +1,37 @@
+From 564515d39396be0840df49c823d63e9c96117cd2 Mon Sep 17 00:00:00 2001
+From: Yann <yannemane53@gmail.com>
+Date: Wed, 14 Oct 2026 12:22:49 +0000
+Subject: [PATCH] =?UTF-8?q?Mosa=C3=AFque=20:=20reconna=C3=AEt=20un=20?=
+ =?UTF-8?q?=C3=A9tablissement=20sans=20sigle=20saisi=20(adresse=20ou=20tit?=
+ =?UTF-8?q?re=20officiel)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ inc/accueil.php | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/inc/accueil.php b/inc/accueil.php
+index c9eaeca7..b8ea002a 100644
+--- a/inc/accueil.php
++++ b/inc/accueil.php
+@@ -40,6 +40,15 @@ function sueb_arbre_formation() {
+ 	$noeuds = array();
+ 	foreach ( $tous as $p ) {
+ 		$sigle = (string) sueb_meta( $p->ID, 'sigle' );
++		if ( ! $sigle && ! $p->post_parent ) {
++			/* Fiche d'établissement sans sigle saisi : on le retrouve par l'adresse (fs) ou le titre officiel. */
++			foreach ( $fixe as $s => $f0 ) {
++				if ( strtolower( $s ) === $p->post_name || mb_strtolower( $f0['fr'] ) === mb_strtolower( trim( $p->post_title ) ) ) {
++					$sigle = $s;
++					break;
++				}
++			}
++		}
+ 		$n     = array(
+ 			'id'     => $p->ID,
+ 			'parent' => $p->post_parent,
+-- 
+2.43.0
+

@@ -13,9 +13,9 @@ defined( 'ABSPATH' ) || exit;
 
 function sueb_direction_universite() {
 	return array(
-		array( 'nom' => 'Jean-Pierre Mvondo Evezo’o', 'fonction' => 'Président du Conseil d’Administration', 'photo' => 'pca' ),
-		array( 'nom' => 'Pr Jean Bosco Etoa Etoa', 'fonction' => 'Recteur', 'photo' => 'recteur' ),
-		array( 'nom' => 'Pr Christiane Félicité Ewane épouse Essoh', 'fonction' => 'Secrétaire Générale', 'photo' => 'sg' ),
+		array( 'nom' => 'Jean-Pierre MVONDO EVEZO’O', 'fonction' => 'Président du Conseil d’Administration', 'photo' => 'pca' ),
+		array( 'nom' => 'Pr Jean Bosco ETOA ETOA', 'fonction' => 'Recteur', 'photo' => 'recteur' ),
+		array( 'nom' => 'Pr Christiane Félicité EWANE épouse ESSOH', 'fonction' => 'Secrétaire Générale', 'photo' => 'sg' ),
 	);
 }
 

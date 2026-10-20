@@ -9,7 +9,6 @@
 defined( 'ABSPATH' ) || exit;
 
 get_header();
-$libelles = array( 'video' => 'Vidéo', 'audio' => 'Audio' );
 ?>
 <header class="page-tete">
 	<div class="conteneur">
@@ -23,29 +22,7 @@ $libelles = array( 'video' => 'Vidéo', 'audio' => 'Audio' );
 		<p class="vide">Aucune actualité n’est publiée pour le moment.</p>
 	<?php else : ?>
 		<ul class="liste-actus">
-			<?php
-			while ( have_posts() ) :
-				the_post();
-				$format = get_post_format();
-				$cats   = get_the_category();
-				$rubr   = $cats && ! in_array( $cats[0]->slug, array( 'uncategorized', 'non-classe' ), true ) ? $cats[0]->name : '';
-				$photo  = sueb_image_url( get_the_ID(), 'sueb-carte' ) ?: sueb_repli_article();
-				?>
-				<li class="liste-actus__item">
-					<a class="liste-actus__lien" href="<?php the_permalink(); ?>">
-						<span class="liste-actus__photo">
-							<img src="<?php echo esc_url( $photo ); ?>" alt="" loading="lazy" decoding="async">
-							<?php if ( isset( $libelles[ $format ] ) ) : ?><span class="badge-format badge-format--<?php echo esc_attr( $format ); ?>"><?php echo sueb_icone( $format, 14 ); ?><?php echo esc_html( $libelles[ $format ] ); ?></span><?php endif; ?>
-						</span>
-						<span class="liste-actus__corps">
-							<span class="liste-actus__meta"><time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'j F Y' ) ); ?></time><?php echo $rubr ? '<span>' . esc_html( $rubr ) . '</span>' : ''; ?></span>
-							<strong class="liste-actus__titre"><?php the_title(); ?></strong>
-							<span class="liste-actus__resume"><?php echo esc_html( wp_trim_words( wp_strip_all_tags( get_the_excerpt() ), 28 ) ); ?></span>
-							<span class="lien-fleche">Lire la suite<?php echo sueb_icone( 'fleche', 18 ); ?></span>
-						</span>
-					</a>
-				</li>
-			<?php endwhile; ?>
+			<?php while ( have_posts() ) : the_post(); echo sueb_carte_article( get_the_ID() ); endwhile; // phpcs:ignore ?>
 		</ul>
 		<?php
 		the_posts_pagination( array(

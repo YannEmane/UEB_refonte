@@ -21,7 +21,7 @@ $total  = count( $slides );
 		<?php foreach ( $slides as $i => $s ) : ?>
 			<article class="diapo<?php echo 0 === $i ? ' est-active' : ''; ?>" data-diapo role="group" aria-roledescription="diapositive" aria-label="<?php echo esc_attr( ( $i + 1 ) . ' sur ' . $total ); ?>"<?php echo 0 === $i ? '' : ' inert'; ?>>
 				<figure class="diapo__image">
-					<img src="<?php echo esc_url( $s['photo'] ); ?>" alt="" width="1400" height="940" decoding="async" <?php echo 0 === $i ? 'fetchpriority="high"' : 'loading="lazy"'; ?>>
+					<img src="<?php echo esc_url( $s['photo'] ); ?>" alt="" width="1400" height="940" decoding="async" <?php echo 0 === $i ? 'fetchpriority="high"' : 'loading="lazy"'; ?><?php echo empty( $s['id'] ) ? '' : ' style="--vt:actu-' . (int) $s['id'] . '"'; ?>>
 				</figure>
 				<div class="diapo__texte">
 					<p class="diapo__etiquette">
@@ -29,7 +29,7 @@ $total  = count( $slides );
 						<?php if ( $s['date'] ) : ?><time datetime="<?php echo esc_attr( $s['iso'] ); ?>"><?php echo esc_html( $s['date'] ); ?></time><?php endif; ?>
 						<?php if ( $s['lieu'] ) : ?><span class="diapo__lieu"><?php echo sueb_icone( 'lieu', 14 ); ?><?php echo esc_html( $s['lieu'] ); ?></span><?php endif; ?>
 					</p>
-					<h2 class="diapo__titre"><?php echo esc_html( $s['titre'] ); ?></h2>
+					<h2 class="diapo__titre"><a href="<?php echo esc_url( $s['url'] ); ?>"><?php echo esc_html( $s['titre'] ); ?></a></h2>
 					<?php if ( $s['texte'] ) : ?><p class="diapo__resume"><?php echo esc_html( $s['texte'] ); ?></p><?php endif; ?>
 					<a class="btn btn--or diapo__lien" href="<?php echo esc_url( $s['url'] ); ?>"><?php echo esc_html( $s['lien'] ); ?><?php echo sueb_icone( 'fleche', 18 ); ?></a>
 				</div>

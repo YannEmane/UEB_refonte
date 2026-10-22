@@ -15,7 +15,7 @@ $evenements = sueb_evenements( 3 );
 $total      = count( $actus );
 $libelles   = array( 'article' => 'Article', 'video' => 'Vidéo', 'audio' => 'Audio' );
 $liens      = array( 'article' => 'Lire l’article', 'video' => 'Voir la vidéo', 'audio' => 'Écouter' );
-$archive    = get_option( 'page_for_posts' ) ? get_permalink( get_option( 'page_for_posts' ) ) : '';
+$archive    = sueb_url_actualites();
 
 /** Pastille du format (vidéo ou audio) posée sur la photo ; rien pour un article. */
 $badge = function ( $a ) use ( $libelles ) {

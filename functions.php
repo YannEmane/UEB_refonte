@@ -50,11 +50,20 @@ add_action( 'wp_enqueue_scripts', function () {
 
 /* Les polices sont chargées en priorité : pas de saut du titre au chargement. */
 add_action( 'wp_head', function () {
-	echo "<script>document.documentElement.classList.add('js')</script>\n";
+	/* Arrivée par une transition de page (carte d'actualité vers l'article) : l'image arrive par la transition, sans son propre rideau. */
+	echo "<script>document.documentElement.classList.add('js');addEventListener('pagereveal',function(e){if(e.viewTransition)document.documentElement.classList.add('vt-arrivee')})</script>\n";
 	foreach ( array( 'oswald-normal-latin', 'libre-franklin-normal-latin' ) as $f ) {
 		printf( '<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin>' . "\n", esc_url( SUEB_URI . '/assets/fonts/' . $f . '.woff2' ) );
 	}
 }, 1 );
+/* Une page de catégorie renvoie à la page Actualités, filtrée sur cette rubrique. */
+add_action( 'template_redirect', function () {
+	if ( is_category() ) {
+		wp_safe_redirect( add_query_arg( 'rubrique', get_queried_object()->slug, sueb_url_actualites() ) );
+		exit;
+	}
+} );
+
 /**
  * Retourne l'URL de l'image d'un article,
  * ou l'image par défaut de l'UEB s'il n'en a pas.

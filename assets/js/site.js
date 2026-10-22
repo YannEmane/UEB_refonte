@@ -547,7 +547,9 @@
 	}
 
 	/* ---------- Listes en cascade : les éléments entrent l'un après l'autre quand la liste paraît ----------
-	   data-cascade="portraits" dévoile aussi les photos, "galerie" les ouvre en rideau, "logos" fait pivoter les logos. */
+	   data-cascade="portraits" dévoile aussi les photos, "galerie" les ouvre en rideau, "logos" fait pivoter les logos ;
+	   pour "rectorat" (la direction, sur l'accueil), seule la classe est-joue compte : la suite est réglée en CSS ;
+	   "actus" ouvre aussi les photos des cartes d'actualité. */
 	var cascades = $$('[data-cascade]');
 	var EASE = 'cubic-bezier(.16,1,.3,1)', RESSORT = 'cubic-bezier(.34,1.56,.64,1)';
 	var jouerCascade = function (liste) {
@@ -568,6 +570,11 @@
 				var cadre = $('.profil__portrait', li), photo = $('.profil__portrait > img', li);
 				if (cadre) cadre.animate([{ clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 950, delay: delai + 120, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'backwards' });
 				if (photo) photo.animate([{ transform: 'scale(1.25)' }, { transform: 'none' }], { duration: 1400, delay: delai + 120, easing: EASE, fill: 'backwards' });
+			}
+			/* Les cartes d'actualité : la photo s'ouvre du haut vers le bas (sauf au retour par une transition de page). */
+			if (effet === 'actus' && !doc.documentElement.classList.contains('vt-arrivee')) {
+				var image = $('.carte-actu__image', li);
+				if (image) image.animate([{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 900, delay: delai + 80, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'backwards' });
 			}
 			if (effet === 'logos') {
 				var logo = $('.tutelle-carte__logo, .etab-autres__logo', li);
@@ -647,6 +654,13 @@
 		var profils = $$('.profil', annuaire), corpsChoisi = '';
 		/* Sans accents ni majuscules : « ecole » trouve « École ». */
 		var sansAccents = function (t) { return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+		/* Un pôle de la direction (page Personnel) disparaît quand aucun de ses membres ne reste visible. */
+		var majPoles = function (g) {
+			var deplie = g.classList.contains('est-deplie');
+			$$('[data-pole]', g).forEach(function (pole) {
+				pole.hidden = !$$('.profil', pole).some(function (p) { return !p.classList.contains('est-filtre') && (deplie || !p.classList.contains('est-replie')); });
+			});
+		};
 		var filtrer = function () {
 			var mots = sansAccents(champPerso ? champPerso.value.trim() : '').split(/\s+/).filter(Boolean);
 			var etab = etabPerso ? etabPerso.value : '', actif = mots.length || etab || corpsChoisi, total = 0, k = 0;
@@ -663,12 +677,14 @@
 				});
 				g.hidden = !vus;
 				g.classList.toggle('est-deplie', !!actif || g.dataset.ouvert === '1');
+				majPoles(g);
 				$('[data-groupe-compte]', g).textContent = vus;
 				total += vus;
 			});
 			comptePerso.textContent = actif && total ? total + (total > 1 ? ' membres trouvés' : ' membre trouvé') + ' sur ' + profils.length : '';
 			videPerso.hidden = total > 0;
 		};
+		$$('[data-groupe]', annuaire).forEach(majPoles);
 		if (champPerso) champPerso.addEventListener('input', filtrer);
 		if (etabPerso) etabPerso.addEventListener('change', filtrer);
 		if (corpsPerso) {
@@ -686,6 +702,7 @@
 				var g = plus.closest('[data-groupe]');
 				g.dataset.ouvert = '1';
 				g.classList.add('est-deplie');
+				majPoles(g);
 				var premier = $('.profil.est-replie:not(.est-filtre) a', g);
 				if (premier) premier.focus();
 			}
@@ -698,5 +715,54 @@
 				if (champPerso) champPerso.focus();
 			}
 		});
+	}
+
+	/* ---------- Actualités : seule la photo de la carte cliquée passe dans la page de l'article ----------
+	   (transition de page : elle reçoit le nom que porte l'image de l'article, view-transition-name: actu-<ID>). */
+	doc.addEventListener('click', function (e) {
+		var lien = e.target.closest('.carte-actu a, .actu-une a');
+		if (!lien || e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+		var img = $('img[data-vt]', lien.closest('.carte-actu, .actu-une'));
+		if (img) img.style.viewTransitionName = img.dataset.vt;
+	});
+	window.addEventListener('pageshow', function () {
+		$$('img[data-vt]').forEach(function (img) { img.style.viewTransitionName = ''; });
+	});
+
+	/* ---------- Article : partage et sommaire ----------
+	   « Copier le lien » se change en coche et annonce « Lien copié » ; le bouton Partager n'apparaît que si
+	   l'appareil a son propre partage. Le sommaire marque l'intertitre en cours de lecture. */
+	$$('[data-partage]').forEach(function (bloc) {
+		var annonce = $('[data-partage-annonce]', bloc), copier = $('[data-copier]', bloc), partager = $('[data-partager]', bloc), minuteur;
+		if (copier && navigator.clipboard) {
+			copier.addEventListener('click', function () {
+				navigator.clipboard.writeText(bloc.dataset.url).then(function () {
+					copier.classList.add('est-copie');
+					annonce.textContent = 'Lien copié';
+					clearTimeout(minuteur);
+					minuteur = setTimeout(function () { copier.classList.remove('est-copie'); annonce.textContent = ''; }, 2400);
+				});
+			});
+		} else if (copier) {
+			copier.hidden = true;
+		}
+		if (partager && navigator.share) {
+			partager.hidden = false;
+			partager.addEventListener('click', function () {
+				navigator.share({ title: bloc.dataset.titre, url: bloc.dataset.url }).catch(function () {});
+			});
+		}
+	});
+	var sommaire = $('[data-sommaire]');
+	if (sommaire && 'IntersectionObserver' in window) {
+		var liensSommaire = $$('a', sommaire);
+		var parties = liensSommaire.map(function (a) { return doc.getElementById(decodeURIComponent(a.hash.slice(1))); }).filter(Boolean);
+		var obsSommaire = new IntersectionObserver(function (entrees) {
+			entrees.forEach(function (en) {
+				if (!en.isIntersecting) return;
+				liensSommaire.forEach(function (a) { a.setAttribute('aria-current', a.hash.slice(1) === en.target.id ? 'true' : 'false'); });
+			});
+		}, { rootMargin: '-20% 0px -70% 0px' });
+		parties.forEach(function (h) { obsSommaire.observe(h); });
 	}
 })();

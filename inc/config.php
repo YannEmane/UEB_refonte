@@ -36,6 +36,15 @@ function sueb_url_dirigeants() {
 }
 
 /**
+ * Adresse de la page Actualités (page WordPress « actualites », gabarit
+ * page-actualites.php, créée par l'installeur). Sans cette page, /actualites/.
+ */
+function sueb_url_actualites() {
+	$page = get_page_by_path( 'actualites' );
+	return $page ? get_permalink( $page ) : home_url( '/actualites/' );
+}
+
+/**
  * Les neuf établissements, repris du site des inscriptions.
  * Sert à créer les fiches à l'installation et de repli (logo, couleur).
  * « presentation » : texte de présentation de la page (repli tant que la fiche n'a pas de texte dans l'admin).
@@ -136,6 +145,16 @@ function sueb_niveaux() {
 		1 => array( 'un' => 'Département', 'plusieurs' => 'Départements', 'enfants' => 'Filières' ),
 		2 => array( 'un' => 'Filière', 'plusieurs' => 'Filières', 'enfants' => 'Unités d’enseignement' ),
 		3 => array( 'un' => 'Unité d’enseignement', 'plusieurs' => 'Unités d’enseignement', 'enfants' => '' ),
+	);
+}
+
+/** Les pôles de la direction de l'université, dans l'ordre de l'organigramme de l'accueil. */
+function sueb_poles_direction() {
+	return array(
+		'rectorat'      => 'Conseil d’administration et Rectorat',
+		'vice-rectorat' => 'Vice-Rectorat',
+		'secretariat'   => 'Secrétariat général et Cabinet du Recteur',
+		'directions'    => 'Directions centrales',
 	);
 }
 

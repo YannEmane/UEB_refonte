@@ -59,17 +59,13 @@ $donnees = array_map(
 			<div>
 				<p class="surtitre">Nouvelles et évènements</p>
 				<h2 id="titre-actu">La vie de l’université</h2>
+				<a class="btn btn--plein actualites__voir" href="<?php echo esc_url( $archive ); ?>">Voir tous les articles<?php echo sueb_icone( 'fleche', 18 ); ?></a>
 			</div>
-			<?php if ( $total > 1 || $archive ) : ?>
+			<?php if ( $total > 1 ) : ?>
 			<div class="actualites__actions">
-				<?php if ( $total > 1 ) : ?>
-					<button class="actualites__pause" type="button" data-pause-actus aria-label="Mettre le défilement en pause" hidden>
-						<svg class="icone" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
-					</button>
-				<?php endif; ?>
-				<?php if ( $archive ) : ?>
-					<a class="lien-fleche" href="<?php echo esc_url( $archive ); ?>">Toutes les actualités<?php echo sueb_icone( 'fleche', 18 ); ?></a>
-				<?php endif; ?>
+				<button class="actualites__pause" type="button" data-pause-actus aria-label="Mettre le défilement en pause" hidden>
+					<svg class="icone" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>
+				</button>
 			</div>
 			<?php endif; ?>
 		</header>

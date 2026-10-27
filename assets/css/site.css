@@ -31,6 +31,9 @@
 	--f-texte: "Libre Franklin", "Segoe UI", Roboto, Arial, sans-serif;
 	--f-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
 
+	/* Respiration verticale entre les grandes sections de l'accueil (réglée ici, une seule fois). */
+	--esp-section: clamp(3rem, 2rem + 4vw, 5.5rem);
+
 	--r-champ: 10px;
 	--r-carte: 16px;
 	--r-panneau: 28px;
@@ -120,8 +123,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .lien-fleche--clair { color: var(--or-clair); }
 .lien-fleche--clair:hover { color: var(--blanc); }
 
-.section { padding-block: clamp(4.5rem, 3rem + 6vw, 8rem); position: relative; }
-.section__tete { margin-bottom: clamp(2.5rem, 2rem + 2vw, 4rem); max-width: 820px; }
+.section { padding-block: var(--esp-section); position: relative; }
+.section__tete { margin-bottom: clamp(2rem, 1.5rem + 1.6vw, 3rem); max-width: 820px; }
 .section__tete--ligne { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1.5rem 3rem; max-width: none; }
 .section__tete--ligne > div:first-child { max-width: 760px; }
 .section__chapo { font-size: 1.1875rem; color: var(--gris); margin: 0; max-width: 62ch; }
@@ -338,8 +341,8 @@ html:not(.js) .revele { opacity: 1; transform: none; }
 
 /* ---------- Découvrir : message du Recteur ---------- */
 
-.decouvrir { background: var(--blanc); padding-bottom: 0; }
-.message { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2.5rem, 2rem + 4vw, 6rem); align-items: center; padding-bottom: clamp(4.5rem, 3rem + 6vw, 8rem); }
+.decouvrir { background: var(--blanc); padding-bottom: var(--esp-section, clamp(3rem, 2rem + 4vw, 5.5rem)); }
+.message { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2.5rem, 2rem + 4vw, 6rem); align-items: center; padding-bottom: var(--esp-section); }
 /* Portrait du Recteur : photo aux grands arrondis, avec une carte flottante. */
 .message__portrait { position: relative; }
 .message__cadre { position: relative; aspect-ratio: 4 / 5; border-radius: var(--r-panneau); overflow: hidden; box-shadow: 0 30px 60px -30px rgba(10, 31, 22, .55); z-index: 1; }
@@ -366,7 +369,7 @@ html:not(.js) .revele { opacity: 1; transform: none; }
 
 /* ---------- Découvrir : histoire ---------- */
 
-.histoire { position: relative; color: var(--blanc); padding-block: clamp(4.5rem, 3rem + 6vw, 8rem); overflow: hidden; background: var(--foret-950); }
+.histoire { position: relative; color: var(--blanc); padding-block: var(--esp-section); overflow: hidden; background: var(--foret-950); }
 .histoire__fond { position: absolute; inset: -12% 0; background-size: cover; background-position: center; opacity: .22; filter: grayscale(.3); }
 .histoire::after { content: ""; position: absolute; inset: 0; background: rgba(10, 31, 22, .6); }
 .histoire__grille { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2.5rem, 2rem + 4vw, 6rem); }
@@ -391,7 +394,7 @@ html:not(.js) .revele { opacity: 1; transform: none; }
 
 /* ---------- Découvrir : dirigeants ---------- */
 
-.dirigeants { padding-block: clamp(4.5rem, 3rem + 6vw, 8rem) clamp(3rem, 2rem + 3vw, 5rem); }
+.dirigeants { padding-block: var(--esp-section) clamp(3rem, 2rem + 3vw, 5rem); }
 .dirigeants__grille { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2.25rem 1.5rem; }
 .dirigeant__photo { position: relative; aspect-ratio: 4 / 5; border-radius: var(--r-carte); overflow: hidden; margin-bottom: 1rem; background: var(--sable); box-shadow: var(--ombre-1); transition: box-shadow .5s var(--ease), transform .5s var(--ease); }
 .dirigeant__photo img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(.85) contrast(1.05); transform: scale(1.04); transition: filter .7s var(--ease), transform 1s var(--ease); }
@@ -412,7 +415,7 @@ html:not(.js) .revele { opacity: 1; transform: none; }
 
 .video {
 	display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: clamp(1rem, .5rem + 2vw, 2.5rem);
-	margin-block: clamp(4.5rem, 3rem + 6vw, 8rem); padding: clamp(.75rem, .5rem + .8vw, 1.25rem);
+	margin-block: var(--esp-section, clamp(3rem, 2rem + 4vw, 5.5rem)) 0; padding: clamp(.75rem, .5rem + .8vw, 1.25rem);
 	border-radius: var(--r-panneau); background: var(--foret-900); color: var(--blanc);
 }
 .video__contenu { padding: clamp(1.25rem, .75rem + 2vw, 2.75rem); }
@@ -1610,3 +1613,5 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 	.medaillon[aria-hidden="true"], .defile__pause { display: none; }
 	.medaillon__disque { animation: none; }
 }
+/* ---------- Accueil : bouton « Voir tous les articles » ---------- */
+.actualites__voir { margin-top: 1.25rem; }

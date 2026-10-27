@@ -19,8 +19,7 @@ $menu    = array(
 	array( 'Établissements et écoles', '#etablissements', array() ),
 	array( 'Partenariats', '#partenariats', array() ),
 	array( 'Nouvelles et évènements', '#actualites', array(
-		array( 'Toutes les actualités', '#actualites' ),
-		array( 'Tous les articles', sueb_url_actualites() ),
+		array( 'Toutes les actualités', sueb_url_actualites() ),
 		array( 'Agenda', '#agenda' ),
 	) ),
 	array( 'Personnel', '#personnel', array() ),

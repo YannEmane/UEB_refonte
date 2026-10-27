@@ -53,7 +53,7 @@ $base = is_front_page() ? '' : home_url( '/' );
 					<li><a href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription en ligne</a></li>
 					<li><a href="<?php echo esc_url( SUEB_LIENS['inscription'] ); ?>">Inscription administrative</a></li>
 					<li><a href="<?php echo esc_url( $base . '#etablissements' ); ?>">Formations et syllabus</a></li>
-					<li><a href="<?php echo esc_url( $base . '#actualites' ); ?>">Actualités</a></li>
+					<li><a href="<?php echo esc_url( sueb_url_actualites() ); ?>">Actualités</a></li>
 					<li><a href="<?php echo esc_url( $base . '#agenda' ); ?>">Agenda</a></li>
 				</ul>
 			</nav>

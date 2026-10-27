@@ -227,9 +227,84 @@ function sueb_photos_repli() {
 	return array( 'remise-toges', 'visite-port', 'equipe-fs', 'vie-etudiante-4', 'campus-ebolowa', 'salle', 'campus-batiments', 'campus-ambam' );
 }
 
+/**
+ * La photo d'une actualité : son image mise en avant, sinon une photo du campus,
+ * toujours la même pour un article donné (accueil, page Actualités, lecture) :
+ * la transition de page fait ainsi passer la même image de la carte à l'article.
+ */
+function sueb_photo_actualite( $id, $taille = 'sueb-carte' ) {
+	$repli = sueb_photos_repli();
+	return sueb_image_url( $id, $taille, '', $repli[ $id % count( $repli ) ] );
+}
+
+/** Le temps de lecture d'un article, en minutes (200 mots par minute, au moins 1). */
+function sueb_temps_lecture( $post ) {
+	$mots = count( preg_split( '/\s+/u', trim( wp_strip_all_tags( get_post_field( 'post_content', $post ) ) ), -1, PREG_SPLIT_NO_EMPTY ) );
+	return max( 1, (int) round( $mots / 200 ) );
+}
+
+/** La rubrique d'un article (sa première catégorie, sauf « Non classé »), ou null. */
+function sueb_rubrique_article( $post ) {
+	foreach ( get_the_category( $post ) as $c ) {
+		if ( ! in_array( $c->slug, array( 'uncategorized', 'non-classe' ), true ) ) {
+			return $c;
+		}
+	}
+	return null;
+}
+
+/**
+ * La carte d'une actualité (page Actualités, « À lire aussi ») : photo, rubrique,
+ * date, titre, chapeau, temps de lecture. Au clic, sa photo reçoit le nom de
+ * transition de l'article (site.js, data-vt) et devient l'image de la page de lecture.
+ */
+function sueb_carte_actualite( $post, $titre_balise = 'h3' ) {
+	$post     = get_post( $post );
+	$rubrique = sueb_rubrique_article( $post );
+	ob_start();
+	?>
+	<li class="carte-actu">
+		<a class="carte-actu__lien" href="<?php echo esc_url( get_permalink( $post ) ); ?>">
+			<span class="carte-actu__image"><img src="<?php echo esc_url( sueb_photo_actualite( $post->ID ) ); ?>" alt="" width="960" height="640" loading="lazy" decoding="async" data-vt="actu-<?php echo (int) $post->ID; ?>"></span>
+			<span class="carte-actu__meta">
+				<?php if ( $rubrique ) : ?><span class="carte-actu__rubrique"><?php echo esc_html( $rubrique->name ); ?></span><?php endif; ?>
+				<time datetime="<?php echo esc_attr( get_the_date( 'c', $post ) ); ?>"><?php echo esc_html( get_the_date( 'j F Y', $post ) ); ?></time>
+			</span>
+			<<?php echo tag_escape( $titre_balise ); ?> class="carte-actu__titre"><?php echo esc_html( get_the_title( $post ) ); ?></<?php echo tag_escape( $titre_balise ); ?>>
+			<span class="carte-actu__resume"><?php echo esc_html( wp_trim_words( wp_strip_all_tags( get_the_excerpt( $post ) ), 26 ) ); ?></span>
+			<span class="carte-actu__temps"><?php echo sueb_icone( 'horloge', 16 ); ?><?php echo esc_html( sprintf( '%d min de lecture', sueb_temps_lecture( $post ) ) ); ?></span>
+		</a>
+	</li>
+	<?php
+	return ob_get_clean();
+}
+
+/**
+ * Les boutons de partage d'un article : Facebook, WhatsApp, LinkedIn, copie du lien
+ * et, sur les appareils qui le proposent, le partage du système (site.js).
+ */
+function sueb_partage( $url, $titre ) {
+	$liens = array(
+		'facebook' => array( 'Facebook', 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode( $url ) ),
+		'whatsapp' => array( 'WhatsApp', 'https://wa.me/?text=' . rawurlencode( $titre . ' ' . $url ) ),
+		'linkedin' => array( 'LinkedIn', 'https://www.linkedin.com/sharing/share-offsite/?url=' . rawurlencode( $url ) ),
+	);
+	ob_start();
+	?>
+	<div class="partage" data-partage data-titre="<?php echo esc_attr( $titre ); ?>" data-url="<?php echo esc_url( $url ); ?>">
+		<?php foreach ( $liens as $icone => $l ) : ?>
+			<a class="partage__bouton" href="<?php echo esc_url( $l[1] ); ?>" target="_blank" rel="noopener" aria-label="<?php echo esc_attr( 'Partager sur ' . $l[0] ); ?>" title="<?php echo esc_attr( $l[0] ); ?>"><?php echo sueb_icone( $icone, 20 ); ?></a>
+		<?php endforeach; ?>
+		<button class="partage__bouton partage__copier" type="button" data-copier aria-label="Copier le lien" title="Copier le lien"><?php echo sueb_icone( 'lien', 20 ); ?><?php echo sueb_icone( 'coche', 20 ); ?></button>
+		<button class="partage__bouton" type="button" data-partager aria-label="Partager" title="Partager" hidden><?php echo sueb_icone( 'partager', 20 ); ?></button>
+		<span class="partage__confirmation" role="status" data-partage-annonce></span>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+
 function sueb_actualites( $nombre = 7 ) {
 	$liste = array();
-	$repli = sueb_photos_repli();
 	foreach ( get_posts( array( 'post_type' => 'post', 'numberposts' => $nombre ) ) as $i => $p ) {
 		$format = get_post_format( $p ) ?: 'article';
 		$media  = (int) sueb_meta( $p->ID, 'media' );
@@ -242,7 +317,7 @@ function sueb_actualites( $nombre = 7 ) {
 			'mois'     => get_the_date( 'M Y', $p ),
 			'iso'      => get_the_date( 'c', $p ),
 			'texte'    => wp_trim_words( wp_strip_all_tags( get_the_excerpt( $p ) ), 28 ),
-			'photo'    => sueb_image_url( $p->ID, 'sueb-carte' ) ?: sueb_photo( $repli[ $i % count( $repli ) ] ),
+			'photo'    => sueb_photo_actualite( $p->ID ),
 			'format'   => in_array( $format, array( 'video', 'audio' ), true ) ? $format : 'article',
 			'media'    => $media ? (string) wp_get_attachment_url( $media ) : '',
 			'integre'  => sueb_video_integree( (string) sueb_meta( $p->ID, 'media_url' ) ),
@@ -321,6 +396,31 @@ function sueb_personnel_par_corps() {
 		return ( $ordre[ $a['slug'] ] ?? 99 ) <=> ( $ordre[ $b['slug'] ] ?? 99 );
 	} );
 	return $groupes;
+}
+
+/**
+ * La direction de l'université rangée par pôle, pour l'organigramme de l'accueil.
+ * Le pôle est celui choisi dans la fiche, sinon il se déduit de la fonction ;
+ * les pôles vides sont omis.
+ */
+function sueb_direction_par_pole( array $membres ) {
+	$poles = array();
+	foreach ( sueb_poles_direction() as $cle => $nom ) {
+		$poles[ $cle ] = array( 'nom' => $nom, 'membres' => array() );
+	}
+	foreach ( $membres as $m ) {
+		$cle = (string) sueb_meta( $m['id'], 'pole' );
+		if ( ! isset( $poles[ $cle ] ) ) {
+			$f   = remove_accents( mb_strtolower( (string) $m['fonction'] ) );
+			$cle = preg_match( '/vice-?recteur/', $f ) ? 'vice-rectorat'
+				: ( preg_match( '/^recteur|conseil d.administration/u', $f ) ? 'rectorat'
+				: ( preg_match( '/secretaire|conseiller|cabinet/', $f ) ? 'secretariat' : 'directions' ) );
+		}
+		$poles[ $cle ]['membres'][] = $m;
+	}
+	return array_filter( $poles, function ( $p ) {
+		return $p['membres'];
+	} );
 }
 
 /** La fiche d'un membre du personnel, avec son établissement (sigle, nom, couleur). */
@@ -447,9 +547,38 @@ function sueb_initiales_personne( $nom ) {
 	return mb_strtoupper( mb_substr( $mots[0], 0, 1 ) . mb_substr( end( $mots ), 0, 1 ) );
 }
 
+/** Le texte où cherche l'annuaire (site.js) : nom, fonction, cours, établissement, grade… sans accents ni majuscules. */
+function sueb_recherche_personnel( array $m ) {
+	return remove_accents( mb_strtolower( implode( ' ', array( $m['nom'], $m['fonction'], $m['cours'], $m['etab'], $m['etab_nom'], $m['grade'] ?? '', $m['specialite'] ?? '', $m['departement'] ?? '' ) ) ) );
+}
+
+/**
+ * La fiche d'un membre sur la page Personnel (templates/annuaire.php) : petit
+ * portrait à gauche, nom, fonction et, s'il en a un, son établissement. Elle
+ * garde la classe « profil » et ses attributs, que lit le filtrage de site.js.
+ */
+function sueb_fiche_personnel( array $m, $classe = '' ) {
+	ob_start();
+	?>
+	<li class="<?php echo esc_attr( trim( 'profil fiche-perso ' . $classe ) ); ?>" style="--etab:<?php echo esc_attr( $m['couleur'] ); ?>" data-etab="<?php echo esc_attr( $m['etab'] ); ?>" data-recherche="<?php echo esc_attr( sueb_recherche_personnel( $m ) ); ?>">
+		<a class="fiche-perso__lien" href="<?php echo esc_url( $m['url'] ); ?>" data-cv-lien>
+			<span class="fiche-perso__portrait"><?php echo sueb_portrait_personnel( $m ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?></span>
+			<span class="fiche-perso__texte">
+				<strong class="fiche-perso__nom<?php echo $m['a_nommer'] ? ' fiche-perso__nom--attente' : ''; ?>"><?php echo esc_html( $m['nom'] ); ?></strong>
+				<span class="fiche-perso__fonction"><?php echo esc_html( $m['fonction'] ); ?></span>
+				<?php if ( $m['etab_id'] ) : ?>
+					<span class="fiche-perso__etab"><img src="<?php echo esc_url( sueb_logo( $m['etab'] ) ); ?>" alt="" width="18" height="18" loading="lazy"><?php echo esc_html( $m['etab'] ); ?></span>
+				<?php endif; ?>
+			</span>
+		</a>
+	</li>
+	<?php
+	return ob_get_clean();
+}
+
 /** La carte d'un membre dans l'annuaire : portrait, établissement, nom, fonction ; elle mène à sa fiche. */
 function sueb_carte_personnel( array $m, $classe = '', $chargement = 'lazy' ) {
-	$recherche = remove_accents( mb_strtolower( implode( ' ', array( $m['nom'], $m['fonction'], $m['cours'], $m['etab'], $m['etab_nom'], $m['grade'] ?? '', $m['specialite'] ?? '', $m['departement'] ?? '' ) ) ) );
+	$recherche = sueb_recherche_personnel( $m );
 	ob_start();
 	?>
 	<li class="<?php echo esc_attr( trim( 'profil ' . $classe ) ); ?>" style="--etab:<?php echo esc_attr( $m['couleur'] ); ?>;--sur-etab:<?php echo esc_attr( sueb_texte_sur( $m['couleur'] ) ); ?>" data-etab="<?php echo esc_attr( $m['etab'] ); ?>" data-recherche="<?php echo esc_attr( $recherche ); ?>">
@@ -490,7 +619,8 @@ function sueb_slides_banniere( $nombre = 5, array $arbre = array() ) {
 			'date'      => get_the_date( 'j F Y', $p ),
 			'iso'       => get_the_date( 'c', $p ),
 			'lieu'      => '',
-			'photo'     => sueb_image_url( $p->ID, 'sueb-banniere' ) ?: sueb_repli_article(),
+			'photo'     => sueb_photo_actualite( $p->ID, 'sueb-banniere' ),
+			'id'        => $p->ID,
 		);
 	}
 

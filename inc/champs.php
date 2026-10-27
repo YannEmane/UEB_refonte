@@ -73,7 +73,8 @@ function sueb_champs() {
 			'champs' => array(
 				'fonction'      => array( 'Fonction', 'text', 'Ex. Doyen, Chef du département de Mathématiques, Maître de conférences.' ),
 				'etablissement' => array( 'Établissement', 'etablissement', '' ),
-				'cours'         => array( 'Cours dispensé(s)', 'text', 'Séparer par des virgules.' ),
+				'pole'          => array( 'Pôle (direction de l’université)', 'select', array( '' => '— Selon la fonction —' ) + sueb_poles_direction() ),
+				'cours'       => array( 'Cours dispensé(s)', 'text', 'Séparer par des virgules.' ),
 				'courriel'      => array( 'Courriel', 'email', 'Facultatif.' ),
 				'grade'         => array( 'Grade', 'select', array( '' => '— Choisir —', 'Professeur' => 'Professeur', 'Maître de conférences' => 'Maître de conférences', 'Chargé de cours' => 'Chargé de cours', 'Assistant' => 'Assistant', 'Enseignant vacataire' => 'Enseignant vacataire', 'Personnel administratif' => 'Personnel administratif' ) ),
 				'departement'   => array( 'Département', 'departement', 'Pour un chef de département ou un enseignant.' ),

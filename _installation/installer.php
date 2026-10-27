@@ -150,6 +150,7 @@ if ( ! get_posts( array( 'post_type' => 'ueb_dirigeant', 'numberposts' => 1, 'po
 /* ---------- Pages ---------- */
 $pages = array(
 	'message-du-recteur' => array( 'Message du Recteur', '<p>Le message du Recteur de l’Université d’Ebolowa sera publié ici. Remplacer ce texte par le message transmis par le rectorat.</p>' ),
+	'actualites'         => array( 'Actualités', '' ),
 	'histoire'           => array( 'Histoire de l’Université d’Ebolowa', '<p>L’Université d’Ebolowa a été créée par le décret présidentiel n° 2022/009 du 6 janvier 2022. Son Recteur, le Pr Jean Bosco Etoa Etoa, et le Président de son Conseil d’administration ont été installés le 4 août 2022, date à laquelle l’université a commencé ses activités.</p><p>Elle réunit aujourd’hui neuf établissements répartis entre Ebolowa, Sangmélima, Ambam et Kribi : quatre facultés, une faculté de médecine, deux écoles nationales supérieures, une école supérieure et un institut.</p><p>[Compléter avec l’arrêté ministériel d’organisation et l’historique fourni par le rectorat.]</p>' ),
 );
 foreach ( $pages as $slug => $p ) {

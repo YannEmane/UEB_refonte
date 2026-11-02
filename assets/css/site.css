@@ -1615,3 +1615,5 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 }
 /* ---------- Accueil : bouton « Voir tous les articles » ---------- */
 .actualites__voir { margin-top: 1.25rem; }
+
+

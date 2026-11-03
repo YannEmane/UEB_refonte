@@ -62,7 +62,7 @@ function sueb_etablissements() {
 		'ENSET'  => array( 'fr' => "École Normale Supérieure d'Enseignement Technique", 'couleur' => '#006B3C', 'ville' => 'Ebolowa', 'photos' => array( 'remise-toges', 'amphi-cours' ), 'responsable' => 'Pr Léandre NNEME NNEME', 'presentation' => "Vous voulez faire de votre passion technique un métier utile et respecté ? L’École Normale Supérieure d’Enseignement Technique d’Ebolowa forme les professeurs de l’enseignement secondaire technique et professionnel dont le Cameroun a besoin pour réussir son industrialisation. Maîtrise de la discipline, pédagogie et pratique en établissement : vous êtes opérationnel dès votre prise de fonction."),
 		'ISABEE' => array( 'fr' => "Institut Supérieur d'Agriculture, du Bois, de l'Eau et de l'Environnement", 'couleur' => '#3A7D44', 'ville' => 'Ebolowa', 'photos' => array( 'campus-ebolowa', 'vie-etudiante-3' ), 'responsable' => 'Pr Philippe KOSMA', 'presentation' => "Au cœur d’une région de forêt équatoriale aux ressources exceptionnelles, l’ISABEE forme les ingénieurs qui produiront, transformeront et protégeront les richesses naturelles du Cameroun. Sciences de l’ingénieur, travaux pratiques, stages de terrain et projet de fin d’études : à l’ISABEE, vous apprenez en faisant, au plus près des exploitations, des forêts et des cours d’eau."),
 		'ESTLC'  => array( 'fr' => 'École Supérieure de Transport, de Logistique et de Commerce', 'couleur' => '#4E7F1D', 'ville' => 'Ambam', 'photos' => array( 'campus-ambam', 'diplomes' ), 'responsable' => 'Pr Jean Gaston TAMBA', 'presentation' => "Vous êtes jeune, ambitieux et vous souhaitez donner une véritable dimension professionnelle à votre parcours universitaire ? À Ambam, carrefour du Cameroun, du Gabon et de la Guinée équatoriale, l’ESTLC vous forme aux métiers du transport, de la logistique, du commerce et des technologies. Ici, la formation ne se limite pas à la théorie : chaque étudiant développe le savoir, le savoir-faire et le savoir-être qu’exige son futur métier."),
-		'ENSTMO' => array( 'fr' => 'École Nationale Supérieure des Sciences et Techniques Maritimes et Océaniques', 'couleur' => '#1b2c5a', 'ville' => 'Kribi', 'photos' => array( 'visite-port', 'vie-etudiante-12' ), 'responsable' => 'Pr Achille PANDONG', 'presentation' => 'Installée à Kribi, ville portuaire en plein essor, l’ENSTMO vous ouvre les métiers de la mer et de l’économie bleue : pêche, construction navale, transport maritime, océanographie, exploitation et gestion portuaire. La proximité du complexe industrialo-portuaire offre aux étudiants un environnement d’apprentissage directement connecté aux réalités du secteur maritime.'),
+		'ENSTMO' => array( 'fr' => 'École Nationale Supérieure des Sciences et Techniques Maritimes et Océaniques', 'couleur' => '#1b2c5a', 'ville' => 'Kribi', 'photos' => array( 'visite-port', 'vie-etudiante-12' ), 'campus' => array( array( 'enstmo-campus', 'Le campus de l’ENSTMO à Kribi' ), array( 'enstmo-visite-entrepot', 'Visite d’un entrepôt' ), array( 'enstmo-terminal-kribi', 'Kribi Conteneurs Terminal, au port de Kribi' ) ), 'responsable' => 'Pr Achille PANDONG', 'presentation' => 'Installée à Kribi, ville portuaire en plein essor, l’ENSTMO vous ouvre les métiers de la mer et de l’économie bleue : pêche, construction navale, transport maritime, océanographie, exploitation et gestion portuaire. La proximité du complexe industrialo-portuaire offre aux étudiants un environnement d’apprentissage directement connecté aux réalités du secteur maritime.'),
 	);
 }
 
@@ -72,7 +72,7 @@ function sueb_etablissements() {
  * dépose dans assets/images/partenaires/<id>.svg (ou .png, .webp, .jpg) ;
  * sans fichier, le sigle s'affiche à la place.
  */
-function sueb_institutions_partenaires() {
+function sueb_institutions_defaut() {
 	return array(
 		array( 'id' => 'garoua', 'nom' => 'Université de Garoua', 'sigle' => 'UG', 'type' => 'Université', 'ville' => 'Garoua' ),
 		array( 'id' => 'bertoua', 'nom' => 'Université de Bertoua', 'sigle' => 'UBe', 'type' => 'Université', 'ville' => 'Bertoua' ),
@@ -89,7 +89,7 @@ function sueb_institutions_partenaires() {
  * Villes du Cameroun placées sur la carte des partenariats (latitude, longitude).
  * Une convention dont la ville figure ici apparaît sur la carte.
  */
-function sueb_villes() {
+function sueb_villes_defaut() {
 	return array(
 		'Ebolowa'    => array( 2.9157, 11.1543 ),
 		'Yaoundé'    => array( 3.8480, 11.5021 ),

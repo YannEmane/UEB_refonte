@@ -41,12 +41,12 @@ $cartes = array_merge( array_values( $cartes ), $autres );
 
 		<ol class="mosaique">
 			<?php foreach ( $cartes as $i => $e ) :
-				$etudiant = sueb_photo_etudiant( $e['sigle'] );
+				$etudiant = sueb_photo_etudiant( $e['sigle'], $e['id'] > 0 ? $e['id'] : 0 );
 				$etiquette = $e['titre'];
 				?>
 				<li class="mosaique__carte revele" id="etab-<?php echo esc_attr( strtolower( $e['sigle'] ) ); ?>" style="view-transition-name:etab-<?php echo esc_attr( strtolower( $e['sigle'] ) ); ?>;--etab:<?php echo esc_attr( $e['couleur'] ); ?>;--texte:<?php echo esc_attr( sueb_texte_sur( $e['couleur'] ) ); ?>;--d:<?php echo esc_attr( round( $i * .07, 2 ) ); ?>s">
 					<?php if ( ! empty( $e['provisoire'] ) ) : ?>
-						<a class="mosaique__lien" href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>" aria-label="<?php echo esc_attr( $etiquette . ' : préinscription en ligne' ); ?>">
+						<a class="mosaique__lien" href="<?php echo esc_url( sueb_lien( 'preinscription' ) ); ?>" aria-label="<?php echo esc_attr( $etiquette . ' : préinscription en ligne' ); ?>">
 					<?php else : ?>
 						<a class="mosaique__lien" href="<?php echo esc_url( get_permalink( $e['id'] ) ); ?>" aria-label="<?php echo esc_attr( $etiquette . ' : départements, filières et équipe' ); ?>">
 					<?php endif; ?>

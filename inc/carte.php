@@ -19,6 +19,86 @@ function sueb_carte_cameroun() {
 	);
 }
 
+/* ---------- Universités et villes de la carte, modifiables dans la gestion du site ----------
+   Enregistrées dans les options « sueb_institutions » et « sueb_villes » ; tant qu'elles ne
+   le sont pas, les listes de inc/config.php (sueb_institutions_defaut, sueb_villes_defaut). */
+
+/** Cadre de la carte : latitudes et longitudes qui y tiennent. */
+const SUEB_CARTE_CADRE = array( 'lat' => array( 1.2, 13.6 ), 'lon' => array( 8.0, 16.6 ) );
+
+/**
+ * Les institutions partenaires (universités publiques, ministère) : id, nom, sigle,
+ * type (« Université » ou « Convention »), ville, logo (ID de pièce jointe, facultatif).
+ */
+function sueb_institutions_partenaires() {
+	$liste = get_option( 'sueb_institutions' );
+	return is_array( $liste ) ? $liste : sueb_institutions_defaut();
+}
+
+/** Villes placées sur la carte : nom => array( latitude, longitude ). Ebolowa, centre du réseau, y est toujours. */
+function sueb_villes() {
+	$liste = get_option( 'sueb_villes' );
+	if ( ! is_array( $liste ) ) {
+		return sueb_villes_defaut();
+	}
+	return isset( $liste['Ebolowa'] ) ? $liste : array( 'Ebolowa' => sueb_villes_defaut()['Ebolowa'] ) + $liste;
+}
+
+/** Logo d'une institution : la pièce jointe choisie dans la gestion, sinon le fichier livré avec le thème. */
+function sueb_logo_institution( array $i ) {
+	$logo = (int) ( $i['logo'] ?? 0 );
+	return $logo && ( $url = wp_get_attachment_image_url( $logo, 'medium' ) ) ? $url : sueb_logo_partenaire( $i['id'] );
+}
+
+/** Nettoie et enregistre les listes envoyées par la gestion. Renvoie un WP_Error si une ligne est invalide. */
+function sueb_enregistrer_carte( array $donnees ) {
+	$villes = array();
+	foreach ( (array) ( $donnees['villes'] ?? array() ) as $n => $v ) {
+		$nom = sanitize_text_field( $v['nom'] ?? '' );
+		if ( '' === $nom ) {
+			continue;
+		}
+		$lat = str_replace( ',', '.', (string) ( $v['lat'] ?? '' ) );
+		$lon = str_replace( ',', '.', (string) ( $v['lon'] ?? '' ) );
+		if ( ! is_numeric( $lat ) || ! is_numeric( $lon )
+			|| $lat < SUEB_CARTE_CADRE['lat'][0] || $lat > SUEB_CARTE_CADRE['lat'][1]
+			|| $lon < SUEB_CARTE_CADRE['lon'][0] || $lon > SUEB_CARTE_CADRE['lon'][1] ) {
+			return new WP_Error( 'sueb_ville', sprintf( 'Coordonnées de « %s » hors de la carte : latitude entre %s et %s, longitude entre %s et %s.', $nom, SUEB_CARTE_CADRE['lat'][0], SUEB_CARTE_CADRE['lat'][1], SUEB_CARTE_CADRE['lon'][0], SUEB_CARTE_CADRE['lon'][1] ), array( 'status' => 400 ) );
+		}
+		$villes[ $nom ] = array( round( (float) $lat, 4 ), round( (float) $lon, 4 ) );
+	}
+	if ( ! isset( $villes['Ebolowa'] ) ) {
+		return new WP_Error( 'sueb_ebolowa', 'Ebolowa, centre du réseau sur la carte, ne peut pas être retirée.', array( 'status' => 400 ) );
+	}
+
+	$institutions = array();
+	$ids          = array();
+	foreach ( (array) ( $donnees['institutions'] ?? array() ) as $i ) {
+		$nom = sanitize_text_field( $i['nom'] ?? '' );
+		if ( '' === $nom ) {
+			continue;
+		}
+		/* L'identifiant (nom du logo livré avec le thème) se garde d'une fois sur l'autre ; une nouvelle ligne en reçoit un tiré du nom. */
+		$id = sanitize_title( $i['id'] ?? '' ) ?: sanitize_title( $nom );
+		for ( $base = $id, $k = 2; isset( $ids[ $id ] ); $k++ ) {
+			$id = $base . '-' . $k;
+		}
+		$ids[ $id ]     = true;
+		$institutions[] = array(
+			'id'    => $id,
+			'nom'   => $nom,
+			'sigle' => sanitize_text_field( $i['sigle'] ?? '' ) ?: sueb_sigle_auto( $nom ),
+			'type'  => 'Convention' === ( $i['type'] ?? '' ) ? 'Convention' : 'Université',
+			'ville' => sanitize_text_field( $i['ville'] ?? '' ),
+			'logo'  => absint( $i['logo'] ?? 0 ),
+		);
+	}
+
+	update_option( 'sueb_villes', $villes, false );
+	update_option( 'sueb_institutions', $institutions, false );
+	return true;
+}
+
 /** Position (x, y) d'un point de latitude et longitude données sur la carte. */
 function sueb_point_carte( $lat, $lon ) {
 	return array( round( ( $lon - 8.0 ) * 50 * 0.991445, 1 ), round( ( 13.6 - $lat ) * 50, 1 ) );

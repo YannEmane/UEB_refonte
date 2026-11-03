@@ -32,11 +32,19 @@ function sueb_dirigeants() {
 
 /**
  * L'offre de formation en arbre : établissements > départements >
- * filières > UE. Une seule requête, l'arbre est monté en mémoire.
+ * filières. Une seule requête, l'arbre est monté en mémoire. Les UE
+ * (plus d'un millier) n'y entrent pas : elles ont leur page d'établissement.
  */
 function sueb_arbre_formation() {
-	$tous = get_posts( array( 'post_type' => 'ueb_structure', 'numberposts' => -1, 'orderby' => array( 'menu_order' => 'ASC', 'title' => 'ASC' ) ) );
-	$fixe = sueb_etablissements();
+	/* Un étage par requête : établissements, puis départements, puis filières. */
+	$tous  = array();
+	$etage = array( 0 );
+	for ( $prof = 0; $prof < 3 && $etage; ++$prof ) {
+		$lot   = get_posts( array( 'post_type' => 'ueb_structure', 'numberposts' => -1, 'post_parent__in' => $etage, 'orderby' => array( 'menu_order' => 'ASC', 'title' => 'ASC' ) ) );
+		$tous  = array_merge( $tous, $lot );
+		$etage = wp_list_pluck( $lot, 'ID' );
+	}
+	$fixe   = sueb_etablissements();
 	$noeuds = array();
 	foreach ( $tous as $p ) {
 		$sigle = (string) sueb_meta( $p->ID, 'sigle' );
@@ -184,7 +192,7 @@ function sueb_reseau_partenaires() {
 			'famille' => $ministere ? 'etat' : 'superieur',
 			'type'    => $ministere ? 'Ministère, convention' : 'Université publique',
 			'ville'   => $i['ville'] ?? '',
-			'logo'    => sueb_logo_partenaire( $i['id'] ),
+			'logo'    => sueb_logo_institution( $i ),
 			'date'    => '',
 			'url'     => '',
 			'texte'   => '',

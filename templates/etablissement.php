@@ -50,7 +50,7 @@ $chiffres = array_filter( $p['chiffres'] );
 				</p>
 				<div class="etab-tete__actions">
 					<a class="btn etab-tete__btn" href="#formations">Découvrir les formations<?php echo sueb_icone( 'chevron', 18 ); ?></a>
-					<a class="btn btn--verre" href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription en ligne</a>
+					<a class="btn btn--verre" href="<?php echo esc_url( sueb_lien( 'preinscription' ) ); ?>">Préinscription en ligne</a>
 				</div>
 			</div>
 			<?php if ( $p['etudiant'] ) : ?>
@@ -168,7 +168,9 @@ $chiffres = array_filter( $p['chiffres'] );
 			<header class="etab-section__tete etab-formations__tete revele">
 				<div>
 					<h2 class="etab-titre" id="titre-formations"><?php echo $a_departements ? 'Départements et filières' : 'Filières'; ?></h2>
-					<?php if ( $a_departements ) : ?>
+					<?php if ( $p['intros']['formations'] ) : ?>
+						<?php echo wp_kses_post( wpautop( esc_html( $p['intros']['formations'] ) ) ); ?>
+					<?php elseif ( $a_departements ) : ?>
 						<p>Chaque département et ses filières. Choisissez une filière pour voir ses niveaux et ses unités d’enseignement, avec leurs crédits et leur syllabus.</p>
 					<?php elseif ( $par_filiere && $offre ) : ?>
 						<p>Chaque filière de <?php echo esc_html( $le_sigle ); ?> et ses niveaux. Choisissez un niveau pour voir ses unités d’enseignement, avec leurs crédits et leur syllabus.</p>
@@ -303,7 +305,7 @@ $chiffres = array_filter( $p['chiffres'] );
 			<div class="conteneur">
 				<header class="etab-section__tete revele">
 					<h2 class="etab-titre" id="titre-tutelle">Établissements privés sous sa tutelle</h2>
-					<p><?php echo esc_html( ucfirst( $le_sigle ) . ' assure l’encadrement académique de ces établissements : programmes, examens et diplômes des filières suivantes.' ); ?></p>
+					<?php echo wp_kses_post( wpautop( esc_html( $p['intros']['tutelle'] ?: ucfirst( $le_sigle ) . ' assure l’encadrement académique de ces établissements : programmes, examens et diplômes des filières suivantes.' ) ) ); ?>
 				</header>
 				<ul class="tutelles" data-cascade="logos">
 					<?php foreach ( $p['tutelle'] as $t ) : ?>
@@ -348,7 +350,7 @@ $chiffres = array_filter( $p['chiffres'] );
 			<header class="etab-section__tete etab-equipe__tete revele">
 				<div>
 					<h2 class="etab-titre" id="titre-equipe">L’équipe</h2>
-					<p>Direction, chefs de département et enseignants de <?php echo esc_html( $le_sigle ); ?>. Choisissez une personne pour lire son CV.</p>
+					<?php echo wp_kses_post( wpautop( esc_html( $p['intros']['equipe'] ?: 'Direction, chefs de département et enseignants de ' . $le_sigle . '. Choisissez une personne pour lire son CV.' ) ) ); ?>
 				</div>
 				<?php if ( $nb_equipe > 8 ) : ?>
 					<label class="annuaire__recherche etab-equipe__recherche">
@@ -384,7 +386,7 @@ $chiffres = array_filter( $p['chiffres'] );
 			<div class="conteneur">
 				<header class="etab-section__tete revele">
 					<h2 class="etab-titre" id="titre-campus">Campus</h2>
-					<?php if ( $p['ville'] ) : ?><p><?php echo esc_html( ucfirst( $le_sigle ) . ' accueille ses étudiants à ' . $p['ville'] . '.' ); ?></p><?php endif; ?>
+					<?php if ( $p['intros']['campus'] ) : ?><?php echo wp_kses_post( wpautop( esc_html( $p['intros']['campus'] ) ) ); ?><?php elseif ( $p['ville'] ) : ?><p><?php echo esc_html( ucfirst( $le_sigle ) . ' accueille ses étudiants à ' . $p['ville'] . '.' ); ?></p><?php endif; ?>
 				</header>
 				<ul class="galerie galerie--<?php echo (int) count( $p['photos'] ); ?>" data-cascade="galerie">
 					<?php foreach ( $p['photos'] as $ph ) : ?>

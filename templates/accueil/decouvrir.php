@@ -20,20 +20,10 @@ $message  = sueb_page( 'message-du-recteur' );
 /* Photo du Recteur : celle de sa fiche dans l'admin, sinon celle livrée avec le thème. */
 $photo_recteur = $recteur && $recteur['photo'] ? $recteur['photo'] : sueb_photo( 'recteur' );
 $histoire = sueb_page( 'histoire' );
-$editeur  = current_user_can( 'edit_posts' );
-$arrete   = sueb_reglage( 'arrete' );
-
-$jalons = array(
-	array( '6 janvier 2022', 'Création', 'Le décret présidentiel n° 2022/009 crée l’Université d’Ebolowa, université d’État de la Région du Sud.' ),
-);
-if ( $arrete ) {
-	$jalons[] = array( 'Arrêté ministériel', 'Organisation', $arrete );
-} elseif ( $editeur ) {
-	$jalons[] = array( 'Arrêté ministériel', 'À compléter', 'Référence et objet de l’arrêté à saisir dans Apparence › Personnaliser › Accueil UEb (visible des seuls éditeurs).' );
-}
-$jalons[] = array( '4 août 2022', 'Installation', 'Installation du Recteur et du Président du Conseil d’administration ; l’université commence ses activités.' );
-$jalons[] = array( '18 novembre 2024', 'Ouverture', 'Convention-cadre de partenariat avec le Port Autonome de Kribi.' );
-$jalons[] = array( '2026', 'Rayonnement', 'Nouvelles conventions, dont le ministère du Tourisme et des Loisirs et l’Institut Sapientia.' );
+/* La frise : saisie dans la gestion du site (réglage « frise »), sinon la frise par défaut
+   (avec, pour les seuls éditeurs, un rappel tant que l'arrêté n'est pas renseigné). */
+$editeur = current_user_can( 'edit_posts' );
+$jalons  = sueb_jalons( $editeur );
 
 $video_fichier = (int) sueb_reglage( 'video_fichier' );
 $video_url     = sueb_video_integree( (string) sueb_reglage( 'video_url' ) );
@@ -127,7 +117,7 @@ $affiche       = $affiche ? wp_get_attachment_image_url( $affiche, 'full' ) : su
 	<button class="modale__fermer" type="button" data-fermer aria-label="Fermer"><?php echo sueb_icone( 'fermer', 24 ); ?></button>
 	<div class="modale__media" data-media>
 		<?php if ( ! $video_fichier && ! $video_url ) : ?>
-			<p class="modale__vide">La vidéo de présentation sera bientôt en ligne.<?php echo $editeur ? '<br><small>Éditeurs : ajoutez-la dans Apparence › Personnaliser › Accueil UEb.</small>' : ''; ?></p>
+			<p class="modale__vide">La vidéo de présentation sera bientôt en ligne.<?php echo $editeur ? '<br><small>Éditeurs : ajoutez-la dans la gestion du site › Accueil.</small>' : ''; ?></p>
 		<?php endif; ?>
 	</div>
 </dialog>

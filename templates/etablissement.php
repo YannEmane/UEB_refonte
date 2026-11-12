@@ -23,9 +23,20 @@ $a_departements = (bool) array_filter( $p['departements'], function ( $d ) {
 	return ! $d['groupe'];
 } );
 $par_filiere = ! $a_departements && 1 === count( $p['departements'] );
+/* Les vrais départements (les groupes de filières n'en sont pas), et toutes les filières pour un établissement sans département. */
+$vrais_deps      = array_values( array_filter( $p['departements'], function ( $d ) {
+	return ! $d['groupe'];
+} ) );
+$toutes_filieres = array_merge( array(), ...array_values( array_map( function ( $d ) {
+	return $d['filieres'];
+}, $p['departements'] ) ?: array( array() ) ) );
+$titre_chef    = 'La direction';
+$fonction_chef = preg_match( '/^facult/i', $p['nom'] ) ? 'Doyen de la faculté' : 'Directeur de l’établissement';
 $rubriques = array_filter( array(
+	'direction'    => $p['direction'] ? 'Direction' : '',
 	'presentation' => 'Présentation',
-	'formations'   => $a_departements ? 'Départements et filières' : 'Filières',
+	'formations'   => $a_departements ? 'Départements' : 'Filières',
+	'doctorat'     => $p['doctorat'] ? 'Doctorat' : '',
 	'tutelle'      => $p['tutelle'] ? 'Sous sa tutelle' : '',
 	'equipe'       => 'Équipe',
 	'campus'       => $p['photos'] ? 'Campus' : '',
@@ -38,7 +49,7 @@ $chiffres = array_filter( $p['chiffres'] );
 			<div class="etab-tete__texte">
 				<ol class="fil-ariane etab-tete__fil">
 					<li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Accueil</a></li>
-					<li><a href="<?php echo esc_url( home_url( '/#etablissements' ) ); ?>">Établissements</a></li>
+					<li><a href="<?php echo esc_url( sueb_url_academie() ); ?>">Académie</a></li>
 					<li aria-current="page"><?php echo esc_html( $sigle ); ?></li>
 				</ol>
 				<span class="etab-tete__logo"><img src="<?php echo esc_url( $p['logo'] ); ?>" alt="" width="72" height="72"></span>
@@ -70,11 +81,35 @@ $chiffres = array_filter( $p['chiffres'] );
 		</div>
 	</nav>
 
-	<section class="etab-section etab-presentation" id="presentation" aria-labelledby="titre-presentation">
-		<div class="conteneur etab-presentation__grille">
-			<div class="revele">
-				<h2 class="etab-titre" id="titre-presentation">Présentation</h2>
-				<div class="etab-presentation__texte">
+	<?php if ( $p['direction'] ) : $d = $p['direction']; ?>
+		<section class="etab-section chef" id="direction" aria-labelledby="titre-direction">
+			<div class="conteneur chef__grille">
+				<a class="chef__portrait revele" href="<?php echo esc_url( $d['url'] ); ?>" tabindex="-1" aria-hidden="true">
+					<span class="profil__portrait"><?php echo sueb_portrait_personnel( $d, 'eager' ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?></span>
+				</a>
+				<div class="chef__texte revele">
+					<p class="sur-titre"><?php echo esc_html( $titre_chef ); ?></p>
+					<h2 class="chef__nom<?php echo $d['a_nommer'] ? ' chef__nom--attente' : ''; ?>" id="titre-direction"><a href="<?php echo esc_url( $d['url'] ); ?>"><?php echo esc_html( $d['nom'] ); ?></a></h2>
+					<p class="chef__fonction"><?php echo esc_html( $d['fonction'] ?: $fonction_chef ); ?></p>
+					<?php if ( $d['grade'] || $d['specialite'] ) : ?>
+						<ul class="puces">
+							<?php if ( $d['grade'] ) : ?><li><?php echo esc_html( $d['grade'] ); ?></li><?php endif; ?>
+							<?php if ( $d['specialite'] ) : ?><li><?php echo esc_html( $d['specialite'] ); ?></li><?php endif; ?>
+						</ul>
+					<?php endif; ?>
+					<p class="chef__bio"><?php echo esc_html( sueb_bio_courte( $d, 80 ) ); ?></p>
+					<a class="lien-texte" href="<?php echo esc_url( $d['url'] ); ?>">Parcours et CV de <?php echo esc_html( preg_replace( '/^(Pr\.?|Dr\.?)\s+/u', '', $d['nom'] ) ); ?></a>
+				</div>
+			</div>
+		</section>
+	<?php endif; ?>
+
+	<section class="etab-section apropos" id="presentation" aria-labelledby="titre-presentation">
+		<div class="conteneur apropos__grille">
+			<div class="apropos__texte revele">
+				<p class="sur-titre">L’établissement</p>
+				<h2 class="titre-section" id="titre-presentation">Présentation</h2>
+				<div class="apropos__prose">
 					<?php if ( $p['presentation'] ) : ?>
 						<?php echo wp_kses_post( apply_filters( 'the_content', $p['presentation'] ) ); ?>
 					<?php else : ?>
@@ -82,34 +117,45 @@ $chiffres = array_filter( $p['chiffres'] );
 					<?php endif; ?>
 				</div>
 				<?php if ( $chiffres ) : ?>
-					<dl class="etab-chiffres">
+					<dl class="compteurs">
 						<?php foreach ( $chiffres as $libelle => $n ) : ?>
-							<div><dt><?php echo esc_html( 1 === $n ? preg_replace( array( '/s$/u', '/s /u' ), array( '', ' ' ), $libelle ) : $libelle ); ?></dt><dd data-compteur="<?php echo (int) $n; ?>"><?php echo (int) $n; ?></dd></div>
+							<div><dd data-compteur="<?php echo (int) $n; ?>"><?php echo (int) $n; ?></dd><dt><?php echo esc_html( 1 === $n ? preg_replace( array( '/s$/u', '/s /u' ), array( '', ' ' ), $libelle ) : $libelle ); ?></dt></div>
 						<?php endforeach; ?>
 					</dl>
 				<?php endif; ?>
 			</div>
-
-			<aside class="etab-direction revele" aria-labelledby="titre-direction">
-				<h2 class="etab-titre etab-titre--petit" id="titre-direction">Direction</h2>
-				<?php if ( $p['direction'] ) : $d = $p['direction']; ?>
-					<a class="etab-direction__carte" href="<?php echo esc_url( $d['url'] ); ?>">
-						<span class="profil__portrait etab-direction__portrait"><?php echo sueb_portrait_personnel( $d, 'eager' ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?></span>
-						<span class="etab-direction__texte">
-							<strong class="<?php echo $d['a_nommer'] ? 'profil__nom--attente' : ''; ?>"><?php echo esc_html( $d['nom'] ); ?></strong>
-							<span><?php echo esc_html( $d['fonction'] ); ?></span>
-							<span class="etab-direction__lien">Voir la fiche<?php echo sueb_icone( 'droite', 16 ); ?></span>
-						</span>
-					</a>
-				<?php else : ?>
-					<p class="vide">La direction sera bientôt présentée.</p>
-				<?php endif; ?>
-			</aside>
+			<?php if ( $p['missions'] ) : ?>
+				<div class="missions revele" aria-labelledby="titre-missions">
+					<h3 class="missions__titre" id="titre-missions">Missions</h3>
+					<ol class="missions__liste">
+						<?php foreach ( $p['missions'] as $k => $mission ) : ?>
+							<li><span class="missions__num" aria-hidden="true"><?php echo esc_html( str_pad( (string) ( $k + 1 ), 2, '0', STR_PAD_LEFT ) ); ?></span><p><?php echo esc_html( $mission ); ?></p></li>
+						<?php endforeach; ?>
+					</ol>
+				</div>
+			<?php endif; ?>
 		</div>
 	</section>
 
-	<section class="etab-section etab-formations" id="formations" aria-labelledby="titre-formations">
+	<section class="etab-section depts" id="formations" aria-labelledby="titre-formations">
 		<div class="conteneur">
+			<header class="tete-section revele">
+				<div>
+					<p class="sur-titre">Formations</p>
+					<h2 class="titre-section" id="titre-formations"><?php echo $a_departements ? 'Départements' : 'Filières'; ?> <span class="titre-section__compte"><?php echo (int) ( $a_departements ? count( $vrais_deps ) : count( $toutes_filieres ) ); ?></span></h2>
+				</div>
+				<p class="tete-section__chapo">
+					<?php if ( $p['intros']['formations'] ) : ?>
+						<?php echo esc_html( $p['intros']['formations'] ); ?>
+					<?php elseif ( $a_departements ) : ?>
+						Chaque département, son chef et ses filières. Choisissez un département pour découvrir ses filières, puis leurs niveaux et leurs unités d’enseignement.
+					<?php else : ?>
+						Choisissez une filière pour découvrir ses niveaux et ses unités d’enseignement, avec leurs crédits, leurs enseignants et leur syllabus.
+					<?php endif; ?>
+				</p>
+			</header>
+
+			<div class="depts__bureau">
 			<?php
 			/* Chaque filière reçoit un identifiant : sa branche ou sa feuille et la liste A–Z ouvrent la même fiche. */
 			$entrees = array();
@@ -141,6 +187,8 @@ $chiffres = array_filter( $p['chiffres'] );
 						'filiere'  => $f['cle'],
 						'sigle'    => '',
 						'meta'     => implode( ', ', array_filter( array( $f['diplome'], $nn ? $nn . ( $nn > 1 ? ' niveaux' : ' niveau' ) : '' ) ) ),
+						'chef'     => null,
+						'resp'     => '',
 						'feuilles' => $feuilles,
 						'vide'     => 'Niveaux en cours de publication.',
 					);
@@ -157,7 +205,9 @@ $chiffres = array_filter( $p['chiffres'] );
 						'url'      => $d['url'],
 						'filiere'  => '',
 						'sigle'    => $d['sigle'],
-						'meta'     => ( $nf ? $nf . ( $nf > 1 ? ' filières' : ' filière' ) : 'Aucune filière publiée' ) . ( $d['responsable'] ? ', chef : ' . $d['responsable'] : '' ),
+						'meta'     => $nf ? $nf . ( $nf > 1 ? ' filières' : ' filière' ) : 'Aucune filière publiée',
+						'chef'     => $d['chef'],
+						'resp'     => $d['responsable'],
 						'feuilles' => $feuilles,
 						'vide'     => 'Filières en cours de publication.',
 					);
@@ -165,27 +215,12 @@ $chiffres = array_filter( $p['chiffres'] );
 			}
 			$offre = (bool) $entrees;
 			?>
-			<header class="etab-section__tete etab-formations__tete revele">
-				<div>
-					<h2 class="etab-titre" id="titre-formations"><?php echo $a_departements ? 'Départements et filières' : 'Filières'; ?></h2>
-					<?php if ( $p['intros']['formations'] ) : ?>
-						<?php echo wp_kses_post( wpautop( esc_html( $p['intros']['formations'] ) ) ); ?>
-					<?php elseif ( $a_departements ) : ?>
-						<p>Chaque département et ses filières. Choisissez une filière pour voir ses niveaux et ses unités d’enseignement, avec leurs crédits et leur syllabus.</p>
-					<?php elseif ( $par_filiere && $offre ) : ?>
-						<p>Chaque filière de <?php echo esc_html( $le_sigle ); ?> et ses niveaux. Choisissez un niveau pour voir ses unités d’enseignement, avec leurs crédits et leur syllabus.</p>
-					<?php elseif ( $offre ) : ?>
-						<p>Les filières de <?php echo esc_html( $le_sigle ); ?>, cycle par cycle. Choisissez une filière pour voir ses niveaux et ses unités d’enseignement.</p>
-					<?php endif; ?>
-				</div>
 				<?php if ( $offre ) : ?>
 					<div class="vues" role="group" aria-label="Affichage des filières" data-vues>
 						<button type="button" aria-pressed="true" data-vue="arbre"><svg class="icone" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V20M12 12H6v4M12 16h6v4"/></svg>Arborescence</button>
 						<button type="button" aria-pressed="false" data-vue="az"><svg class="icone" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18 7.5 6 11 18M5.2 14h4.6M14 6h6l-6 12h6"/></svg>A–Z</button>
 					</div>
 				<?php endif; ?>
-			</header>
-
 			<?php if ( ! $offre ) : ?>
 				<div class="etab-vide revele">
 					<p><strong>Les départements et filières de <?php echo esc_html( $le_sigle ); ?> sont en cours de publication.</strong></p>
@@ -209,6 +244,15 @@ $chiffres = array_filter( $p['chiffres'] );
 										<?php if ( $b['sigle'] ) : ?><span class="branche__sigle"><?php echo esc_html( $b['sigle'] ); ?></span><?php endif; ?>
 										<span><?php echo esc_html( $b['meta'] ); ?></span>
 									</p>
+										<?php if ( ! $par_filiere ) : ?>
+											<p class="branche__chef">
+												<?php if ( $b['chef'] ) : ?>
+													<a href="<?php echo esc_url( $b['chef']['url'] ); ?>"><span class="avatar"><?php echo sueb_portrait_personnel( $b['chef'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?></span><span><strong><?php echo esc_html( $b['chef']['nom'] ); ?></strong><small>Chef de département</small></span></a>
+												<?php else : ?>
+													<span class="branche__chef-vide"><span class="avatar avatar--vide" aria-hidden="true"><?php echo esc_html( $b['resp'] ? sueb_initiales_personne( $b['resp'] ) : '?' ); ?></span><span><strong<?php echo $b['resp'] ? '' : ' class="attente"'; ?>><?php echo esc_html( $b['resp'] ?: 'À nommer' ); ?></strong><small>Chef de département</small></span></span>
+												<?php endif; ?>
+											</p>
+										<?php endif; ?>
 									<?php if ( $b['feuilles'] ) : ?>
 										<ul class="branche__filieres">
 											<?php foreach ( $b['feuilles'] as $fe ) : ?>
@@ -297,8 +341,97 @@ $chiffres = array_filter( $p['chiffres'] );
 					</dialog>
 				<?php endforeach; endforeach; ?>
 			<?php endif; ?>
+			</div>
+
+			<div class="depts__mobile">
+			<?php if ( $a_departements ) : ?>
+				<ul class="cartes-deps">
+					<?php foreach ( $vrais_deps as $k => $dep ) :
+						$nf = count( $dep['filieres'] );
+						$apercu = array_slice( $dep['filieres'], 0, 4 );
+						?>
+						<li class="carte-dep revele" style="--d:<?php echo esc_attr( round( ( $k % 3 ) * .06, 2 ) ); ?>s">
+							<div class="carte-dep__haut">
+								<?php if ( $dep['sigle'] ) : ?><span class="pastille"><?php echo esc_html( $dep['sigle'] ); ?></span><?php endif; ?>
+								<span class="carte-dep__compte"><?php echo esc_html( $nf ? sprintf( _n( '%d filière', '%d filières', $nf ), $nf ) : 'Filières à venir' ); ?></span>
+							</div>
+							<h3 class="carte-dep__titre"><a href="<?php echo esc_url( $dep['url'] ); ?>"><?php echo esc_html( $dep['titre'] ); ?></a></h3>
+							<?php if ( $apercu ) : ?>
+								<ul class="carte-dep__filieres">
+									<?php foreach ( $apercu as $f ) : ?><li><?php echo esc_html( sueb_titre_et_code( $f['titre'] )[0] ); ?></li><?php endforeach; ?>
+									<?php if ( $nf > 4 ) : ?><li class="carte-dep__plus"><?php echo esc_html( sprintf( _n( 'et %d autre', 'et %d autres', $nf - 4 ), $nf - 4 ) ); ?></li><?php endif; ?>
+								</ul>
+							<?php endif; ?>
+							<div class="carte-dep__chef">
+								<?php if ( $dep['chef'] ) : ?>
+									<span class="avatar"><?php echo sueb_portrait_personnel( $dep['chef'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?></span>
+									<span><strong><?php echo esc_html( $dep['chef']['nom'] ); ?></strong><small>Chef de département</small></span>
+								<?php elseif ( $dep['responsable'] ) : ?>
+									<span class="avatar avatar--vide" aria-hidden="true"><?php echo esc_html( sueb_initiales_personne( $dep['responsable'] ) ); ?></span>
+									<span><strong><?php echo esc_html( $dep['responsable'] ); ?></strong><small>Chef de département</small></span>
+								<?php else : ?>
+									<span class="avatar avatar--vide" aria-hidden="true">?</span>
+									<span><strong class="attente">À nommer</strong><small>Chef de département</small></span>
+								<?php endif; ?>
+							</div>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			<?php elseif ( $toutes_filieres ) : ?>
+				<ul class="cartes-filieres">
+					<?php foreach ( $toutes_filieres as $k => $f ) : list( $f_titre, $f_code ) = sueb_titre_et_code( $f['titre'] ); ?>
+						<li class="carte-filiere revele" style="--d:<?php echo esc_attr( round( ( $k % 3 ) * .06, 2 ) ); ?>s">
+							<div class="carte-filiere__haut">
+								<?php if ( $f['diplome'] ) : ?><span class="pastille"><?php echo esc_html( $f['diplome'] ); ?></span><?php endif; ?>
+								<?php if ( $f_code ) : ?><span class="carte-filiere__code"><?php echo esc_html( $f_code ); ?></span><?php endif; ?>
+							</div>
+							<h3 class="carte-filiere__titre"><a href="<?php echo esc_url( $f['url'] ); ?>"><?php echo esc_html( $f_titre ); ?></a></h3>
+							<?php if ( $f['texte'] ) : ?><p class="carte-filiere__resume"><?php echo esc_html( wp_trim_words( $f['texte'], 24 ) ); ?></p><?php endif; ?>
+							<?php if ( $f['niveaux'] ) : ?>
+								<ul class="niveaux-puces" aria-label="Niveaux">
+									<?php foreach ( $f['niveaux'] as $niveau => $ues ) : ?><li class="<?php echo $ues ? 'est-plein' : ''; ?>"><?php echo esc_html( preg_replace( '/^Niveau (\d+)$/', 'N$1', $niveau ) ); ?></li><?php endforeach; ?>
+								</ul>
+							<?php endif; ?>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			<?php else : ?>
+				<div class="etab-vide revele">
+					<p><strong>Les départements et filières de <?php echo esc_html( $le_sigle ); ?> sont en cours de publication.</strong></p>
+					<p><?php echo $p['tutelle'] ? esc_html( 'En attendant, découvrez plus bas les filières des établissements privés placés sous sa tutelle.' ) : esc_html( 'Pour toute question sur les formations, la préinscription en ligne présente l’offre de chaque établissement.' ); ?></p>
+				</div>
+			<?php endif; ?>
+			</div>
 		</div>
 	</section>
+
+	<?php if ( $p['doctorat'] ) : ?>
+		<section class="etab-section doctorat" id="doctorat" aria-labelledby="titre-doctorat">
+			<div class="conteneur">
+				<header class="tete-section revele">
+					<div>
+						<p class="sur-titre">Recherche</p>
+						<h2 class="titre-section" id="titre-doctorat">Formation doctorale</h2>
+					</div>
+					<p class="tete-section__chapo">Le troisième cycle de <?php echo esc_html( $le_sigle ); ?> : les doctorants y préparent leur thèse, encadrés par les enseignants-chercheurs de l’établissement.</p>
+				</header>
+				<ul class="cartes-doctorat">
+					<?php foreach ( $p['doctorat'] as $ed ) : ?>
+						<li class="carte-doctorat revele">
+							<span class="carte-doctorat__niveau">Doctorat</span>
+							<h3><?php echo esc_html( $ed[0] ); ?></h3>
+							<?php if ( $ed[1] ) : ?><p><?php echo esc_html( $ed[1] ); ?></p><?php endif; ?>
+							<?php if ( $ed[2] ) : ?>
+								<ul class="puces">
+									<?php foreach ( $ed[2] as $spe ) : ?><li><?php echo esc_html( $spe ); ?></li><?php endforeach; ?>
+								</ul>
+							<?php endif; ?>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+		</section>
+	<?php endif; ?>
 
 	<?php if ( $p['tutelle'] ) : ?>
 		<section class="etab-section etab-tutelle" id="tutelle" aria-labelledby="titre-tutelle">

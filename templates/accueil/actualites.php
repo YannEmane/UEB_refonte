@@ -113,7 +113,7 @@ $donnees = array_map(
 					<?php endforeach; ?>
 				</ol>
 			<?php endif; ?>
-			<a class="lien-fleche lien-fleche--clair agenda__lien" href="<?php echo esc_url( get_post_type_archive_link( 'ueb_evenement' ) ); ?>">Tout l’agenda<?php echo sueb_icone( 'fleche', 18 ); ?></a>
+			<a class="lien-fleche lien-fleche--clair agenda__lien" href="<?php echo esc_url( sueb_url_actualites() . '#agenda' ); ?>">Tout l’agenda<?php echo sueb_icone( 'fleche', 18 ); ?></a>
 		</aside>
 		</div>
 		<?php if ( $actus ) : ?>

@@ -55,7 +55,7 @@ add_action( 'init', function () {
 		'menu_position' => 21,
 		'supports'      => array( 'title', 'editor', 'excerpt', 'thumbnail', 'page-attributes' ),
 		'rewrite'       => array( 'slug' => 'etablissements', 'with_front' => false ),
-		'has_archive'   => 'etablissements',
+		'has_archive'   => 'academie', // la page Académie : archive-ueb_structure.php
 		'show_in_rest'  => true,
 	) );
 

@@ -371,6 +371,41 @@ function sueb_evenements( $nombre = 4 ) {
 	return $liste;
 }
 
+/**
+ * L'agenda complet de la page Actualités (espace #agenda) : tous les évènements à venir, du plus
+ * proche au plus lointain, puis les $passes derniers évènements passés, du plus récent au plus ancien.
+ */
+function sueb_agenda( $passes = 6 ) {
+	$maintenant = current_time( 'Y-m-d\TH:i' );
+	$base       = array( 'post_type' => 'ueb_evenement', 'meta_key' => '_sueb_debut', 'orderby' => 'meta_value' );
+	$lots       = array(
+		'a_venir' => get_posts( $base + array( 'numberposts' => -1, 'order' => 'ASC', 'meta_query' => array( array( 'key' => '_sueb_debut', 'value' => $maintenant, 'compare' => '>=' ) ) ) ),
+		'passes'  => get_posts( $base + array( 'numberposts' => $passes, 'order' => 'DESC', 'meta_query' => array( array( 'key' => '_sueb_debut', 'value' => $maintenant, 'compare' => '<' ) ) ) ),
+	);
+	$agenda = array();
+	foreach ( $lots as $cle => $posts ) {
+		$agenda[ $cle ] = array();
+		foreach ( $posts as $p ) {
+			/* La date saisie est celle du site : on la lit dans son fuseau, sans décalage. */
+			$dt = date_create_immutable( (string) sueb_meta( $p->ID, 'debut' ), wp_timezone() );
+			$ts = $dt ? $dt->getTimestamp() : 0;
+			$agenda[ $cle ][] = array(
+				'titre' => $p->post_title,
+				'url'   => get_permalink( $p ),
+				'texte' => wp_trim_words( wp_strip_all_tags( get_the_excerpt( $p ) ), 22 ),
+				'jour'  => $ts ? wp_date( 'j', $ts ) : '',
+				'mois'  => $ts ? wp_date( 'M', $ts ) : '',
+				'annee' => $ts ? wp_date( 'Y', $ts ) : '',
+				'date'  => $ts ? wp_date( 'l j F Y', $ts ) : '',
+				'heure' => $ts ? wp_date( 'G\hi', $ts ) : '',
+				'iso'   => $ts ? wp_date( 'c', $ts ) : '',
+				'lieu'  => (string) sueb_meta( $p->ID, 'lieu' ),
+			);
+		}
+	}
+	return $agenda;
+}
+
 /** Le personnel, groupé par catégorie (dans l'ordre des catégories). */
 function sueb_personnel_par_corps() {
 	$etabs = array();
@@ -614,8 +649,11 @@ function sueb_carte_personnel( array $m, $classe = '', $chargement = 'lazy' ) {
 function sueb_slides_banniere( $nombre = 5, array $arbre = array() ) {
 	$repli_photos = array( 'campus-ebolowa', 'remise-toges', 'amphi', 'bibliotheque', 'vie-etudiante-1' );
 
+	/* Les articles mis « À la une » dans la gestion (articles épinglés de WordPress), les plus récents d'abord ;
+	   tant qu'aucun ne l'est, les derniers articles publiés. */
+	$une   = array_filter( array_map( 'intval', (array) get_option( 'sticky_posts', array() ) ) );
 	$actus = array();
-	foreach ( get_posts( array( 'post_type' => 'post', 'numberposts' => $nombre ) ) as $p ) {
+	foreach ( get_posts( array( 'post_type' => 'post', 'numberposts' => $nombre ) + ( $une ? array( 'post__in' => $une ) : array() ) ) as $p ) {
 		$format = get_post_format( $p );
 		$actus[] = array(
 			'type'      => 'actualite',

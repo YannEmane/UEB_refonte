@@ -53,6 +53,7 @@ $base = is_front_page() ? '' : home_url( '/' );
 					<li><a href="<?php echo esc_url( sueb_lien( 'preinscription' ) ); ?>">Préinscription en ligne</a></li>
 					<li><a href="<?php echo esc_url( sueb_lien( 'inscription' ) ); ?>">Inscription administrative</a></li>
 					<li><a href="<?php echo esc_url( $base . '#etablissements' ); ?>">Formations et syllabus</a></li>
+					<li><a href="<?php echo esc_url( sueb_url_etudiants() ); ?>">Vie étudiante</a></li>
 					<li><a href="<?php echo esc_url( sueb_url_actualites() ); ?>">Actualités</a></li>
 					<li><a href="<?php echo esc_url( $base . '#agenda' ); ?>">Agenda</a></li>
 				</ul>
@@ -64,6 +65,7 @@ $base = is_front_page() ? '' : home_url( '/' );
 					<li><span class="pied__icone"><?php echo sueb_icone( 'lieu', 18 ); ?></span><span><?php echo esc_html( $u['bp'] ); ?><br><?php echo esc_html( $u['ville'] ); ?></span></li>
 					<li><span class="pied__icone"><?php echo sueb_icone( 'telephone', 18 ); ?></span><a href="tel:<?php echo esc_attr( preg_replace( '/\s+/', '', $u['tel'] ) ); ?>"><?php echo esc_html( $u['tel'] ); ?></a></li>
 					<li><span class="pied__icone"><?php echo sueb_icone( 'courriel', 18 ); ?></span><a href="mailto:<?php echo esc_attr( $u['email'] ); ?>"><?php echo esc_html( $u['email'] ); ?></a></li>
+					<li><span class="pied__icone"><?php echo sueb_icone( 'personnes', 18 ); ?></span><a href="<?php echo esc_url( sueb_url_contact() ); ?>">Contacts des établissements</a></li>
 				</ul>
 			</div>
 		</div>

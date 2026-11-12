@@ -342,7 +342,7 @@ html:not(.js) .revele { opacity: 1; transform: none; }
 /* ---------- Découvrir : message du Recteur ---------- */
 
 .decouvrir { background: var(--blanc); padding-bottom: var(--esp-section, clamp(3rem, 2rem + 4vw, 5.5rem)); }
-.message { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2.5rem, 2rem + 4vw, 6rem); align-items: center; padding-bottom: var(--esp-section); }
+.message { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2.5rem, 2rem + 4vw, 6rem); align-items: start; padding-bottom: var(--esp-section); }
 /* Portrait du Recteur : photo aux grands arrondis, avec une carte flottante. */
 .message__portrait { position: relative; }
 .message__cadre { position: relative; aspect-ratio: 4 / 5; border-radius: var(--r-panneau); overflow: hidden; box-shadow: 0 30px 60px -30px rgba(10, 31, 22, .55); z-index: 1; }
@@ -362,7 +362,8 @@ html:not(.js) .revele { opacity: 1; transform: none; }
 .message__citation { margin: 0 0 1.5rem; position: relative; }
 .message__citation .icone { color: var(--or); margin-bottom: .75rem; }
 .message__citation p { font-family: var(--f-titre); font-weight: 500; font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.35rem); line-height: 1.25; color: var(--foret-900); letter-spacing: 0; margin: 0; }
-.message__extrait { color: var(--gris); font-size: 1.125rem; max-width: 62ch; }
+.message__texte > .surtitre { margin-top: 0; }
+.message__extrait { color: var(--gris); font-size: clamp(1.3125rem, 1.1rem + .7vw, 1.625rem); line-height: 1.6; max-width: 60ch; }
 .signature { display: flex; flex-direction: column; margin: 1.75rem 0; }
 .signature strong { font-family: var(--f-titre); font-weight: 500; font-size: 1.25rem; color: var(--foret-900); }
 .signature span { color: var(--gris); }
@@ -1757,4 +1758,574 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 	.semestre thead th + th, .semestre td { width: 6rem; }
 	.semestre tbody th, .semestre td, .semestre thead th { padding: .7rem .7rem; }
 	.semestre__code { display: block; min-width: 0; margin: 0 0 .15rem; font-size: .8125rem; }
+}
+
+/* ---------- La page Académie (archive-ueb_structure.php) ----------
+   L'en-tête vert des actualités, avec les chiffres et un raccourci par sigle ; puis les établissements
+   par famille, en cartes : un bandeau à la couleur de l'établissement (logo, sigle, étudiant), sous
+   lequel le nom, la ville, la direction, un résumé et le compte des formations. Toute la carte mène
+   à la page de l'établissement. */
+
+.acad-tete { padding-block: clamp(1.75rem, 1.2rem + 1.5vw, 2.5rem) clamp(2.25rem, 1.6rem + 2vw, 3.25rem); background: var(--foret-900); color: var(--blanc); }
+.acad-tete__ligne { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1.75rem 3rem; }
+.acad-tete__ligne > div { max-width: 46rem; }
+.acad-tete__titre { margin: 0; font-size: clamp(2.4rem, 1.6rem + 3vw, 4.25rem); line-height: 1.05; }
+.acad-tete__chapo { max-width: 60ch; margin: .75rem 0 0; font-size: 1.0625rem; color: rgba(255, 255, 255, .78); }
+.acad-chiffres { display: flex; flex-wrap: wrap; gap: .5rem 2.25rem; margin: 0; }
+.acad-chiffres div { display: flex; flex-direction: column-reverse; }
+.acad-chiffres dd { margin: 0; font-family: var(--f-titre); font-weight: 500; font-size: clamp(2rem, 1.6rem + 1.2vw, 2.75rem); line-height: 1; color: var(--or-clair); }
+.acad-chiffres dt { margin-top: .35rem; font-size: .875rem; color: rgba(255, 255, 255, .72); }
+.acad-raccourcis { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: clamp(1.75rem, 1.2rem + 1.5vw, 2.5rem); padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, .14); }
+.acad-raccourcis a { display: inline-flex; align-items: center; gap: .5rem; padding: .35rem .9rem .35rem .4rem; border: 1px solid rgba(255, 255, 255, .2); border-radius: 999px; background: rgba(255, 255, 255, .06); font-weight: 600; font-size: .875rem; letter-spacing: .02em; color: var(--blanc); text-decoration: none; transition: background .25s, border-color .25s, transform .3s var(--ease); }
+.acad-raccourcis img { width: 26px; height: 26px; padding: 2px; border-radius: 50%; background: var(--blanc); object-fit: contain; }
+.acad-raccourcis a:hover, .acad-raccourcis a:focus-visible { background: var(--etab); border-color: var(--etab); transform: translateY(-2px); }
+
+.acad-corps { padding-block: clamp(2.5rem, 2rem + 2vw, 4rem) var(--esp-section); background: var(--papier); }
+.acad-famille + .acad-famille { margin-top: clamp(3rem, 2.2rem + 2.5vw, 4.5rem); }
+.acad-famille__tete { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 2rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--filet-fort); }
+.acad-famille__tete h2 { display: flex; align-items: center; gap: .75rem; margin: 0; font-size: clamp(1.6rem, 1.3rem + 1vw, 2.1rem); }
+.acad-famille__tete h2 span { display: grid; place-items: center; min-width: 2rem; height: 2rem; padding-inline: .5rem; border-radius: 999px; background: var(--foret-900); font-family: var(--f-texte); font-weight: 700; font-size: .875rem; color: var(--blanc); }
+.acad-famille__tete p { margin: 0; color: var(--gris); }
+
+.acad-grille { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.acad-carte { position: relative; display: flex; flex-direction: column; overflow: hidden; border-radius: var(--r-carte); background: var(--blanc); box-shadow: var(--ombre-1); transition: transform .5s var(--ease), box-shadow .5s var(--ease); }
+.acad-carte:hover, .acad-carte:focus-within { transform: translateY(-4px); box-shadow: var(--ombre-2); }
+.acad-carte__bandeau { position: relative; display: flex; align-items: flex-end; gap: .9rem; min-height: 132px; padding: 1.1rem 1.25rem; background: var(--etab); color: var(--sur-etab); overflow: hidden; }
+.acad-carte__logo { position: relative; z-index: 1; display: block; flex: none; width: 56px; height: 56px; padding: 5px; border-radius: 50%; background: var(--blanc); box-shadow: 0 8px 20px -8px rgba(0, 0, 0, .45); transition: transform .6s var(--ease); }
+.acad-carte__logo img { width: 100%; height: 100%; object-fit: contain; }
+.acad-carte:hover .acad-carte__logo { transform: rotate(-6deg) scale(1.06); }
+.acad-carte__sigle { position: relative; z-index: 1; margin: 0; font-family: var(--f-titre); font-weight: 500; font-size: clamp(1.6rem, 1.3rem + .8vw, 2rem); line-height: 1; letter-spacing: .01em; }
+.acad-carte__etudiant { position: absolute; right: .5rem; bottom: 0; height: 118%; max-width: 46%; width: auto; object-fit: contain; object-position: right bottom; transform-origin: right bottom; transition: transform .6s var(--ease); }
+.acad-carte:hover .acad-carte__etudiant { transform: scale(1.05); }
+.acad-carte__corps { display: flex; flex-direction: column; flex: 1; gap: .75rem; padding: 1.25rem 1.25rem 1.1rem; border-top: 4px solid var(--etab); }
+.acad-carte__nom { margin: 0; font-size: 1.2rem; line-height: 1.25; text-wrap: balance; }
+.acad-carte__nom a { color: var(--foret-900); text-decoration: none; }
+.acad-carte__nom a::after { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; }
+.acad-carte__nom a:focus-visible { outline: none; }
+.acad-carte:has(.acad-carte__nom a:focus-visible) { outline: 3px solid var(--etab); outline-offset: 3px; }
+.acad-carte__infos { display: flex; flex-wrap: wrap; gap: .35rem 1rem; margin: 0; font-size: .875rem; color: var(--gris); }
+.acad-carte__infos span { display: inline-flex; align-items: center; gap: .35rem; }
+.acad-carte__infos .icone { color: var(--etab); flex: none; }
+.acad-carte__resume { margin: 0; font-size: .9375rem; line-height: 1.55; color: var(--encre); }
+.acad-carte__pied { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: auto 0 0; padding-top: .9rem; border-top: 1px solid var(--filet); }
+.acad-carte__compte { font-size: .875rem; font-weight: 600; color: var(--foret-800); }
+.acad-carte__aller { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--papier); color: var(--foret-900); transition: background .3s, color .3s, transform .4s var(--ease); }
+.acad-carte:hover .acad-carte__aller { background: var(--etab); color: var(--sur-etab); transform: translateX(3px); }
+
+.acad-appel { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem 2rem; margin-top: clamp(3rem, 2.2rem + 2.5vw, 4.5rem); padding: clamp(1.5rem, 1rem + 2vw, 2.5rem); border-radius: var(--r-panneau); background: var(--foret-900); color: var(--blanc); }
+.acad-appel h2 { margin: 0; font-size: clamp(1.4rem, 1.15rem + .8vw, 1.85rem); }
+.acad-appel p { margin: .4rem 0 0; color: rgba(255, 255, 255, .78); }
+
+@media (max-width: 1040px) {
+	.acad-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+	.acad-grille { grid-template-columns: minmax(0, 1fr); }
+	.acad-chiffres { gap: .5rem 1.5rem; }
+	.acad-carte__bandeau { min-height: 116px; }
+}
+
+/* ---------- La page Contact (page-contact.php) ----------
+   L'en-tête de l'Académie ; le rectorat en grand bandeau blanc, puis une carte par établissement,
+   filet à sa couleur, avec sa direction et ses coordonnées cliquables. */
+
+.contact-tete__intro p { margin: 0 0 .6rem; }
+.contact-tete__intro p:last-child { margin-bottom: 0; }
+.contact-tete__intro a { color: var(--or-clair); }
+
+.contact-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: .65rem; }
+.contact-liste li { display: flex; align-items: flex-start; gap: .65rem; font-size: .9375rem; line-height: 1.45; overflow-wrap: anywhere; }
+.contact-liste .icone { flex: none; margin-top: .1rem; color: var(--etab, var(--foret-700)); }
+.contact-liste a { color: var(--foret-900); text-decoration: underline; text-decoration-color: var(--filet-fort); text-underline-offset: 3px; transition: text-decoration-color .2s, color .2s; }
+.contact-liste a:hover { color: var(--foret-700); text-decoration-color: currentColor; }
+
+.contact-rectorat { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto; align-items: center; gap: 1.5rem 2.5rem; margin-bottom: clamp(3rem, 2.2rem + 2.5vw, 4.5rem); padding: clamp(1.5rem, 1rem + 2vw, 2.5rem); border-radius: var(--r-panneau); background: var(--blanc); box-shadow: var(--ombre-2); border-top: 5px solid var(--or); }
+.contact-rectorat__marque { display: flex; align-items: center; gap: 1.1rem; }
+.contact-rectorat__logo { display: grid; place-items: center; flex: none; width: 84px; height: 84px; border-radius: 50%; border: 1px solid var(--filet); background: var(--blanc); }
+.contact-rectorat__logo img { width: 62px; height: auto; }
+.contact-rectorat__surtitre { margin: 0; font-size: .8125rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--or-fonce); }
+.contact-rectorat h2 { margin: .15rem 0 0; font-size: clamp(1.6rem, 1.3rem + 1vw, 2.1rem); }
+.contact-rectorat__resp { margin: .3rem 0 0; color: var(--gris); }
+.contact-liste--rectorat li { font-size: 1rem; }
+.contact-rectorat__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.contact-reseau { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid var(--filet-fort); border-radius: 50%; color: var(--foret-900); transition: background .25s, color .25s, border-color .25s, transform .3s var(--ease); }
+.contact-reseau:hover { background: var(--foret-900); border-color: var(--foret-900); color: var(--blanc); transform: translateY(-2px); }
+
+.contact-grille { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.contact-carte { display: flex; flex-direction: column; gap: 1rem; padding: 1.35rem 1.35rem 1.2rem; border-radius: var(--r-carte); background: var(--blanc); box-shadow: var(--ombre-1); border-top: 4px solid var(--etab); }
+.contact-carte__tete { display: flex; align-items: center; gap: .85rem; }
+.contact-carte__logo { display: grid; place-items: center; flex: none; width: 52px; height: 52px; padding: 4px; border-radius: 50%; border: 1px solid var(--filet); }
+.contact-carte__logo img { width: 100%; height: 100%; object-fit: contain; }
+.contact-carte h3 { margin: 0; font-size: 1.35rem; line-height: 1.1; }
+.contact-carte h3 a { color: var(--foret-900); text-decoration: none; }
+.contact-carte h3 a:hover { color: var(--etab); }
+.contact-carte__tete p { margin: .2rem 0 0; font-size: .875rem; line-height: 1.35; color: var(--gris); }
+.contact-carte__resp { display: flex; flex-direction: column; margin: 0; padding: .7rem .85rem; border-radius: var(--r-champ); background: var(--papier); font-size: .9375rem; }
+.contact-carte__resp span { font-size: .8125rem; color: var(--gris); }
+.contact-carte__note { margin: 0; font-size: .875rem; color: var(--gris); }
+.contact-carte__note a { color: var(--foret-800); }
+.contact-carte__page { align-self: flex-start; margin-top: auto; padding-top: .35rem; font-size: .9375rem; }
+
+@media (max-width: 1040px) {
+	.contact-rectorat { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+	.contact-rectorat__actions { grid-column: 1 / -1; }
+	.contact-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+	.contact-rectorat { grid-template-columns: minmax(0, 1fr); }
+	.contact-grille { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- La page Étudiants (page-etudiants.php) ----------
+   Bandeau photo assombri, puis les rubriques en cartes numérotées, les campus (photo, ville et
+   pastilles des établissements), une galerie, les dernières actualités et l'appel à s'inscrire. */
+
+.etu-tete { position: relative; isolation: isolate; padding-block: clamp(2rem, 1.4rem + 2vw, 3rem) clamp(4rem, 3rem + 5vw, 7.5rem); background: var(--foret-900) var(--photo) center 35% / cover no-repeat; color: var(--blanc); }
+.etu-tete::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(100deg, rgba(10, 31, 22, .94) 0%, rgba(10, 31, 22, .78) 45%, rgba(10, 31, 22, .35) 100%); }
+.etu-tete__titre { margin: clamp(1.5rem, 1rem + 2vw, 3rem) 0 0; font-size: clamp(2.6rem, 1.7rem + 3.6vw, 4.75rem); line-height: 1.02; max-width: 14ch; }
+.etu-tete__chapo { max-width: 56ch; margin: 1rem 0 0; font-size: clamp(1.0625rem, 1rem + .3vw, 1.25rem); color: rgba(255, 255, 255, .85); }
+.etu-tete__actions, .etu-appel__actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
+.etu-appel__actions { margin-top: 0; }
+
+.etu-corps .acad-famille + .acad-famille { margin-top: clamp(3rem, 2.2rem + 2.5vw, 4.5rem); }
+.etu-grille { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.etu-rubrique { padding: 1.4rem 1.4rem 1.5rem; border-radius: var(--r-carte); background: var(--blanc); box-shadow: var(--ombre-1); border-top: 4px solid var(--or); transition: transform .5s var(--ease), box-shadow .5s var(--ease); }
+.etu-rubrique:hover { transform: translateY(-4px); box-shadow: var(--ombre-2); }
+.etu-rubrique__num { display: block; font-family: var(--f-titre); font-weight: 500; font-size: 1.75rem; line-height: 1; color: var(--or-fonce); }
+.etu-rubrique h3 { margin: .8rem 0 .4rem; font-size: 1.25rem; }
+.etu-rubrique p { margin: 0; font-size: .9375rem; line-height: 1.55; color: var(--gris); }
+
+.etu-campus__grille { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+.etu-ville { display: flex; flex-direction: column; overflow: hidden; border-radius: var(--r-carte); background: var(--blanc); box-shadow: var(--ombre-1); }
+.etu-ville__photo { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; transition: transform 1.2s var(--ease); }
+.etu-ville:hover .etu-ville__photo { transform: scale(1.03); }
+.etu-ville__texte { position: relative; padding: 1.2rem 1.35rem 1.35rem; background: var(--blanc); }
+.etu-ville h3 { display: flex; align-items: center; gap: .45rem; margin: 0 0 .9rem; font-size: 1.5rem; }
+.etu-ville h3 .icone { color: var(--or-fonce); }
+.etu-ville__etabs { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.etu-ville__etabs a { display: inline-flex; align-items: center; gap: .45rem; padding: .3rem .85rem .3rem .35rem; border: 1px solid var(--filet); border-radius: 999px; font-weight: 600; font-size: .875rem; color: var(--foret-900); text-decoration: none; transition: background .25s, border-color .25s, color .25s, transform .3s var(--ease); }
+.etu-ville__etabs img { width: 26px; height: 26px; object-fit: contain; }
+.etu-ville__etabs a:hover, .etu-ville__etabs a:focus-visible { background: var(--etab); border-color: var(--etab); color: var(--blanc); transform: translateY(-2px); }
+.etu-ville__etabs a:hover img { border-radius: 50%; background: var(--blanc); }
+
+.etu-galerie__grille { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: repeat(2, clamp(160px, 14vw, 230px)); gap: .75rem; }
+.etu-galerie__grille li { overflow: hidden; border-radius: var(--r-carte); background: var(--foret-800); }
+.etu-galerie__grille li:first-child { grid-row: span 2; }
+.etu-galerie__grille li:last-child { grid-column: span 2; }
+.etu-galerie__grille img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
+.etu-galerie__grille li:hover img { transform: scale(1.04); }
+
+.etu-actus .acad-famille__tete { align-items: center; }
+
+@media (max-width: 1040px) {
+	.etu-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+	.etu-campus__grille { grid-template-columns: minmax(0, 1fr); }
+	.etu-galerie__grille { grid-template-columns: 1fr 1fr; grid-template-rows: none; grid-auto-rows: 160px; }
+	.etu-galerie__grille li:first-child { grid-row: auto; grid-column: span 2; }
+}
+@media (max-width: 640px) {
+	.etu-grille { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- Annuaire : les deux plus hauts dirigeants (Recteur et PCA) en tête ----------
+   Comme sur l'accueil (.rectorat__tete) : un panneau vert sur toute la largeur, deux colonnes ;
+   dans chacune, un grand portrait centré et, juste en dessous, la fonction en or et le nom en blanc. */
+.fiches--tete { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1.5rem, 1rem + 1.5vw, 2.5rem); margin-bottom: clamp(1.75rem, 1.4rem + 1vw, 2.5rem); padding: clamp(1.25rem, .5rem + 2.4vw, 2.75rem); border-radius: var(--r-panneau); background: var(--foret-900); color: var(--blanc); }
+.fiches--tete:has(> li:only-child) { grid-template-columns: minmax(0, 1fr); }
+.fiche-perso--grande .fiche-perso__lien { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 1.1rem; padding: 0; border: 0; background: none; text-align: center; }
+.fiche-perso--grande .fiche-perso__lien:focus-visible { outline-offset: 6px; }
+.fiche-perso--grande .fiche-perso__portrait { width: min(100%, 18rem); border-radius: var(--r-carte); background: var(--foret-800); box-shadow: 0 24px 48px -24px rgba(0, 0, 0, .6); }
+.fiche-perso--grande .fiche-perso__portrait .profil__initiales { font-size: clamp(2rem, 1.4rem + 1.8vw, 3.2rem); }
+.fiche-perso--grande .fiche-perso__texte { align-items: center; gap: .45rem; }
+.fiche-perso--grande .fiche-perso__fonction { order: -1; font-size: .9375rem; font-weight: 600; color: var(--or-clair); }
+.fiche-perso--grande .fiche-perso__nom { font-size: clamp(1.25rem, 1rem + .8vw, 1.75rem); line-height: 1.2; color: var(--blanc); }
+.fiche-perso--grande .fiche-perso__nom--attente { color: rgba(255, 255, 255, .7); }
+@media (max-width: 760px) {
+	.fiches--tete { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- Accueil : vie étudiante (templates/accueil/etudiants.php) ----------
+   Après le personnel (fond papier), sur le blanc : une mosaïque de cinq photos, la première en grand. */
+.vie-etu { background: var(--blanc); }
+.vie-etu__mosaique { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: repeat(2, clamp(150px, 13vw, 220px)); gap: .75rem; }
+.vie-etu__mosaique li { overflow: hidden; border-radius: var(--r-carte); background: var(--foret-800); }
+.vie-etu__mosaique li:first-child { grid-row: span 2; }
+.vie-etu__mosaique a { display: block; height: 100%; }
+.vie-etu__mosaique img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
+.vie-etu__mosaique li:hover img { transform: scale(1.05); }
+@media (max-width: 760px) {
+	.vie-etu__mosaique { grid-template-columns: 1fr 1fr; grid-template-rows: none; grid-auto-rows: 140px; }
+	.vie-etu__mosaique li:first-child { grid-row: auto; grid-column: span 2; grid-row-end: span 2; }
+}
+
+/* ---------- Page Actualités : l'espace Agenda (#agenda, sueb_agenda) ----------
+   Après la liste des articles, sur le papier : les évènements à venir en cartes datées
+   (pastille or, comme l'agenda de l'accueil), puis les évènements passés, repliés. */
+.agenda-page { padding-block: clamp(2.5rem, 2rem + 2vw, 4rem); background: var(--papier); }
+.agenda-page__titre { display: flex; align-items: center; gap: .6rem; }
+.agenda-page__titre .icone { color: var(--or-fonce); }
+.agenda-page__liste { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr)); gap: 1rem; }
+.agenda-carte { display: flex; align-items: flex-start; gap: 1.1rem; padding: 1.1rem 1.25rem; border-radius: var(--r-carte); background: var(--blanc); box-shadow: var(--ombre-1); transition: transform .4s var(--ease), box-shadow .4s var(--ease); }
+.agenda-carte:hover { transform: translateY(-3px); box-shadow: var(--ombre-2); }
+.agenda-carte__date { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 68px; height: 76px; border-radius: 12px; background: var(--or); color: var(--foret-950); font-size: .78rem; font-weight: 700; line-height: 1.1; text-align: center; text-transform: uppercase; }
+.agenda-carte__date strong { font-family: var(--f-titre); font-weight: 500; font-size: 1.75rem; line-height: 1; }
+.agenda-carte__date small { font-size: .6875rem; font-weight: 600; opacity: .75; }
+.agenda-carte__texte { min-width: 0; }
+.agenda-carte h3 { margin: 0; font-size: 1.125rem; line-height: 1.3; }
+.agenda-carte h3 a { color: var(--foret-900); text-decoration: none; }
+.agenda-carte h3 a:hover { color: var(--foret-700); text-decoration: underline; text-underline-offset: .2em; }
+.agenda-carte__infos { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin: .4rem 0 0; font-size: .875rem; color: var(--gris); }
+.agenda-carte__infos span { display: inline-flex; align-items: center; gap: .35rem; }
+.agenda-carte__infos .icone { flex: none; color: var(--or-fonce); }
+.agenda-carte__resume { margin: .5rem 0 0; font-size: .9375rem; line-height: 1.5; color: var(--encre); }
+.agenda-carte--passe .agenda-carte__date { background: var(--sable); color: var(--gris); }
+.agenda-page__vide { margin: 0; padding: 1.25rem 1.4rem; border: 1px dashed var(--filet-fort); border-radius: var(--r-carte); background: var(--blanc); color: var(--gris); }
+.agenda-page__vide strong { color: var(--foret-900); }
+.agenda-page__passes { margin-top: 1.5rem; }
+.agenda-page__passes summary { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 0; font-weight: 700; color: var(--foret-700); cursor: pointer; list-style: none; }
+.agenda-page__passes summary::-webkit-details-marker { display: none; }
+.agenda-page__passes summary .icone { transition: transform .3s var(--ease); }
+.agenda-page__passes[open] summary .icone { transform: rotate(180deg); }
+.agenda-page__liste--passes { margin-top: .75rem; }
+
+/* ---------- La page d'un évènement (single-ueb_evenement.php) ----------
+   Bandeau vert : la date en grande pastille or (grise une fois passée), l'état, le titre, l'horaire
+   et le lieu. Puis la description (et son image) à côté de l'encadré « Informations pratiques »,
+   qui reste visible au défilement ; enfin les prochains évènements, en cartes d'agenda. */
+.evt-tete { padding-block: clamp(1.75rem, 1.2rem + 1.5vw, 2.5rem) clamp(2.5rem, 1.8rem + 2.5vw, 4rem); background: var(--foret-900); color: var(--blanc); }
+.evt-tete__ligne { display: flex; align-items: center; gap: clamp(1.25rem, .8rem + 2vw, 2.75rem); margin-top: clamp(1rem, .6rem + 1.2vw, 2rem); }
+.evt-tete__date { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: clamp(7.5rem, 6rem + 4vw, 10rem); aspect-ratio: 1; border-radius: var(--r-panneau); background: var(--or); color: var(--foret-950); text-align: center; box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .6); }
+.evt-tete__date span { font-size: clamp(.75rem, .7rem + .2vw, .875rem); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.evt-tete__date strong { font-family: var(--f-titre); font-weight: 500; font-size: clamp(3rem, 2.2rem + 2.6vw, 4.5rem); line-height: 1; }
+.evt-tete__date--passe { background: rgba(255, 255, 255, .14); color: var(--blanc); box-shadow: none; }
+.evt-tete__texte { min-width: 0; }
+.evt-etat { display: inline-flex; align-items: center; gap: .45rem; margin: 0 0 .75rem; padding: .25rem .8rem; border-radius: 999px; font-size: .8125rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.evt-etat::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.evt-etat--a-venir { background: rgba(139, 195, 74, .18); color: var(--vert-clair); }
+.evt-etat--aujourdhui { background: var(--or); color: var(--foret-950); }
+.evt-etat--passe { background: rgba(255, 255, 255, .1); color: rgba(255, 255, 255, .7); }
+.evt-tete__titre { max-width: 26ch; margin: 0; font-family: var(--f-serif); font-weight: 650; font-size: clamp(1.9rem, 1.3rem + 2.4vw, 3.25rem); line-height: 1.12; color: var(--blanc); }
+.evt-tete__infos { display: flex; flex-wrap: wrap; gap: .5rem 1.75rem; margin: 1.1rem 0 0; font-size: 1.0625rem; color: rgba(255, 255, 255, .85); }
+.evt-tete__infos span { display: inline-flex; align-items: center; gap: .5rem; }
+.evt-tete__infos .icone { color: var(--or); flex: none; }
+
+.evt-grille { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: clamp(2rem, 1rem + 3vw, 4.5rem); padding-block: clamp(2.5rem, 2rem + 2vw, 4rem); }
+.evt-image { margin: 0 0 2rem; overflow: hidden; border-radius: var(--r-panneau); }
+.evt-image img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.evt-vide { margin: 0; padding: 1.25rem 1.4rem; border: 1px dashed var(--filet-fort); border-radius: var(--r-carte); background: var(--papier); color: var(--gris); }
+.evt-cote { position: sticky; top: calc(70px + 1.5rem); align-self: start; display: grid; gap: 1.5rem; }
+.evt-pratique { padding: 1.5rem; border-radius: var(--r-carte); background: var(--papier); border-top: 4px solid var(--or); }
+.evt-pratique h2, .evt-partage h2 { margin: 0 0 1rem; font-size: 1.25rem; color: var(--foret-900); }
+.evt-pratique dl { display: grid; gap: 1rem; margin: 0; }
+.evt-pratique dt { display: flex; align-items: center; gap: .45rem; font-size: .8125rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--gris); }
+.evt-pratique dt .icone { color: var(--or-fonce); }
+.evt-pratique dd { margin: .25rem 0 0; font-size: 1.0625rem; line-height: 1.45; color: var(--foret-900); }
+.evt-pratique__btn { width: 100%; justify-content: center; margin-top: 1.4rem; }
+.evt-partage h2 { font-size: 1rem; }
+.evt-autres { border-top: 1px solid var(--filet); }
+
+@media (max-width: 980px) {
+	.evt-grille { grid-template-columns: minmax(0, 1fr); }
+	.evt-cote { position: static; }
+}
+@media (max-width: 640px) {
+	.evt-tete__ligne { flex-direction: column; align-items: flex-start; }
+	.evt-tete__date { width: auto; aspect-ratio: auto; flex-direction: row; gap: .6rem; padding: .6rem 1.1rem; border-radius: var(--r-carte); }
+	.evt-tete__date strong { font-size: 2rem; }
+}
+
+/* ---------- Contenus saisis dans la gestion : texte justifié, tableaux, couleurs ---------- */
+.article__corps [style*="justify"], .prose [style*="justify"] { hyphens: auto; }
+.article__corps table, .prose table { width: 100%; border-collapse: collapse; font-family: var(--f-texte); font-size: .95rem; line-height: 1.5; }
+.article__corps th, .article__corps td, .prose th, .prose td { padding: .65rem .85rem; border: 1px solid var(--filet); text-align: left; vertical-align: top; }
+.article__corps thead th, .prose thead th { background: var(--papier); font-weight: 700; color: var(--foret-900); }
+.article__corps tbody tr:nth-child(even), .prose tbody tr:nth-child(even) { background: color-mix(in srgb, var(--papier) 50%, var(--blanc)); }
+.article__corps sup, .article__corps sub { font-size: .7em; line-height: 0; }
+.article__corps .wp-embed-aspect-16-9 iframe, .article__corps iframe[src*="youtube"], .article__corps iframe[src*="vimeo"] { width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0; border-radius: var(--r-carte); }
+@media (max-width: 640px) {
+	.article__corps table { display: block; overflow-x: auto; }
+}
+
+/* ==========================================================================
+   PARCOURS ACADÉMIQUE : Académie > établissement > département > filière > UE,
+   et les enseignements sur la fiche du personnel.
+   Un langage commun, sobre : aplats et filets d'un pixel, titres en serif,
+   cartes entièrement cliquables (lien étiré), pastilles, avatars ronds. Pas de
+   dégradé ni de bordure latérale ; la couleur de l'établissement (--etab)
+   ne sert qu'aux accents (pastilles, chiffres, survol).
+   ========================================================================== */
+
+/* ---------- Éléments partagés ---------- */
+.sur-titre { margin: 0 0 .6rem; font-size: .8125rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--etab, var(--foret-700)); }
+.titre-section { margin: 0; font-family: var(--f-serif); font-weight: 650; font-size: clamp(1.75rem, 1.35rem + 1.3vw, 2.5rem); line-height: 1.15; color: var(--foret-950); }
+.titre-section__compte { display: inline-grid; place-items: center; min-width: 2.1rem; height: 2.1rem; margin-left: .35rem; padding-inline: .55rem; border-radius: 999px; background: var(--papier); font-family: var(--f-texte); font-size: .9rem; font-weight: 700; vertical-align: .35em; color: var(--foret-900); }
+.tete-section { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem 3rem; margin-bottom: clamp(1.75rem, 1.3rem + 1.4vw, 2.75rem); }
+.tete-section__chapo { max-width: 52ch; margin: 0; font-size: 1.0625rem; line-height: 1.6; color: var(--gris); }
+.lien-texte { display: inline-block; font-weight: 700; color: var(--foret-900); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--etab, var(--foret-700)) 60%, transparent); text-decoration-thickness: 2px; text-underline-offset: .3em; transition: text-decoration-color .2s, color .2s; }
+.lien-texte:hover { color: var(--etab, var(--foret-700)); text-decoration-color: currentColor; }
+.puces { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; margin: 0; padding: 0; }
+.puces li { padding: .3rem .75rem; border: 1px solid var(--filet); border-radius: 999px; background: var(--blanc); font-size: .8125rem; font-weight: 600; color: var(--foret-800); }
+.pastille { display: inline-flex; align-items: center; padding: .25rem .7rem; border-radius: 999px; background: color-mix(in srgb, var(--etab, var(--foret-700)) 12%, var(--blanc)); font-size: .75rem; font-weight: 700; letter-spacing: .04em; color: color-mix(in srgb, var(--etab, var(--foret-700)) 80%, var(--foret-950)); }
+.attente { font-style: italic; color: var(--gris-clair); }
+.avatar { position: relative; display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px; overflow: hidden; border-radius: 50%; background: var(--sable); }
+.avatar img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+.avatar .profil__vide { border-radius: 50%; }
+.avatar .profil__initiales { font-size: .95rem; }
+.avatar--petit { width: 30px; height: 30px; }
+.avatar--petit .profil__initiales { font-size: .7rem; }
+.avatar--vide { background: color-mix(in srgb, var(--etab, var(--foret-700)) 12%, var(--blanc)); font-family: var(--f-serif); font-weight: 600; font-size: .95rem; color: var(--etab, var(--foret-700)); }
+
+/* ---------- Académie ---------- */
+.etablissements--academie { padding-top: clamp(2rem, 1.5rem + 2vw, 3rem); }
+.etablissements--academie .mosaique { margin-top: 0; }
+.acad-pied { padding-bottom: var(--esp-section); }
+.acad-pied .acad-appel { margin-top: 0; }
+
+/* ---------- Établissement : la direction ---------- */
+.chef { background: var(--blanc); }
+.chef__grille { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(2rem, 1rem + 4vw, 5rem); align-items: center; }
+.chef__portrait { display: block; max-width: 420px; }
+.chef__portrait .profil__portrait { border-radius: var(--r-panneau); box-shadow: var(--ombre-2); }
+.chef__nom { margin: 0; font-family: var(--f-serif); font-weight: 650; font-size: clamp(2rem, 1.4rem + 2vw, 3.1rem); line-height: 1.1; }
+.chef__nom a { color: var(--foret-950); text-decoration: none; }
+.chef__nom a:hover { color: var(--etab); }
+.chef__nom--attente a { font-style: italic; color: var(--gris); }
+.chef__fonction { margin: .6rem 0 1rem; font-size: 1.125rem; font-weight: 600; color: var(--etab); }
+.chef__bio { max-width: 62ch; margin: 1.25rem 0 1.5rem; font-family: var(--f-serif); font-size: clamp(1.0625rem, 1rem + .3vw, 1.2rem); line-height: 1.7; color: var(--encre); }
+
+/* ---------- Établissement : présentation et missions ---------- */
+.apropos { background: var(--papier); }
+.apropos__grille { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(2rem, 1rem + 4vw, 5rem); align-items: start; }
+.apropos__prose { margin-top: 1.25rem; font-size: 1.0625rem; line-height: 1.75; color: var(--encre); }
+.apropos__prose p { margin: 0 0 1rem; max-width: 68ch; }
+.compteurs { display: flex; flex-wrap: wrap; gap: 1.25rem 2.75rem; margin: 2rem 0 0; padding-top: 1.75rem; border-top: 1px solid var(--filet-fort); }
+.compteurs div { display: flex; flex-direction: column; }
+.compteurs dd { margin: 0; font-family: var(--f-titre); font-weight: 500; font-size: clamp(2.25rem, 1.8rem + 1.5vw, 3.25rem); line-height: 1; color: var(--etab); }
+.compteurs dt { margin-top: .35rem; font-size: .875rem; color: var(--gris); }
+.missions { padding: clamp(1.5rem, 1rem + 1.5vw, 2.25rem); border: 1px solid var(--filet); border-radius: var(--r-panneau); background: var(--blanc); }
+.missions__titre { margin: 0 0 .5rem; font-family: var(--f-serif); font-size: 1.5rem; color: var(--foret-950); }
+.missions__liste { display: grid; list-style: none; margin: 0; padding: 0; }
+.missions__liste li { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: .75rem; padding-block: 1rem; }
+.missions__liste li + li { border-top: 1px solid var(--filet); }
+.missions__num { font-family: var(--f-titre); font-weight: 500; font-size: 1.35rem; line-height: 1.2; color: var(--etab); }
+.missions__liste p { margin: 0; line-height: 1.55; color: var(--encre); }
+
+/* ---------- Cartes des départements et des filières ---------- */
+.cartes-deps, .cartes-filieres, .cartes-doctorat { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1.25rem; list-style: none; margin: 0; padding: 0; }
+.carte-dep, .carte-filiere { position: relative; display: flex; flex-direction: column; gap: .9rem; padding: 1.5rem; border: 1px solid var(--filet); border-radius: 20px; background: var(--blanc); transition: border-color .3s, transform .4s var(--ease), box-shadow .4s var(--ease); }
+.carte-dep:hover, .carte-filiere:hover, .carte-dep:focus-within, .carte-filiere:focus-within { border-color: var(--etab); transform: translateY(-3px); box-shadow: var(--ombre-2); }
+.carte-dep__haut, .carte-filiere__haut { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; min-height: 1.75rem; }
+.carte-dep__compte, .carte-filiere__code { font-size: .8125rem; font-weight: 600; color: var(--gris); }
+.carte-dep__titre, .carte-filiere__titre { margin: 0; font-family: var(--f-serif); font-weight: 650; font-size: 1.35rem; line-height: 1.25; text-wrap: balance; }
+.carte-dep__titre a, .carte-filiere__titre a { color: var(--foret-950); text-decoration: none; }
+.carte-dep__titre a::after, .carte-filiere__titre a::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.carte-dep__titre a:focus-visible, .carte-filiere__titre a:focus-visible { outline: none; }
+.carte-dep:has(a:focus-visible), .carte-filiere:has(a:focus-visible) { outline: 3px solid var(--or); outline-offset: 3px; }
+.carte-dep__filieres { display: grid; gap: .35rem; list-style: none; margin: 0; padding: 0; font-size: .9375rem; color: var(--encre); }
+.carte-dep__filieres li { display: flex; gap: .55rem; line-height: 1.4; }
+.carte-dep__filieres li::before { content: ""; flex: none; width: 5px; height: 5px; margin-top: .55em; border-radius: 50%; background: var(--etab); }
+.carte-dep__filieres .carte-dep__plus { color: var(--gris); }
+.carte-dep__filieres .carte-dep__plus::before { background: var(--filet-fort); }
+.carte-dep__chef { display: flex; align-items: center; gap: .7rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--filet); }
+.carte-dep__chef > span:last-child { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.carte-dep__chef strong { overflow: hidden; font-size: .9375rem; color: var(--foret-900); text-overflow: ellipsis; white-space: nowrap; }
+.carte-dep__chef small { font-size: .8125rem; color: var(--gris); }
+.carte-filiere__photo { width: calc(100% + 3rem); max-width: none; margin: -1.5rem -1.5rem .25rem; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 19px 19px 0 0; }
+.carte-filiere__resume { margin: 0; font-size: .9375rem; line-height: 1.55; color: var(--gris); }
+.carte-filiere__pied { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--filet); }
+.carte-filiere__compte { font-size: .8125rem; font-weight: 600; color: var(--gris); }
+.niveaux-puces { display: flex; flex-wrap: wrap; gap: .3rem; list-style: none; margin: 0; padding: 0; }
+.niveaux-puces li { min-width: 2.2rem; padding: .2rem .5rem; border: 1px solid var(--filet-fort); border-radius: 8px; font-size: .75rem; font-weight: 700; text-align: center; color: var(--gris); }
+.niveaux-puces li.est-plein { border-color: transparent; background: var(--etab); color: var(--sur-etab, var(--blanc)); }
+
+/* ---------- Formation doctorale ---------- */
+.doctorat { background: var(--foret-950); color: var(--blanc); }
+.doctorat .sur-titre { color: var(--or-clair); }
+.doctorat .titre-section { color: var(--blanc); }
+.doctorat .tete-section__chapo { color: rgba(255, 255, 255, .72); }
+.carte-doctorat { display: flex; flex-direction: column; gap: .8rem; padding: 1.75rem; border: 1px solid rgba(255, 255, 255, .14); border-radius: 20px; background: rgba(255, 255, 255, .04); }
+.carte-doctorat__niveau { align-self: flex-start; padding: .25rem .75rem; border-radius: 999px; background: var(--or); font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--foret-950); }
+.carte-doctorat h3 { margin: 0; font-family: var(--f-serif); font-size: 1.4rem; line-height: 1.25; color: var(--blanc); }
+.carte-doctorat p { margin: 0; line-height: 1.65; color: rgba(255, 255, 255, .8); }
+.carte-doctorat .puces li { border-color: rgba(255, 255, 255, .2); background: transparent; color: var(--blanc); }
+
+/* ---------- Département ---------- */
+.dep-tete { padding-block: clamp(1.75rem, 1.2rem + 1.5vw, 2.5rem) clamp(2.5rem, 1.8rem + 2.5vw, 4rem); background: var(--etab); color: var(--sur-etab, var(--blanc)); }
+.dep-tete .fil-ariane a { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: .25em; }
+.dep-tete .fil-ariane li + li::before { color: color-mix(in srgb, currentColor 50%, transparent); }
+.dep-tete__sur { display: inline-flex; align-items: center; gap: .55rem; margin: clamp(1rem, .6rem + 1.2vw, 2rem) 0 .9rem; padding: .3rem .9rem .3rem .3rem; border-radius: 999px; background: rgba(255, 255, 255, .14); font-size: .875rem; font-weight: 700; }
+.dep-tete__sur img { width: 28px; height: 28px; padding: 2px; border-radius: 50%; background: var(--blanc); object-fit: contain; }
+.dep-tete__titre { max-width: 24ch; margin: 0; font-family: var(--f-serif); font-weight: 650; font-size: clamp(2.1rem, 1.4rem + 2.8vw, 3.75rem); line-height: 1.08; color: inherit; }
+.dep-tete__chiffres { display: flex; flex-wrap: wrap; gap: 1rem 3rem; margin: 2rem 0 0; }
+.dep-tete__chiffres div { display: flex; flex-direction: column; }
+.dep-tete__chiffres dd { margin: 0; font-family: var(--f-titre); font-weight: 500; font-size: 2.25rem; line-height: 1; }
+.dep-tete__chiffres dt { margin-top: .3rem; font-size: .875rem; opacity: .8; }
+.dep-tete__etab a { color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .2em; }
+.dep-intro { padding-block: clamp(3rem, 2rem + 3vw, 5rem); background: var(--blanc); }
+.dep-intro__grille { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: clamp(2rem, 1rem + 4vw, 5rem); align-items: start; }
+.dep-chef { padding: 1.5rem; border: 1px solid var(--filet); border-radius: var(--r-panneau); background: var(--papier); }
+.dep-chef__portrait { display: block; width: min(100%, 220px); margin-bottom: 1.1rem; }
+.dep-chef__portrait .profil__portrait { border-radius: var(--r-carte); }
+.dep-chef__portrait--vide { display: grid; place-items: center; aspect-ratio: 4 / 5; border-radius: var(--r-carte); background: color-mix(in srgb, var(--etab) 12%, var(--blanc)); font-family: var(--f-serif); font-size: 3rem; font-weight: 600; color: var(--etab); }
+.dep-chef__nom { margin: 0 0 .75rem; font-family: var(--f-serif); font-weight: 650; font-size: 1.6rem; line-height: 1.2; }
+.dep-chef__nom a { color: var(--foret-950); text-decoration: none; }
+.dep-chef__nom a:hover { color: var(--etab); }
+.dep-chef__bio { margin: .9rem 0 1rem; line-height: 1.6; color: var(--encre); }
+.dep-filieres { padding-block: clamp(3rem, 2rem + 3vw, 5rem); background: var(--papier); }
+.dep-equipe { padding-block: clamp(3rem, 2rem + 3vw, 5rem); background: var(--blanc); }
+.dep-autres { padding-block: 2.5rem; border-top: 1px solid var(--filet); background: var(--blanc); }
+.dep-autres__titre { margin: 0 0 1rem; font-size: 1.125rem; color: var(--foret-900); }
+.dep-autres ul { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; margin: 0; padding: 0; }
+.dep-autres a { display: inline-block; padding: .5rem 1rem; border: 1px solid var(--filet); border-radius: 999px; font-size: .9375rem; font-weight: 600; color: var(--foret-900); text-decoration: none; transition: border-color .2s, background .2s; }
+.dep-autres a:hover { border-color: var(--etab); background: color-mix(in srgb, var(--etab) 8%, var(--blanc)); }
+
+/* ---------- Filière : les UE d'un niveau, semestre par semestre ---------- */
+.semestre-bloc + .semestre-bloc { margin-top: 1.75rem; }
+.semestre-bloc__titre { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .25rem 1rem; margin: 0 0 .5rem; font-size: 1.05rem; color: var(--foret-900); }
+.semestre-bloc__titre span { font-family: var(--f-texte); font-size: .8125rem; font-weight: 600; color: var(--gris); }
+.ues-liste { list-style: none; margin: 0; padding: 0; border: 1px solid var(--filet); border-radius: var(--r-carte); background: var(--blanc); }
+.ue { display: grid; grid-template-columns: 6.25rem minmax(0, 1fr) 5.5rem 8rem minmax(0, 13rem) 7.5rem; align-items: center; gap: 1rem; padding: .9rem 1.1rem; }
+.ue + .ue { border-top: 1px solid var(--filet); }
+.ue--tete { padding-block: .6rem; background: var(--papier); border-radius: var(--r-carte) var(--r-carte) 0 0; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--gris); }
+.ue:not(.ue--tete):hover { background: color-mix(in srgb, var(--etab, var(--foret-700)) 4%, var(--blanc)); }
+.ue__code { font-family: var(--f-titre); font-size: .9375rem; font-weight: 500; letter-spacing: .02em; color: var(--etab, var(--foret-700)); }
+.ue__titre { font-weight: 600; line-height: 1.35; color: var(--foret-950); text-decoration: none; }
+.ue__titre:hover { color: var(--etab, var(--foret-700)); text-decoration: underline; text-underline-offset: .2em; }
+.ue__credits, .ue__heures, .ue__niveau { font-size: .875rem; color: var(--gris); }
+.ue__credits strong, .ue__heures strong { font-size: 1rem; color: var(--foret-950); }
+.ue__heures small { display: block; font-size: .75rem; line-height: 1.35; color: var(--gris-clair); }
+.ue__profs { display: flex; flex-direction: column; gap: .35rem; min-width: 0; }
+.prof { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; color: var(--foret-900); text-decoration: none; }
+.prof__nom { overflow: hidden; font-size: .875rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.prof:hover .prof__nom { color: var(--etab, var(--foret-700)); text-decoration: underline; text-underline-offset: .2em; }
+.ue__syllabus a { display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .75rem; border: 1px solid var(--filet-fort); border-radius: 999px; font-size: .8125rem; font-weight: 700; color: var(--foret-900); text-decoration: none; white-space: nowrap; transition: border-color .2s, background .2s; }
+.ue__syllabus a:hover { border-color: var(--etab, var(--foret-700)); background: color-mix(in srgb, var(--etab, var(--foret-700)) 8%, var(--blanc)); }
+.ue__syllabus .attente { font-size: .8125rem; }
+.ue__filiere { font-size: .875rem; color: var(--foret-800); text-decoration: underline; text-decoration-color: var(--filet-fort); text-underline-offset: .2em; }
+.ues-liste--prof .ue { grid-template-columns: 6.25rem minmax(0, 1.4fr) minmax(0, 1fr) 8rem 5.5rem 7.5rem; }
+.annee__corps { padding-bottom: 1.35rem; }
+
+.programme-profs { padding: 1.75rem; border: 1px solid var(--filet); background: var(--blanc); }
+.programme-profs h2 { margin: 0 0 1rem; font-size: 1.25rem; color: var(--foret-900); }
+.programme-profs ul { display: grid; gap: .85rem; list-style: none; margin: 0; padding: 0; }
+.programme-profs .prof { gap: .75rem; }
+.programme-profs .prof > span:last-child { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.programme-profs small { font-size: .8125rem; color: var(--gris); }
+
+/* ---------- Page d'une UE ---------- */
+.ue-profs { margin-top: 2.5rem; }
+.ue-profs .titre-section { margin-bottom: 1.25rem; font-size: 1.75rem; }
+
+/* ---------- Fiche du personnel : ses enseignements ---------- */
+.enseignements { margin-top: clamp(3rem, 2.2rem + 2.5vw, 4.5rem); padding-top: 2.5rem; border-top: 1px solid var(--filet); }
+.enseignements__etab + .enseignements__etab { margin-top: 2rem; }
+.enseignements__titre { margin: 0 0 .75rem; }
+.enseignements__titre a { display: inline-flex; align-items: center; gap: .75rem; color: var(--foret-950); text-decoration: none; }
+.enseignements__titre img { width: 36px; height: 36px; padding: 3px; border: 1px solid var(--filet); border-radius: 50%; background: var(--blanc); object-fit: contain; }
+.enseignements__titre span { display: flex; flex-direction: column; font-family: var(--f-texte); font-size: .875rem; font-weight: 500; line-height: 1.3; color: var(--gris); }
+.enseignements__titre strong { font-size: 1.1rem; color: var(--foret-950); }
+.enseignements__titre a:hover strong { color: var(--etab); }
+.fiche-infos__etabs { display: flex; flex-wrap: wrap; gap: .4rem; }
+.fiche-infos__etabs a { display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .65rem .2rem .25rem; border: 1px solid var(--filet); border-radius: 999px; font-size: .875rem; font-weight: 700; text-decoration: none; }
+.fiche-infos__etabs img { width: 20px; height: 20px; border-radius: 50%; object-fit: contain; }
+
+/* ---------- Petits écrans ---------- */
+@media (max-width: 1100px) {
+	.ue, .ues-liste--prof .ue { grid-template-columns: 5.5rem minmax(0, 1fr) 5rem 7rem; }
+	.ue--tete span:nth-child(n+5) { display: none; }
+	.ue__profs, .ue__syllabus, .ues-liste--prof .ue__credits, .ues-liste--prof .ue__syllabus { grid-column: 2 / -1; }
+	.ue__profs { flex-direction: row; flex-wrap: wrap; gap: .4rem 1rem; }
+}
+@media (max-width: 980px) {
+	.chef__grille, .apropos__grille, .dep-intro__grille { grid-template-columns: minmax(0, 1fr); }
+	.chef__portrait { max-width: 300px; }
+}
+@media (max-width: 640px) {
+	.ue--tete { display: none; }
+	.ue, .ues-liste--prof .ue { grid-template-columns: minmax(0, 1fr) auto; gap: .45rem .75rem; padding: 1rem; }
+	.ue__code { grid-column: 1; }
+	.ue__titre { grid-column: 1 / -1; grid-row: 2; font-size: 1rem; }
+	.ue__credits { grid-column: 2; grid-row: 1; text-align: right; }
+	.ue__heures, .ue__profs, .ue__syllabus, .ue__filiere, .ue__niveau, .ues-liste--prof .ue__credits, .ues-liste--prof .ue__syllabus { grid-column: 1 / -1; }
+	.ues-liste--prof .ue__credits { grid-row: auto; text-align: left; }
+	.ue__heures small { display: inline; margin-left: .35rem; }
+	.carte-dep, .carte-filiere { padding: 1.25rem; }
+	.carte-filiere__photo { width: calc(100% + 2.5rem); margin: -1.25rem -1.25rem .25rem; }
+	.compteurs { gap: 1rem 1.75rem; }
+	.dep-tete__chiffres { gap: 1rem 2rem; }
+}
+
+
+/* ---------- Établissement : l'arbre des départements (ordinateur) ou les cartes (mobile) ----------
+   Sur grand écran, l'arborescence et la vue A–Z d'origine, avec le chef de chaque département
+   sous son intitulé ; sous 981 px, les cartes cliquables. */
+.depts__bureau .vues { margin: -.75rem 0 1.75rem auto; width: fit-content; }
+.branche__chef { margin: .55rem 0 .35rem; }
+.branche__chef a, .branche__chef-vide { display: inline-flex; align-items: center; gap: .6rem; text-align: left; color: var(--foret-900); text-decoration: none; }
+.branche--gauche .branche__chef a, .branche--gauche .branche__chef-vide { flex-direction: row-reverse; text-align: right; }
+.branche__chef .avatar { width: 38px; height: 38px; }
+.branche__chef a > span:last-child, .branche__chef-vide > span:last-child { display: flex; flex-direction: column; line-height: 1.25; }
+.branche__chef strong { font-size: .9rem; }
+.branche__chef small { font-size: .75rem; color: var(--gris); }
+.branche__chef a:hover strong { color: var(--etab); text-decoration: underline; text-underline-offset: .2em; }
+@media (min-width: 981px) {
+	.depts__mobile { display: none; }
+}
+@media (max-width: 980px) {
+	.depts__bureau { display: none; }
+}
+
+/* ---------- Page Contact : la carte des sites et leurs contacts ----------
+   À gauche, la carte (Leaflet, fonds OpenStreetMap) qui reste visible au défilement ; à droite, les
+   sites ville par ville, chacun avec le rectorat, les services et les établissements qui s'y trouvent.
+   Sous 981 px, la carte passe au-dessus de la liste. */
+.sites { margin-top: clamp(1rem, .5rem + 1vw, 2rem); }
+.sites__grille { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1.5rem; align-items: start; }
+.sites__carte { position: sticky; top: calc(var(--entete-h) + 1.25rem); z-index: 0; height: min(72vh, 640px); overflow: hidden; border: 1px solid var(--filet); border-radius: var(--r-panneau); background: var(--sable); }
+.sites__repli { display: grid; place-items: center; height: 100%; margin: 0; padding: 2rem; text-align: center; color: var(--gris); }
+.sites__liste { display: grid; gap: 1rem; }
+.site { overflow: hidden; border: 1px solid var(--filet); border-radius: 20px; background: var(--blanc); scroll-margin-top: calc(var(--entete-h) + 1.5rem); transition: border-color .25s, box-shadow .25s; }
+.site.est-actif { border-color: var(--foret-700); box-shadow: var(--ombre-2); }
+.site__tete { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .85rem 1rem .85rem 1.1rem; border-bottom: 1px solid var(--filet); background: var(--papier); }
+.site__tete h3 { margin: 0; font-size: 1.2rem; }
+.site__tete button { display: inline-flex; align-items: center; gap: .6rem; padding: 0; border: 0; background: none; font: inherit; font-family: var(--f-serif); font-weight: 650; color: var(--foret-950); cursor: pointer; }
+.site__tete button:hover { color: var(--foret-700); text-decoration: underline; text-underline-offset: .2em; }
+.site__pin { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--foret-900); font-family: var(--f-texte); font-size: .8125rem; font-weight: 700; color: var(--blanc); }
+.site__itineraire { display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .8rem; border: 1px solid var(--filet-fort); border-radius: 999px; background: var(--blanc); font-size: .8125rem; font-weight: 700; color: var(--foret-900); text-decoration: none; white-space: nowrap; transition: border-color .2s, background .2s; }
+.site__itineraire:hover { border-color: var(--foret-700); background: var(--papier); }
+.site__entrees { list-style: none; margin: 0; padding: 0; }
+.entree { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: .85rem; padding: 1rem 1.1rem; }
+.entree + .entree { border-top: 1px solid var(--filet); }
+.entree__logo { display: grid; place-items: center; width: 40px; height: 40px; overflow: hidden; border: 1px solid var(--filet); border-radius: 50%; background: var(--blanc); color: var(--foret-700); }
+.entree__logo img { width: 30px; height: 30px; object-fit: contain; }
+.entree--service .entree__logo { background: var(--papier); }
+.entree__corps { min-width: 0; }
+.entree__titre { margin: 0; font-weight: 700; color: var(--foret-950); }
+.entree__titre a { color: inherit; text-decoration: none; }
+.entree__titre a:hover { color: var(--etab); text-decoration: underline; text-underline-offset: .2em; }
+.entree__sous { margin: .1rem 0 0; font-size: .875rem; line-height: 1.4; color: var(--gris); }
+.entree__adresse { margin: .35rem 0 0; font-size: .875rem; color: var(--encre); }
+.entree__contacts { display: flex; flex-wrap: wrap; gap: .35rem 1rem; margin: .5rem 0 0; }
+.entree__contacts a { display: inline-flex; align-items: center; gap: .35rem; font-size: .875rem; font-weight: 600; color: var(--foret-800); text-decoration: none; overflow-wrap: anywhere; }
+.entree__contacts a:hover { text-decoration: underline; text-underline-offset: .2em; }
+.entree__contacts .icone { flex: none; color: var(--etab, var(--foret-700)); }
+.entree__note { margin: .45rem 0 0; font-size: .8125rem; color: var(--gris); }
+.entree__note a { color: var(--foret-800); }
+
+/* Repères et bulles de la carte */
+.repere { background: none; border: 0; }
+.repere span { position: relative; display: grid; place-items: center; width: 36px; height: 36px; border: 3px solid var(--blanc); border-radius: 50%; background: var(--foret-900); box-shadow: 0 6px 14px -4px rgba(10, 31, 22, .55); font-family: var(--f-texte); font-size: .875rem; font-weight: 700; color: var(--blanc); }
+.repere span::after { content: ""; position: absolute; left: 50%; bottom: -10px; translate: -50% 0; border: 6px solid transparent; border-top-color: var(--blanc); }
+.leaflet-container { font-family: var(--f-texte); }
+.leaflet-popup-content-wrapper { border-radius: var(--r-carte); box-shadow: var(--ombre-2); }
+.leaflet-popup-content { display: grid; gap: .35rem; margin: .9rem 1rem; }
+.bulle__lieu { font-family: var(--f-serif); font-size: 1.05rem; color: var(--foret-950); }
+.bulle__noms { font-size: .8125rem; line-height: 1.45; color: var(--gris); }
+.bulle__lien { font-size: .8125rem; font-weight: 700; color: var(--foret-700); }
+
+@media (max-width: 980px) {
+	.sites__grille { grid-template-columns: minmax(0, 1fr); }
+	.sites__carte { position: relative; top: 0; height: 52vh; min-height: 320px; }
 }

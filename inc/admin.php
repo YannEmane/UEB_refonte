@@ -183,6 +183,8 @@ function sueb_traiter_connexion() {
 function sueb_nettoyer_champ( $v, $type ) {
 	$v = is_scalar( $v ) ? (string) $v : '';
 	switch ( $type ) {
+		case 'personnes':
+			return sueb_liste_ids( $v );
 		case 'media':
 		case 'etablissement':
 		case 'departement':
@@ -251,6 +253,8 @@ function sueb_pages_theme() {
 		'histoire'           => 'Section Histoire de l’accueil',
 		'message-du-recteur' => 'Message du Recteur sur l’accueil',
 		'dirigeants'         => 'Page des dirigeants',
+		'etudiants'          => 'Page Étudiants (textes dans Vie étudiante)',
+		'contact'            => 'Page Contact (coordonnées du rectorat et des établissements)',
 	);
 }
 
@@ -402,6 +406,126 @@ add_action( 'rest_api_init', function () {
 			'callback'            => function ( WP_REST_Request $requete ) {
 				$resultat = sueb_enregistrer_carte( (array) $requete->get_json_params() );
 				return is_wp_error( $resultat ) ? $resultat : array( 'ok' => true );
+			},
+		),
+	) );
+} );
+
+/* ---------- Contacts et sites (page Contact) : route sueb/v1/contacts ----------
+   Le rectorat (coordonnées et position), les services centraux et le contact de chaque établissement,
+   réunis sur un seul écran de la gestion. */
+
+function sueb_peut_gerer_contacts() {
+	return in_array( 'sueb_reglages', sueb_permissions_de(), true );
+}
+
+add_action( 'rest_api_init', function () {
+	register_rest_route( 'sueb/v1', '/contacts', array(
+		array(
+			'methods'             => 'GET',
+			'permission_callback' => 'sueb_peut_gerer_contacts',
+			'callback'            => function () {
+				$u     = sueb_universite();
+				$pos   = sueb_position_rectorat();
+				$etabs = array();
+				foreach ( get_posts( array( 'post_type' => 'ueb_structure', 'post_parent' => 0, 'post_status' => array( 'publish', 'draft' ), 'numberposts' => -1, 'orderby' => 'menu_order title', 'order' => 'ASC' ) ) as $e ) {
+					if ( ! current_user_can( 'edit_post', $e->ID ) ) {
+						continue;
+					}
+					$c       = preg_split( '/[,;\s]+/', trim( (string) sueb_meta( $e->ID, 'coordonnees' ) ) );
+					$etabs[] = array(
+						'id'       => $e->ID,
+						'sigle'    => (string) sueb_meta( $e->ID, 'sigle' ) ?: $e->post_title,
+						'nom'      => $e->post_title,
+						'tel'      => (string) sueb_meta( $e->ID, 'contact_telephone' ),
+						'courriel' => (string) sueb_meta( $e->ID, 'contact_courriel' ),
+						'adresse'  => (string) sueb_meta( $e->ID, 'adresse' ),
+						'lat'      => $c[0] ?? '',
+						'lon'      => $c[1] ?? '',
+					);
+				}
+				return array(
+					'rectorat'       => array( 'bp' => $u['bp'], 'ville' => $u['ville'], 'tel' => $u['tel'], 'courriel' => $u['email'], 'lat' => $pos[0], 'lon' => $pos[1] ),
+					'services'       => array_values( sueb_services_centraux() ),
+					'etablissements' => $etabs,
+				);
+			},
+		),
+		array(
+			'methods'             => 'POST',
+			'permission_callback' => 'sueb_peut_gerer_contacts',
+			'callback'            => function ( WP_REST_Request $requete ) {
+				$d   = (array) $requete->get_json_params();
+				$lat = function ( $v ) {
+					return sueb_lire_coordonnee( $v, 1.5, 13.2 );
+				};
+				$lon = function ( $v ) {
+					return sueb_lire_coordonnee( $v, 8.3, 16.3 );
+				};
+
+				/* Le rectorat : les mêmes réglages que « Coordonnées et liens ». */
+				$r = (array) ( $d['rectorat'] ?? array() );
+				foreach ( array( 'bp' => 'univ_bp', 'ville' => 'univ_ville', 'tel' => 'univ_tel', 'courriel' => 'univ_email' ) as $cle => $mod ) {
+					if ( isset( $r[ $cle ] ) ) {
+						set_theme_mod( $mod, sueb_nettoyer_reglage( $r[ $cle ], 'courriel' === $cle ? 'email' : 'text' ) );
+					}
+				}
+				if ( null !== $lat( $r['lat'] ?? '' ) && null !== $lon( $r['lon'] ?? '' ) ) {
+					update_option( 'sueb_position_rectorat', array( $lat( $r['lat'] ), $lon( $r['lon'] ) ) );
+				} elseif ( '' !== trim( (string) ( $r['lat'] ?? '' ) . (string) ( $r['lon'] ?? '' ) ) ) {
+					return new WP_Error( 'sueb_position', 'Position du rectorat invalide : latitude entre 1,5 et 13,2, longitude entre 8,3 et 16,3.', array( 'status' => 400 ) );
+				}
+
+				/* Les services centraux. */
+				$services = array();
+				foreach ( (array) ( $d['services'] ?? array() ) as $s ) {
+					$nom = sanitize_text_field( $s['nom'] ?? '' );
+					if ( '' === $nom ) {
+						continue;
+					}
+					$la = $lat( $s['lat'] ?? '' );
+					$lo = $lon( $s['lon'] ?? '' );
+					if ( ( null === $la || null === $lo ) && '' !== trim( (string) ( $s['lat'] ?? '' ) . (string) ( $s['lon'] ?? '' ) ) ) {
+						return new WP_Error( 'sueb_position', sprintf( 'Position de « %s » invalide : latitude entre 1,5 et 13,2, longitude entre 8,3 et 16,3 (ex. 2,9157 et 11,1543).', $nom ), array( 'status' => 400 ) );
+					}
+					$pos        = sueb_position_rectorat();
+					$services[] = array(
+						'nom'      => $nom,
+						'lieu'     => sanitize_text_field( $s['lieu'] ?? '' ),
+						'tel'      => sanitize_text_field( $s['tel'] ?? '' ),
+						'courriel' => sanitize_email( $s['courriel'] ?? '' ),
+						'lat'      => $la ?? $pos[0],
+						'lon'      => $lo ?? $pos[1],
+					);
+				}
+				update_option( 'sueb_services_centraux', $services );
+
+				/* Le contact de chaque établissement (ses champs de fiche). */
+				foreach ( (array) ( $d['etablissements'] ?? array() ) as $e ) {
+					$id = absint( $e['id'] ?? 0 );
+					if ( ! $id || 'ueb_structure' !== get_post_type( $id ) || wp_get_post_parent_id( $id ) || ! current_user_can( 'edit_post', $id ) ) {
+						continue;
+					}
+					$la = $lat( $e['lat'] ?? '' );
+					$lo = $lon( $e['lon'] ?? '' );
+					if ( ( null === $la || null === $lo ) && '' !== trim( (string) ( $e['lat'] ?? '' ) . (string) ( $e['lon'] ?? '' ) ) ) {
+						return new WP_Error( 'sueb_position', sprintf( 'Position de « %s » invalide : latitude entre 1,5 et 13,2, longitude entre 8,3 et 16,3.', get_the_title( $id ) ), array( 'status' => 400 ) );
+					}
+					$valeurs = array(
+						'contact_telephone' => sanitize_text_field( $e['tel'] ?? '' ),
+						'contact_courriel'  => sanitize_email( $e['courriel'] ?? '' ),
+						'adresse'           => sanitize_text_field( $e['adresse'] ?? '' ),
+						'coordonnees'       => null === $la ? '' : $la . ', ' . $lo,
+					);
+					foreach ( $valeurs as $cle => $v ) {
+						if ( '' === $v ) {
+							delete_post_meta( $id, '_sueb_' . $cle );
+						} else {
+							update_post_meta( $id, '_sueb_' . $cle, $v );
+						}
+					}
+				}
+				return array( 'ok' => true );
 			},
 		),
 	) );

@@ -765,4 +765,14 @@
 		}, { rootMargin: '-20% 0px -70% 0px' });
 		parties.forEach(function (h) { obsSommaire.observe(h); });
 	}
+
+	/* Page d'une filière : un seul niveau ouvert à la fois. L'attribut name des <details> le fait déjà
+	   dans les navigateurs récents ; ce relais couvre les autres. */
+	document.addEventListener('toggle', function (e) {
+		var d = e.target;
+		if (!d.matches || !d.matches('details.annee') || !d.open) return;
+		[].forEach.call(document.querySelectorAll('details.annee[open]'), function (autre) {
+			if (autre !== d) autre.open = false;
+		});
+	}, true);
 })();

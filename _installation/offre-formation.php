@@ -15,6 +15,12 @@
  * communs des niveaux 1 et 2 de l'ISABEE relèvent du département SFBA. Pour la FALSH,
  * la FMSP, la FSEG et la FSJP, les départements ne sont pas publiés : leurs filières
  * sont rangées dans un groupe « Filières » (méta groupe), en attendant.
+ * Formations professionnelles (BTS, licences et masters professionnels de l'ENSET, licences
+ * professionnelles de la FS, masters professionnels de la FMSP) : d'après la base des
+ * inscriptions (tables ueb_filieres et ueb_filieres_niveaux, novembre 2026). L'ENSET ne
+ * les rattache pas à ses départements dans cette base : elles sont rangées dans un groupe
+ * « Formations professionnelles ». Les niveaux des licences professionnelles de la FS n'y
+ * figurent pas. La page Académie range les filières par parcours (inc/parcours.php).
  *
  * @package Site_UEB
  */
@@ -48,6 +54,7 @@ return array(
 			array( 'code' => 'ENSET-DDSE', 'sigle' => 'DDSE', 'titre' => 'Département de Didactique des disciplines, des sciences de l’éducation, de la pédagogie et de la formation bilingue', 'groupe' => false ),
 			array( 'code' => 'ENSET-AA', 'sigle' => 'AA', 'titre' => 'Département d’Agriculture', 'groupe' => false ),
 			array( 'code' => 'ENSET-ESB', 'sigle' => 'ESB', 'titre' => 'Département des Sciences de base', 'groupe' => false ),
+			array( 'code' => 'ENSET-PRO', 'sigle' => '', 'titre' => 'Formations professionnelles', 'groupe' => true ),
 		),
 		'ESTLC' => array(
 			array( 'code' => 'ESTLC-EG', 'sigle' => 'EG', 'titre' => 'Département des Enseignements généraux', 'groupe' => false, 'responsable' => 'M. Mballa Eloundou Aimé Christel' ),
@@ -273,5 +280,44 @@ return array(
 		array( 'code' => 'ENSTMO-NMSI', 'titre' => 'Navigation maritime et systèmes d’information', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
 		array( 'code' => 'ENSTMO-PM', 'titre' => 'Pêche et mariculture', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
 		array( 'code' => 'ENSTMO-SSIP', 'titre' => 'Sûreté et sécurité des installations portuaires et plateformes pétrolières', 'etab' => 'ENSTMO', 'departement' => 'ENSTMO-ING', 'diplome' => 'Diplôme d’ingénieur', 'niveaux' => 'Niveau 3, Niveau 4, Niveau 5' ),
+		/* Formations professionnelles, d'après la base des inscriptions (novembre 2026). */
+		array( 'code' => 'ENSET-PRO-BAT', 'titre' => 'Bâtiment', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS et licence professionnelle', 'niveaux' => 'BTS 1, BTS 2, L1 pro, L2 pro, L3 pro' ),
+		array( 'code' => 'ENSET-PRO-BF', 'titre' => 'Banque et finance', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS', 'niveaux' => 'BTS 1, BTS 2' ),
+		array( 'code' => 'ENSET-PRO-CCA', 'titre' => 'Comptabilité, contrôle et audit', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Licence professionnelle', 'niveaux' => 'L3 pro' ),
+		array( 'code' => 'ENSET-PRO-CGE', 'titre' => 'Comptabilité et gestion des entreprises', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS et master professionnel', 'niveaux' => 'BTS 1, BTS 2, M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-CO', 'titre' => 'Communication des organisations', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Licence professionnelle', 'niveaux' => 'L3 pro' ),
+		array( 'code' => 'ENSET-PRO-CT', 'titre' => 'Communication touristique', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Licence et master professionnels', 'niveaux' => 'L1 pro, L2 pro, L3 pro, M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-DIET', 'titre' => 'Diététique', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS', 'niveaux' => 'BTS 1, BTS 2' ),
+		array( 'code' => 'ENSET-PRO-ELT', 'titre' => 'Électrotechnique', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS et licence professionnelle', 'niveaux' => 'BTS 1, BTS 2, L1 pro, L2 pro, L3 pro' ),
+		array( 'code' => 'ENSET-PRO-ENR', 'titre' => 'Énergies renouvelables', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS', 'niveaux' => 'BTS 1, BTS 2' ),
+		array( 'code' => 'ENSET-PRO-GCU', 'titre' => 'Gestion culinaire', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS', 'niveaux' => 'BTS 1, BTS 2' ),
+		array( 'code' => 'ENSET-PRO-GISER', 'titre' => 'Gestion des infrastructures et services d’énergie renouvelable', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Master professionnel', 'niveaux' => 'M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-GLT', 'titre' => 'Gestion logistique et transport', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS, licence et master professionnels', 'niveaux' => 'BTS 1, BTS 2, L1 pro, L2 pro, L3 pro, M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-GMH', 'titre' => 'Gestion et management hôtelier', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS', 'niveaux' => 'BTS 1, BTS 2' ),
+		array( 'code' => 'ENSET-PRO-GRH', 'titre' => 'Gestion des ressources humaines', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS, licence et master professionnels', 'niveaux' => 'BTS 1, BTS 2, L1 pro, L2 pro, L3 pro, M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-IAA', 'titre' => 'Intelligence artificielle et application', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Master professionnel', 'niveaux' => 'M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-IEE', 'titre' => 'Ingénierie de l’énergie électrique', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Licence et master professionnels', 'niveaux' => 'L3 pro, M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-IH', 'titre' => 'Industrie de l’habillement', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS et licence professionnelle', 'niveaux' => 'BTS 1, BTS 2, L3 pro' ),
+		array( 'code' => 'ENSET-PRO-IIA', 'titre' => 'Informatique industrielle et automatisme', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS et licence professionnelle', 'niveaux' => 'BTS 1, BTS 2, L1 pro, L2 pro, L3 pro' ),
+		array( 'code' => 'ENSET-PRO-ITH', 'titre' => 'Industrie du textile et de l’habillement', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Master professionnel', 'niveaux' => 'M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-MAB', 'titre' => 'Maintenance des appareils biomédicaux', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS et licence professionnelle', 'niveaux' => 'BTS 1, BTS 2, L3 pro' ),
+		array( 'code' => 'ENSET-PRO-MAT', 'titre' => 'Management touristique', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS', 'niveaux' => 'BTS 1, BTS 2' ),
+		array( 'code' => 'ENSET-PRO-MCH', 'titre' => 'Management des chantiers', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Master professionnel', 'niveaux' => 'M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-MCV', 'titre' => 'Marketing, commerce et vente', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS', 'niveaux' => 'BTS 1, BTS 2' ),
+		array( 'code' => 'ENSET-PRO-MEB', 'titre' => 'Menuiserie et ébénisterie', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS', 'niveaux' => 'BTS 1, BTS 2' ),
+		array( 'code' => 'ENSET-PRO-MEV', 'titre' => 'Management événementiel', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS', 'niveaux' => 'BTS 1, BTS 2' ),
+		array( 'code' => 'ENSET-PRO-MSIE', 'titre' => 'Maintenance des systèmes électriques et installations électriques', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Master professionnel', 'niveaux' => 'M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-MTH', 'titre' => 'Management et technique d’hébergement', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Licence professionnelle', 'niveaux' => 'L1 pro, L2 pro, L3 pro' ),
+		array( 'code' => 'ENSET-PRO-MTSEC', 'titre' => 'Maintenance en télédistance et systèmes électroniques connectés', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Master professionnel', 'niveaux' => 'M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-NHD', 'titre' => 'Nutrition humaine et diététique', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Licence et master professionnels', 'niveaux' => 'L1 pro, L2 pro, L3 pro, M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-PV', 'titre' => 'Production végétale', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'BTS', 'niveaux' => 'BTS 1, BTS 2' ),
+		array( 'code' => 'ENSET-PRO-STR', 'titre' => 'Structures', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Master professionnel', 'niveaux' => 'M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-TE', 'titre' => 'Technologie éducative', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Licence et master professionnels', 'niveaux' => 'L1 pro, L2 pro, L3 pro, M1 pro, M2 pro' ),
+		array( 'code' => 'ENSET-PRO-TIC', 'titre' => 'Technologie de l’information et de la communication', 'etab' => 'ENSET', 'departement' => 'ENSET-PRO', 'diplome' => 'Licence professionnelle', 'niveaux' => 'L1 pro, L2 pro, L3 pro' ),
+		array( 'code' => 'FS-LP-SBM', 'titre' => 'Sciences biomédicales et médico-sanitaires (SBM)', 'etab' => 'FS', 'departement' => 'FS-SBM', 'diplome' => 'Licence professionnelle', 'niveaux' => '' ),
+		array( 'code' => 'FS-LP-TBM', 'titre' => 'Technologie biomédicale (TBM)', 'etab' => 'FS', 'departement' => 'FS-SBM', 'diplome' => 'Licence professionnelle', 'niveaux' => '' ),
+		array( 'code' => 'FS-LP-SBAA', 'titre' => 'Sciences biologiques appliquées à l’agriculture (SBAA)', 'etab' => 'FS', 'departement' => 'FS-SBA', 'diplome' => 'Licence professionnelle', 'niveaux' => '' ),
+		array( 'code' => 'FMSP-EA', 'titre' => 'Épidémiologie appliquée', 'etab' => 'FMSP', 'departement' => 'FMSP-FILIERES', 'diplome' => 'Master professionnel', 'niveaux' => 'M1 pro, M2 pro' ),
+		array( 'code' => 'FMSP-SC', 'titre' => 'Santé communautaire', 'etab' => 'FMSP', 'departement' => 'FMSP-FILIERES', 'diplome' => 'Master professionnel', 'niveaux' => 'M1 pro, M2 pro' ),
 	),
 );

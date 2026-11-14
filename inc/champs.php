@@ -55,6 +55,7 @@ function sueb_champs() {
 				'responsable'  => array( 'Responsable', 'text', 'Doyen, directeur, chef de département ou coordonnateur.' ),
 				'diplome'      => array( 'Diplôme délivré', 'text', 'Filière seulement (ex. Licence, Master).' ),
 				'niveaux'      => array( 'Niveaux ouverts', 'text', 'Filière seulement, séparés par des virgules (ex. L1, L2, L3, M1).' ),
+				'parcours'     => array( 'Parcours', 'text', 'Filière seulement : classique, pro, bts-ingenierie ou medecine (plusieurs possibles, séparés par des virgules). Vide : déduit des niveaux ouverts et du diplôme. La page Académie range les filières par parcours.' ),
 				'accroche'     => array( 'Accroche', 'textarea', 'Filière seulement : la phrase en grand en haut de sa page (ex. « Former les ingénieurs agronomes de demain. »). Le résumé s’affiche à côté.' ),
 				'contact_courriel'  => array( 'Courriel de contact', 'email', 'Établissement : affiché sur la page Contact. Filière : dans l’encadré « Contact » de sa page.' ),
 				'contact_telephone' => array( 'Téléphone de contact', 'text', 'Établissement ou filière.' ),

@@ -357,9 +357,9 @@ add_action( 'pre_get_posts', function ( $q ) {
 
 /* Une fois : l'adresse /academie/ entre dans les règles de réécriture. */
 add_action( 'init', function () {
-	if ( 'a1' !== get_option( 'sueb_regles_academie' ) ) {
+	if ( 'a2' !== get_option( 'sueb_regles_academie' ) ) { // a2 : les adresses des parcours (inc/parcours.php)
 		flush_rewrite_rules( false );
-		update_option( 'sueb_regles_academie', 'a1' );
+		update_option( 'sueb_regles_academie', 'a2' );
 	}
 }, 99 );
 

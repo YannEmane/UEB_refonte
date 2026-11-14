@@ -85,6 +85,12 @@ function sueb_filiere( $f ) {
 	$niveaux = array();
 	$credits = 0;
 	$ues     = get_children( array( 'post_parent' => $f->ID, 'post_type' => 'ueb_structure', 'post_status' => 'publish', 'orderby' => 'menu_order title', 'order' => 'ASC' ) );
+	/* Les enseignants de toutes les UE, chargés en une fois. */
+	$ids = array();
+	foreach ( $ues as $u ) {
+		$ids = array_merge( $ids, sueb_ids( sueb_meta( $u->ID, 'enseignants' ) ) );
+	}
+	$personnes = sueb_personnes( $ids );
 	foreach ( $ues as $u ) {
 		$syllabus = (int) sueb_meta( $u->ID, 'syllabus' );
 		$ue       = array(
@@ -95,6 +101,7 @@ function sueb_filiere( $f ) {
 			'volume'   => (string) sueb_meta( $u->ID, 'volume' ),
 			'syllabus' => $syllabus ? (string) wp_get_attachment_url( $syllabus ) : '',
 			'url'      => get_permalink( $u ),
+			'profs'    => array_values( array_intersect_key( $personnes, array_flip( sueb_ids( sueb_meta( $u->ID, 'enseignants' ) ) ) ) ),
 		);
 		$niveaux[ sueb_niveau_ue( $ue['semestre'], $diplome ) ][] = $ue;
 		$credits += (int) $ue['credits'];
@@ -114,6 +121,8 @@ function sueb_filiere( $f ) {
 		'code'        => $code,
 		'diplome'     => $diplome,
 		'responsable' => (string) sueb_meta( $f->ID, 'responsable' ),
+		'resume'      => trim( (string) sueb_meta( $f->ID, 'accroche' ) ) ?: wp_trim_words( wp_strip_all_tags( $f->post_excerpt ?: $f->post_content ), 26 ),
+		'photo'       => (string) get_the_post_thumbnail_url( $f->ID, 'sueb-carte' ),
 		'url'         => get_permalink( $f ),
 		'niveaux'     => $niveaux,
 		'nb_ue'       => count( $ues ),
@@ -202,6 +211,11 @@ function sueb_page_etablissement( $id ) {
 			++$nb_filieres;
 		}
 		$departements[] = array(
+			'id'          => $d->ID,
+			'chef'        => sueb_meta( $d->ID, 'groupe' ) ? null : sueb_chef_departement( $d->ID ),
+			'nb_ue'       => array_sum( array_map( function ( $f ) {
+				return array_sum( array_map( 'count', $f['niveaux'] ) );
+			}, $filieres ) ),
 			'groupe'      => (bool) sueb_meta( $d->ID, 'groupe' ),
 			'titre'       => $d->post_title,
 			'sigle'       => (string) sueb_meta( $d->ID, 'sigle' ),
@@ -287,6 +301,8 @@ function sueb_page_etablissement( $id ) {
 			'campus'     => (string) sueb_meta( $id, 'intro_campus' ),
 		),
 		'presentation' => $presente,
+		'missions'     => sueb_missions( $id, $sigle ),
+		'doctorat'     => sueb_doctorat( $id, $sigle ),
 		'departements' => $departements,
 		'direction'    => $direction,
 		'equipe'       => $equipe,
@@ -323,4 +339,156 @@ function sueb_presentation_etablissement( array $p ) {
 		$phrases[] = sprintf( '%s assure la tutelle académique %s : %s.', $il, 1 === $n ? 'd’un établissement privé' : 'de ' . $n . ' établissements privés', implode( ', ', array_column( $p['tutelle'], 'sigle' ) ) );
 	}
 	return $phrases;
+}
+
+/** Adresse de la page Académie : tous les établissements en bref (archive-ueb_structure.php). */
+function sueb_url_academie() {
+	return get_post_type_archive_link( 'ueb_structure' ) ?: home_url( '/academie/' );
+}
+
+/* La page Académie lit l'arbre des formations elle-même : la requête principale se limite à un établissement. */
+add_action( 'pre_get_posts', function ( $q ) {
+	if ( ! is_admin() && $q->is_main_query() && $q->is_post_type_archive( 'ueb_structure' ) ) {
+		$q->set( 'post_parent', 0 );
+		$q->set( 'posts_per_page', 1 );
+		$q->set( 'no_found_rows', true );
+	}
+} );
+
+/* Une fois : l'adresse /academie/ entre dans les règles de réécriture. */
+add_action( 'init', function () {
+	if ( 'a1' !== get_option( 'sueb_regles_academie' ) ) {
+		flush_rewrite_rules( false );
+		update_option( 'sueb_regles_academie', 'a1' );
+	}
+}, 99 );
+
+/* Le titre de l'onglet de la page Académie. */
+add_filter( 'document_title_parts', function ( $parties ) {
+	if ( is_post_type_archive( 'ueb_structure' ) ) {
+		$parties['title'] = 'Académie';
+	}
+	return $parties;
+} );
+
+
+/* ---------- Enseignants, chefs de département, missions, formation doctorale ---------- */
+
+/** Une liste d'identifiants (« ,12,45, », « 12, 45 » ou tableau) en entiers uniques. */
+function sueb_ids( $v ) {
+	$v = is_array( $v ) ? $v : preg_split( '/[^\d]+/', (string) $v );
+	return array_values( array_unique( array_filter( array_map( 'absint', $v ) ) ) );
+}
+
+/** La valeur enregistrée d'un champ « personnes » : « ,12,45, » (les virgules autour permettent de chercher « ,12, »). */
+function sueb_liste_ids( $v ) {
+	$ids = sueb_ids( $v );
+	return $ids ? ',' . implode( ',', $ids ) . ',' : '';
+}
+
+/** Des membres du personnel, en une requête : id => membre (sueb_membre_personnel), dans l'ordre demandé. */
+function sueb_personnes( array $ids ) {
+	$ids = sueb_ids( $ids );
+	if ( ! $ids ) {
+		return array();
+	}
+	$par = array();
+	foreach ( get_posts( array( 'post_type' => 'ueb_personnel', 'post__in' => $ids, 'numberposts' => -1, 'orderby' => 'post__in' ) ) as $p ) {
+		$par[ $p->ID ] = sueb_membre_personnel( $p );
+	}
+	return $par;
+}
+
+/** Les enseignants d'une UE (champ « Enseignants »). */
+function sueb_enseignants_ue( $ue_id ) {
+	return array_values( sueb_personnes( sueb_ids( sueb_meta( $ue_id, 'enseignants' ) ) ) );
+}
+
+/**
+ * Les UE qu'enseigne un membre du personnel, rangées par établissement :
+ * array( établissement => array( nom, sigle, url, couleur, logo, ues => array( UE… ) ) ).
+ */
+function sueb_ue_enseignees( $personne_id ) {
+	$ues = get_posts( array(
+		'post_type'   => 'ueb_structure',
+		'numberposts' => -1,
+		'meta_query'  => array( array( 'key' => '_sueb_enseignants', 'value' => ',' . (int) $personne_id . ',', 'compare' => 'LIKE' ) ), // phpcs:ignore WordPress.DB.SlowDBQuery -- quelques UE
+		'orderby'     => 'title',
+		'order'       => 'ASC',
+	) );
+	$fixe   = sueb_etablissements();
+	$sortie = array();
+	foreach ( $ues as $u ) {
+		$filiere = (int) $u->post_parent;
+		$racine  = sueb_racine( $u );
+		$sigle   = strtoupper( (string) sueb_meta( $racine, 'sigle' ) );
+		if ( ! isset( $sortie[ $racine ] ) ) {
+			$sortie[ $racine ] = array(
+				'nom'     => get_the_title( $racine ),
+				'sigle'   => $sigle,
+				'url'     => get_permalink( $racine ),
+				'couleur' => (string) sueb_meta( $racine, 'couleur' ) ?: ( $fixe[ $sigle ]['couleur'] ?? '#163d2b' ),
+				'logo'    => sueb_image_url( $racine, 'medium', 'logo' ) ?: sueb_logo( $sigle ),
+				'ues'     => array(),
+			);
+		}
+		$syllabus = (int) sueb_meta( $u->ID, 'syllabus' );
+		$sortie[ $racine ]['ues'][] = array(
+			'titre'    => $u->post_title,
+			'url'      => get_permalink( $u ),
+			'code'     => (string) sueb_meta( $u->ID, 'code' ),
+			'credits'  => (string) sueb_meta( $u->ID, 'credits' ),
+			'volume'   => (string) sueb_meta( $u->ID, 'volume' ),
+			'niveau'   => sueb_nom_niveau( sueb_niveau_ue( sueb_meta( $u->ID, 'semestre' ), sueb_meta( $filiere, 'diplome' ) ) ),
+			'filiere'  => sueb_titre_et_code( get_the_title( $filiere ) )[0],
+			'f_url'    => get_permalink( $filiere ),
+			'syllabus' => $syllabus ? (string) wp_get_attachment_url( $syllabus ) : '',
+		);
+	}
+	return $sortie;
+}
+
+/** Le chef d'un département : la fiche du Personnel rattachée à ce département (catégorie « Chefs de département » d'abord). */
+function sueb_chef_departement( $dep_id ) {
+	$fiches = get_posts( array( 'post_type' => 'ueb_personnel', 'numberposts' => -1, 'meta_key' => '_sueb_departement', 'meta_value' => (int) $dep_id, 'orderby' => 'menu_order title', 'order' => 'ASC' ) );
+	$repli  = null;
+	foreach ( $fiches as $p ) {
+		if ( has_term( 'chefs-departement', 'ueb_corps', $p ) ) {
+			return sueb_membre_personnel( $p );
+		}
+		if ( ! $repli && preg_match( '/chef/i', (string) sueb_meta( $p->ID, 'fonction' ) ) ) {
+			$repli = $p;
+		}
+	}
+	return $repli ? sueb_membre_personnel( $repli ) : null;
+}
+
+/** Une biographie courte d'une personne (les premiers mots de sa biographie), ou une phrase tirée de sa fiche. */
+function sueb_bio_courte( array $m, $mots = 60 ) {
+	if ( '' !== trim( (string) $m['biographie'] ) ) {
+		return wp_trim_words( wp_strip_all_tags( $m['biographie'] ), $mots );
+	}
+	$phrase = $m['nom'] . ( $m['fonction'] ? ', ' . lcfirst( $m['fonction'] ) : '' );
+	if ( $m['grade'] && false === stripos( $phrase, $m['grade'] ) ) {
+		$phrase .= ' (' . $m['grade'] . ')';
+	}
+	return $phrase . ( $m['specialite'] ? '. Spécialité : ' . $m['specialite'] : '' ) . '.';
+}
+
+/** Les missions d'un établissement : le champ « Missions », sinon celles livrées avec le thème. */
+function sueb_missions( $id, $sigle ) {
+	$lignes = array_values( array_filter( array_map( 'trim', preg_split( '/\R/u', (string) sueb_meta( $id, 'mission' ) ) ) ) );
+	return $lignes ?: ( sueb_missions_defaut()[ strtoupper( $sigle ) ] ?? array() );
+}
+
+/** La formation doctorale d'un établissement : array( array( nom, présentation, spécialités ) ). */
+function sueb_doctorat( $id, $sigle ) {
+	$sortie = array();
+	foreach ( preg_split( '/\R/u', (string) sueb_meta( $id, 'ecole_doctorale' ) ) as $ligne ) {
+		$p = array_map( 'trim', explode( '|', $ligne, 3 ) );
+		if ( '' !== $p[0] ) {
+			$sortie[] = array( $p[0], $p[1] ?? '', array_values( array_filter( array_map( 'trim', explode( ',', $p[2] ?? '' ) ) ) ) );
+		}
+	}
+	return $sortie ?: ( sueb_doctorat_defaut()[ strtoupper( $sigle ) ] ?? array() );
 }

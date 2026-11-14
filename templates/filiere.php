@@ -50,11 +50,21 @@ foreach ( $f['niveaux'] as $niveau => $ues ) {
 		'nb'        => count( $ues ),
 	);
 }
+/* L'équipe pédagogique : les enseignants de toutes ses UE, une fois chacun. */
+$profs = array();
+foreach ( $f['niveaux'] as $ues ) {
+	foreach ( $ues as $u ) {
+		foreach ( $u['profs'] as $prof ) {
+			$profs[ $prof['id'] ] = $prof;
+		}
+	}
+}
 $nom_semestre = function ( $s ) {
 	return preg_match( '/^S(\d+)$/i', $s, $m ) ? 'Semestre ' . $m[1] : $s;
 };
 $liens = array_filter( array(
 	array( '#programme', 'Programme des cours', (bool) $annees ),
+	array( '#titre-profs', 'Équipe pédagogique', (bool) $profs ),
 	array( '#a-propos', 'À propos de la filière', true ),
 	array( get_permalink( $racine ) . '#equipe', 'L’équipe enseignante de ' . $sigle, true ),
 	array( $parent && ! $groupe ? get_permalink( $parent ) : '', 'Page du département', $parent && ! $groupe ),
@@ -69,7 +79,7 @@ $liens = array_filter( array(
 			<p class="surtitre surtitre--clair">Filière<?php echo $f['code'] ? ' · ' . esc_html( $f['code'] ) : ''; ?><?php echo $f['diplome'] ? ' · ' . esc_html( $f['diplome'] ) : ''; ?></p>
 			<h1><?php echo esc_html( $f['titre'] ); ?></h1>
 			<ol class="fil-ariane programme-tete__fil">
-				<li><a href="<?php echo esc_url( home_url( '/#etablissements' ) ); ?>">Établissements</a></li>
+				<li><a href="<?php echo esc_url( sueb_url_academie() ); ?>">Académie</a></li>
 				<?php foreach ( array_reverse( get_post_ancestors( $id ) ) as $a ) : ?>
 					<li><a href="<?php echo esc_url( get_permalink( $a ) ); ?>"><?php echo esc_html( sueb_meta( $a, 'sigle' ) ?: sueb_titre_et_code( get_the_title( $a ) )[0] ); ?></a></li>
 				<?php endforeach; ?>
@@ -102,10 +112,10 @@ $liens = array_filter( array(
 					<?php if ( ! $annees ) : ?>
 						<p class="vide">Les unités d’enseignement de cette filière seront bientôt publiées.</p>
 					<?php else : ?>
-						<p class="programme-section__aide">Les unités d’enseignement année par année, avec leurs crédits. Choisissez une UE pour voir son volume horaire et son syllabus.</p>
+						<p class="programme-section__aide">Dépliez un niveau pour voir ses unités d’enseignement, semestre par semestre : code, crédits, volume horaire, enseignants et syllabus. Choisissez un enseignant pour lire sa fiche.</p>
 						<div class="annees">
 							<?php $i = 0; foreach ( $annees as $niveau => $an ) : ?>
-								<details class="annee"<?php echo 0 === $i ? ' open' : ''; ?>>
+								<details class="annee" name="niveaux-filiere"<?php echo 0 === $i ? ' open' : ''; ?>>
 									<summary>
 										<span class="annee__titre"><?php echo esc_html( sueb_nom_niveau( $niveau ) ); ?></span>
 										<span class="annee__resume"><?php echo $an['nb'] ? esc_html( $an['nb'] . ' UE · ' . $an['credits'] . ' crédits' ) : 'À venir'; ?></span>
@@ -115,23 +125,38 @@ $liens = array_filter( array(
 										<?php if ( ! $an['nb'] ) : ?>
 											<p class="vide">Les unités d’enseignement de ce niveau seront bientôt publiées.</p>
 										<?php endif; ?>
-										<?php foreach ( $an['semestres'] as $sem => $ues ) : ?>
-											<table class="semestre">
-												<caption class="sr"><?php echo esc_html( sueb_nom_niveau( $niveau ) . ', ' . $nom_semestre( $sem ) ); ?></caption>
-												<thead><tr><th scope="col"><?php echo esc_html( $nom_semestre( $sem ) ); ?></th><th scope="col">Crédits</th></tr></thead>
-												<tbody>
-													<?php foreach ( $ues as $u ) : ?>
-														<tr>
-															<th scope="row">
-																<a href="<?php echo esc_url( $u['url'] ); ?>"><?php if ( $u['code'] ) : ?><span class="semestre__code"><?php echo esc_html( $u['code'] ); ?></span><?php endif; ?><?php echo esc_html( $u['titre'] ); ?></a>
-																<?php if ( $u['syllabus'] ) : ?><a class="semestre__syllabus" href="<?php echo esc_url( $u['syllabus'] ); ?>" target="_blank" rel="noopener"><?php echo sueb_icone( 'document', 14 ); ?>Syllabus</a><?php endif; ?>
-															</th>
-															<td><?php echo $u['credits'] ? esc_html( $u['credits'] . ' crédits' ) : '—'; ?></td>
-														</tr>
-													<?php endforeach; ?>
-												</tbody>
-											</table>
-										<?php endforeach; ?>
+											<?php foreach ( $an['semestres'] as $sem => $ues ) : $cr_sem = array_sum( array_map( 'intval', array_column( $ues, 'credits' ) ) ); ?>
+												<div class="semestre-bloc">
+													<h3 class="semestre-bloc__titre"><?php echo esc_html( $nom_semestre( $sem ) ); ?><span><?php echo esc_html( count( $ues ) . ' UE' . ( $cr_sem ? ' · ' . $cr_sem . ' crédits' : '' ) ); ?></span></h3>
+													<ul class="ues-liste" aria-label="<?php echo esc_attr( sueb_nom_niveau( $niveau ) . ', ' . $nom_semestre( $sem ) ); ?>">
+														<li class="ue ue--tete" aria-hidden="true"><span>Code</span><span>Unité d’enseignement</span><span>Crédits</span><span>Volume horaire</span><span>Enseignants</span><span>Syllabus</span></li>
+														<?php foreach ( $ues as $u ) :
+															$heures = preg_match( '/^\s*(\d+(?:[.,]\d+)?)\s*h\b\s*:?\s*(.*)$/iu', (string) $u['volume'], $vh ) ? array( $vh[1] . ' h', $vh[2] ) : array( (string) $u['volume'], '' );
+															?>
+															<li class="ue">
+																<span class="ue__code"><?php echo esc_html( $u['code'] ?: '—' ); ?></span>
+																<a class="ue__titre" href="<?php echo esc_url( $u['url'] ); ?>"><?php echo esc_html( $u['titre'] ); ?></a>
+																<span class="ue__credits" data-libelle="Crédits"><?php if ( $u['credits'] ) : ?><strong><?php echo esc_html( $u['credits'] ); ?></strong> crédits<?php else : ?>—<?php endif; ?></span>
+																<span class="ue__heures" data-libelle="Volume horaire"><?php if ( $heures[0] ) : ?><strong><?php echo esc_html( $heures[0] ); ?></strong><?php if ( $heures[1] ) : ?><small><?php echo esc_html( $heures[1] ); ?></small><?php endif; ?><?php else : ?>—<?php endif; ?></span>
+																<span class="ue__profs" data-libelle="Enseignants">
+																	<?php if ( $u['profs'] ) : foreach ( $u['profs'] as $prof ) : ?>
+																		<a class="prof" href="<?php echo esc_url( $prof['url'] ); ?>"><span class="avatar avatar--petit"><?php echo sueb_portrait_personnel( $prof ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?></span><span class="prof__nom"><?php echo esc_html( $prof['nom'] ); ?></span></a>
+																	<?php endforeach; else : ?>
+																		<span class="attente">À venir</span>
+																	<?php endif; ?>
+																</span>
+																<span class="ue__syllabus">
+																	<?php if ( $u['syllabus'] ) : ?>
+																		<a href="<?php echo esc_url( $u['syllabus'] ); ?>" target="_blank" rel="noopener"><?php echo sueb_icone( 'document', 16 ); ?>Syllabus</a>
+																	<?php else : ?>
+																		<span class="attente">Syllabus à venir</span>
+																	<?php endif; ?>
+																</span>
+															</li>
+														<?php endforeach; ?>
+													</ul>
+												</div>
+											<?php endforeach; ?>
 									</div>
 								</details>
 							<?php $i++; endforeach; ?>
@@ -149,6 +174,17 @@ $liens = array_filter( array(
 						<?php endforeach; ?>
 					</ul>
 				</nav>
+
+				<?php if ( $profs ) : ?>
+					<section class="programme-profs" aria-labelledby="titre-profs">
+						<h2 id="titre-profs">Équipe pédagogique</h2>
+						<ul>
+							<?php foreach ( $profs as $prof ) : ?>
+								<li><a class="prof" href="<?php echo esc_url( $prof['url'] ); ?>"><span class="avatar"><?php echo sueb_portrait_personnel( $prof ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?></span><span><strong class="prof__nom"><?php echo esc_html( $prof['nom'] ); ?></strong><small><?php echo esc_html( $prof['grade'] ?: $prof['fonction'] ); ?></small></span></a></li>
+							<?php endforeach; ?>
+						</ul>
+					</section>
+				<?php endif; ?>
 
 				<section class="programme-contact" aria-labelledby="titre-contact">
 					<h2 id="titre-contact">Contact de la filière</h2>

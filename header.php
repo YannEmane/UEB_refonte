@@ -16,13 +16,14 @@ $menu    = array(
 		array( 'Les dirigeants', sueb_url_dirigeants() ),
 		array( 'Vidéo de présentation', '#video' ),
 	) ),
-	array( 'Établissements et écoles', '#etablissements', array() ),
+	array( 'Académie', sueb_url_academie(), array() ),
 	array( 'Partenariats', '#partenariats', array() ),
 	array( 'Nouvelles et évènements', '#actualites', array(
 		array( 'Toutes les actualités', sueb_url_actualites() ),
 		array( 'Agenda', '#agenda' ),
 	) ),
 	array( 'Personnel', '#personnel', array() ),
+	array( 'Vie étudiante', '#vie-etudiante', array() ),
 );
 foreach ( sueb_etablissements() as $sigle => $e ) {
 	$menu[1][2][] = array( $sigle, sueb_lien_etablissement( $sigle ), $e['fr'] );
@@ -56,7 +57,7 @@ $icones = array(
 			<li class="bandeau-haut__acces"><a href="<?php echo esc_url( sueb_lien( 'preinscription' ) ); ?>">Préinscription</a></li>
 			<li class="bandeau-haut__acces"><a href="<?php echo esc_url( sueb_lien( 'inscription' ) ); ?>">Inscription</a></li>
 			<li><a href="<?php echo esc_url( $base . '#agenda' ); ?>">Agenda</a></li>
-			<li><a href="<?php echo esc_url( $base . '#contact' ); ?>">Contact</a></li>
+			<li><a href="<?php echo esc_url( sueb_url_contact() ); ?>">Contact</a></li>
 		</ul>
 	</div>
 </div>
@@ -75,7 +76,7 @@ $icones = array(
 			<ul class="nav__liste">
 				<?php foreach ( $menu as $i => $item ) : ?>
 					<li class="nav__item<?php echo $item[2] ? ' nav__item--sous' : ''; ?>">
-						<a class="nav__lien" href="<?php echo esc_url( $base . $item[1] ); ?>"><?php echo esc_html( $item[0] ); ?><?php echo $item[2] ? sueb_icone( 'chevron', 14 ) : ''; ?></a>
+						<a class="nav__lien" href="<?php echo esc_url( 0 === strpos( $item[1], '#' ) ? $base . $item[1] : $item[1] ); ?>"><?php echo esc_html( $item[0] ); ?><?php echo $item[2] ? sueb_icone( 'chevron', 14 ) : ''; ?></a>
 						<?php if ( $item[2] ) : ?>
 							<div class="sous-menu<?php echo 1 === $i ? ' sous-menu--large' : ''; ?>">
 								<ul>

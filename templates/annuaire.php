@@ -78,14 +78,33 @@ foreach ( $groupes as $g ) {
 					<h2 class="annuaire__titre" id="groupe-<?php echo esc_attr( $g['slug'] ); ?>"><?php echo esc_html( $g['nom'] ); ?><small data-groupe-compte><?php echo (int) $n; ?></small></h2>
 					<?php foreach ( $poles as $cle => $pole ) : ?>
 						<div class="annuaire__pole"<?php echo $cle ? ' data-pole' : ''; ?>>
-							<?php if ( $pole['nom'] ) : ?>
+							<?php
+							/* Le pôle du Rectorat n'a pas d'intitulé : ses deux premiers membres, les deux plus hauts
+							   dirigeants (Recteur et PCA), ouvrent la page en grand, au centre ; les suivants viennent dessous. */
+							$tete = array();
+							if ( 'rectorat' === $cle ) {
+								$tete = array_slice( $pole['membres'], 0, 2 );
+								$pole['membres'] = array_slice( $pole['membres'], 2 );
+							} elseif ( $pole['nom'] ) {
+								?>
 								<h3 class="annuaire__sous-titre"><?php echo esc_html( $pole['nom'] ); ?></h3>
+								<?php
+							}
+							?>
+							<?php if ( $tete ) : ?>
+								<ul class="fiches fiches--tete">
+									<?php foreach ( $tete as $m ) : ++$i; ?>
+										<?php echo sueb_fiche_personnel( $m, 'fiche-perso--grande' ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?>
+									<?php endforeach; ?>
+								</ul>
 							<?php endif; ?>
-							<ul class="fiches">
-								<?php foreach ( $pole['membres'] as $m ) : ?>
-									<?php echo sueb_fiche_personnel( $m, $i++ >= $apercu ? 'est-replie' : '' ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?>
-								<?php endforeach; ?>
-							</ul>
+							<?php if ( $pole['membres'] ) : ?>
+								<ul class="fiches">
+									<?php foreach ( $pole['membres'] as $m ) : ?>
+										<?php echo sueb_fiche_personnel( $m, $i++ >= $apercu ? 'est-replie' : '' ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?>
+									<?php endforeach; ?>
+								</ul>
+							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
 					<?php if ( $n > $apercu ) : ?>

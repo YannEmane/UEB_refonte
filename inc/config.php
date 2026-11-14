@@ -45,6 +45,43 @@ function sueb_url_actualites() {
 }
 
 /**
+ * Adresse de la page Contact (page WordPress « contact », gabarit page-contact.php,
+ * créée une fois par le thème si elle manque). Sans cette page, /contact/.
+ */
+function sueb_url_contact() {
+	$page = get_page_by_path( 'contact' );
+	return $page ? get_permalink( $page ) : home_url( '/contact/' );
+}
+
+/* Une fois : la page Contact est créée si elle n'existe pas (son texte sert d'introduction). */
+add_action( 'init', function () {
+	if ( get_option( 'sueb_page_contact' ) || ! post_type_exists( 'page' ) ) {
+		return;
+	}
+	if ( ! get_page_by_path( 'contact', OBJECT, 'page' ) ) {
+		wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Contact', 'post_name' => 'contact', 'post_content' => '' ) );
+	}
+	update_option( 'sueb_page_contact', 1 );
+}, 30 );
+
+/** Adresse de la page Étudiants : la vie étudiante sur les campus (page « etudiants », gabarit page-etudiants.php). */
+function sueb_url_etudiants() {
+	$page = get_page_by_path( 'etudiants' );
+	return $page ? get_permalink( $page ) : home_url( '/etudiants/' );
+}
+
+/* Une fois : la page Étudiants est créée si elle n'existe pas (ses textes sont dans les réglages « Vie étudiante »). */
+add_action( 'init', function () {
+	if ( get_option( 'sueb_page_etudiants' ) ) {
+		return;
+	}
+	if ( ! get_page_by_path( 'etudiants', OBJECT, 'page' ) ) {
+		wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Vie étudiante', 'post_name' => 'etudiants', 'post_content' => '' ) );
+	}
+	update_option( 'sueb_page_etudiants', 1 );
+}, 30 );
+
+/**
  * Les neuf établissements, repris du site des inscriptions.
  * Sert à créer les fiches à l'installation et de repli (logo, couleur).
  * « presentation » : texte de présentation de la page (repli tant que la fiche n'a pas de texte dans l'admin).
@@ -63,6 +100,84 @@ function sueb_etablissements() {
 		'ISABEE' => array( 'fr' => "Institut Supérieur d'Agriculture, du Bois, de l'Eau et de l'Environnement", 'couleur' => '#3A7D44', 'ville' => 'Ebolowa', 'photos' => array( 'campus-ebolowa', 'vie-etudiante-3' ), 'responsable' => 'Pr Philippe KOSMA', 'presentation' => "Au cœur d’une région de forêt équatoriale aux ressources exceptionnelles, l’ISABEE forme les ingénieurs qui produiront, transformeront et protégeront les richesses naturelles du Cameroun. Sciences de l’ingénieur, travaux pratiques, stages de terrain et projet de fin d’études : à l’ISABEE, vous apprenez en faisant, au plus près des exploitations, des forêts et des cours d’eau."),
 		'ESTLC'  => array( 'fr' => 'École Supérieure de Transport, de Logistique et de Commerce', 'couleur' => '#4E7F1D', 'ville' => 'Ambam', 'photos' => array( 'campus-ambam', 'diplomes' ), 'responsable' => 'Pr Jean Gaston TAMBA', 'presentation' => "Vous êtes jeune, ambitieux et vous souhaitez donner une véritable dimension professionnelle à votre parcours universitaire ? À Ambam, carrefour du Cameroun, du Gabon et de la Guinée équatoriale, l’ESTLC vous forme aux métiers du transport, de la logistique, du commerce et des technologies. Ici, la formation ne se limite pas à la théorie : chaque étudiant développe le savoir, le savoir-faire et le savoir-être qu’exige son futur métier."),
 		'ENSTMO' => array( 'fr' => 'École Nationale Supérieure des Sciences et Techniques Maritimes et Océaniques', 'couleur' => '#1b2c5a', 'ville' => 'Kribi', 'photos' => array( 'visite-port', 'vie-etudiante-12' ), 'campus' => array( array( 'enstmo-campus', 'Le campus de l’ENSTMO à Kribi' ), array( 'enstmo-visite-entrepot', 'Visite d’un entrepôt' ), array( 'enstmo-terminal-kribi', 'Kribi Conteneurs Terminal, au port de Kribi' ) ), 'responsable' => 'Pr Achille PANDONG', 'presentation' => 'Installée à Kribi, ville portuaire en plein essor, l’ENSTMO vous ouvre les métiers de la mer et de l’économie bleue : pêche, construction navale, transport maritime, océanographie, exploitation et gestion portuaire. La proximité du complexe industrialo-portuaire offre aux étudiants un environnement d’apprentissage directement connecté aux réalités du secteur maritime.'),
+	);
+}
+
+/**
+ * Les missions de chaque établissement, livrées avec le thème (tirées de sa présentation, de son offre de
+ * formation et de la presse) ; le champ « Missions » de sa fiche les remplace. Une mission par entrée.
+ */
+function sueb_missions_defaut() {
+	return array(
+		'FS'     => array(
+			'Former des licenciés et des masters en sciences fondamentales et appliquées : mathématiques, chimie, biologie, sciences biomédicales et informatique.',
+			'Donner à chaque étudiant une solide pratique de laboratoire et de terrain, en lien avec les besoins de l’agriculture, de la santé et de l’industrie.',
+			'Développer la recherche scientifique, en particulier en mathématiques appliquées, en sciences biomédicales et en agriculture biologique.',
+			'Préparer les étudiants à l’emploi et à l’entrepreneuriat.',
+		),
+		'FSJP'   => array(
+			'Former les magistrats, avocats, notaires, juristes d’entreprise et cadres de l’administration et des collectivités territoriales.',
+			'Enseigner le droit et la science politique, avec une attention particulière au droit des affaires OHADA, à la gouvernance et à la décentralisation.',
+			'Conduire la recherche juridique et politique et former des docteurs : les premières thèses de l’Université d’Ebolowa y ont été soutenues en juillet 2026.',
+			'Mettre son expertise au service des institutions et des acteurs locaux.',
+		),
+		'FSEG'   => array(
+			'Former les économistes, gestionnaires, financiers et managers dont ont besoin les entreprises, les banques et les administrations.',
+			'Développer l’esprit d’entreprise des étudiants, selon la vision entrepreneuriale de l’université.',
+			'Mener la recherche en économie et en gestion, et encadrer des doctorants.',
+			'Accompagner le développement économique de la Région du Sud.',
+		),
+		'FALSH'  => array(
+			'Former aux métiers de la communication, du journalisme, de la traduction, du tourisme, des arts et du patrimoine.',
+			'Enseigner les langues, les lettres, l’histoire et les sciences humaines au travers de parcours professionnalisants.',
+			'Valoriser et transmettre les richesses culturelles du Cameroun.',
+			'Développer la recherche en arts, lettres et sciences humaines.',
+		),
+		'FMSP'   => array(
+			'Former les médecins, les pharmaciens et les professionnels de santé publique, selon le programme national de formation médicale, pharmaceutique et odontostomatologique.',
+			'Assurer la formation clinique des étudiants à l’Hôpital de référence de Sangmélima.',
+			'Développer la recherche en santé, en épidémiologie et en santé communautaire.',
+			'Transmettre l’éthique et la déontologie des professions de santé.',
+		),
+		'ENSET'  => array(
+			'Former les professeurs de l’enseignement secondaire technique et professionnel.',
+			'Allier la maîtrise de la discipline, la pédagogie et la pratique en établissement.',
+			'Proposer des formations professionnalisantes : BTS, licences et masters professionnels.',
+			'Accompagner l’industrialisation du Cameroun par la formation technique.',
+		),
+		'ISABEE' => array(
+			'Former les ingénieurs de l’agriculture, du bois, de l’eau et de l’environnement.',
+			'Apprendre en faisant : travaux pratiques, stages de terrain et projet de fin d’études.',
+			'Contribuer à la gestion durable des forêts, des sols et des ressources en eau de la région.',
+			'Développer la recherche appliquée au service des exploitations et des filières locales.',
+		),
+		'ESTLC'  => array(
+			'Former aux métiers du transport, de la logistique, du commerce et des technologies.',
+			'Tirer parti de la position d’Ambam, carrefour du Cameroun, du Gabon et de la Guinée équatoriale, pour préparer aux échanges de la sous-région.',
+			'Développer chez chaque étudiant le savoir, le savoir-faire et le savoir-être qu’exige son métier.',
+			'Accompagner l’insertion professionnelle et l’entrepreneuriat.',
+		),
+		'ENSTMO' => array(
+			'Former aux métiers de la mer et de l’économie bleue : pêche, construction navale, transport maritime, océanographie, hydrographie, météorologie et gestion portuaire.',
+			'Adosser la formation au complexe industrialo-portuaire de Kribi.',
+			'Développer la recherche en sciences et techniques maritimes et océaniques.',
+			'Contribuer au développement de l’économie maritime du Cameroun.',
+		),
+	);
+}
+
+/**
+ * Les formations doctorales connues (presse : CRTV et Cameroon Tribune, juillet 2026), livrées avec le thème ;
+ * le champ « Formation doctorale » de la fiche les remplace. Chaque entrée : nom, présentation, spécialités.
+ */
+function sueb_doctorat_defaut() {
+	return array(
+		'FSJP' => array(
+			array( 'Formation doctorale en sciences juridiques et politiques', 'La faculté encadre des doctorants en droit et en science politique. En juillet 2026, elle a accueilli les premières soutenances de thèse de l’Université d’Ebolowa : quatorze doctorants y ont présenté leurs travaux.', array() ),
+		),
+		'FSEG' => array(
+			array( 'Formation doctorale en sciences économiques et de gestion', 'La faculté encadre dix-sept doctorants. Du 20 au 24 juillet 2026, elle a co-organisé à Ebolowa, avec l’Université Omar Bongo (Gabon), des séminaires doctoraux et de préparation à l’agrégation.', array() ),
+		),
 	);
 }
 
@@ -167,4 +282,35 @@ function sueb_corps_personnel() {
 		'enseignants'         => 'Enseignants',
 		'personnel-appui'     => 'Personnel d’appui',
 	);
+}
+
+/* ---------- Contacts et sites (page Contact), modifiables dans la gestion › Contacts et sites ---------- */
+
+/** Les services centraux par défaut : nom, lieu, téléphone, courriel, latitude, longitude. */
+function sueb_services_centraux_defaut() {
+	return array(
+		array( 'nom' => 'Centre médico-scolaire (CMS)', 'lieu' => 'Ebolowa', 'tel' => '', 'courriel' => '', 'lat' => 2.9157, 'lon' => 11.1543 ),
+		array( 'nom' => 'Centre des œuvres universitaires', 'lieu' => 'Ebolowa', 'tel' => '', 'courriel' => '', 'lat' => 2.9157, 'lon' => 11.1543 ),
+	);
+}
+
+/** Les services centraux affichés sur la page Contact (option « sueb_services_centraux »). */
+function sueb_services_centraux() {
+	$liste = get_option( 'sueb_services_centraux' );
+	return is_array( $liste ) ? $liste : sueb_services_centraux_defaut();
+}
+
+/** La position du rectorat sur la carte : array( latitude, longitude ). */
+function sueb_position_rectorat() {
+	$p = get_option( 'sueb_position_rectorat' );
+	return is_array( $p ) && 2 === count( $p ) ? array( (float) $p[0], (float) $p[1] ) : array( 2.9157, 11.1543 );
+}
+
+/** Une coordonnée saisie (« 2,9157 » ou « 2.9157 ») en nombre, ou null si elle est vide ou hors du Cameroun. */
+function sueb_lire_coordonnee( $v, $min, $max ) {
+	$v = str_replace( ',', '.', trim( (string) $v ) );
+	if ( '' === $v || ! is_numeric( $v ) || $v < $min || $v > $max ) {
+		return null;
+	}
+	return round( (float) $v, 6 );
 }

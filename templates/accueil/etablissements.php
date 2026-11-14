@@ -27,13 +27,15 @@ foreach ( $arbre as $e ) {
 ksort( $cartes );
 $cartes = array_merge( array_values( $cartes ), $autres );
 ?>
-<section class="section etablissements" id="etablissements" aria-labelledby="titre-etab">
+<section class="section etablissements<?php echo empty( $args['sans_tete'] ) ? '' : ' etablissements--academie'; ?>" id="etablissements" aria-label="Établissements de l’Université d’Ebolowa">
 	<div class="conteneur">
+		<?php if ( empty( $args['sans_tete'] ) ) : ?>
 		<header class="section__tete revele">
 			<p class="surtitre">Nos établissements et écoles</p>
 			<h2 id="titre-etab">Facultés, écoles et institut</h2>
 			<p class="section__chapo">Découvrez les établissements de l’UEb et parcourez leurs départements, leurs filières et leurs unités d’enseignement, jusqu’au syllabus et aux crédits de chaque cours.</p>
 		</header>
+		<?php endif; ?>
 
 		<?php if ( ! $cartes ) : ?>
 			<p class="vide">Les établissements seront bientôt présentés ici.</p>

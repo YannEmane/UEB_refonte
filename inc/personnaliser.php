@@ -33,6 +33,19 @@ function sueb_reglages_def() {
 				'video_affiche'    => array( 'Vidéo de présentation : image d’affiche', 'image', '' ),
 			),
 		),
+		'etudiants'   => array(
+			'titre'    => 'Vie étudiante',
+			'reglages' => array(
+				'etu_intro'     => array( 'Présentation', 'textarea', 'À Ebolowa, Sangmélima, Ambam et Kribi, la vie étudiante ne s’arrête pas aux salles de cours : associations, sport, culture et entraide font partie de vos années à l’Université d’Ebolowa.', 'Le texte en haut de la page. Un paragraphe par ligne.' ),
+				'etu_rubriques' => array( 'Rubriques', 'textarea', "Associations et clubs | Clubs scientifiques, culturels, entrepreneuriaux ou humanitaires : rejoignez une association, ou créez la vôtre avec d’autres étudiants.
+Sport | Football, handball, athlétisme et bien d’autres disciplines : entraînements, tournois entre établissements et jeux universitaires.
+Culture et loisirs | Journées culturelles, concours d’éloquence, musique, théâtre et danse rythment l’année universitaire.
+Logement | Les solutions de logement autour des campus et les démarches à prévoir avant la rentrée.
+Restauration | Où se restaurer sur les campus et aux alentours, à des prix adaptés aux étudiants.
+Bibliothèques et salles d’étude | Des espaces pour travailler, emprunter des ouvrages et réviser au calme.", 'Une rubrique par ligne : « titre | texte ». Vider le champ masque la section.' ),
+				'etu_photo'     => array( 'Photo du bandeau', 'image', '', 'La grande photo en haut de la page. Vide : une photo livrée avec le thème.' ),
+			),
+		),
 		'coordonnees' => array(
 			'titre'    => 'Coordonnées et liens UEb',
 			'reglages' => array(

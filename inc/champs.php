@@ -42,6 +42,8 @@ function sueb_champs() {
 				'intro_tutelle'    => array( 'Texte « Sous sa tutelle »', 'textarea', 'Établissement seulement : l’introduction de la section des établissements privés encadrés. Vide : le texte par défaut.' ),
 				'intro_equipe'     => array( 'Texte « L’équipe »', 'textarea', 'Établissement seulement : l’introduction de la section. Vide : le texte par défaut.' ),
 				'intro_campus'     => array( 'Texte « Campus »', 'textarea', 'Établissement seulement : l’introduction de la galerie. Vide : « … accueille ses étudiants à (ville). »' ),
+				'mission'          => array( 'Missions', 'textarea', 'Établissement seulement : une mission par ligne, affichées sur sa page. Vide : les missions livrées avec le thème.' ),
+				'ecole_doctorale'  => array( 'Formation doctorale', 'textarea', 'Établissement seulement : une école ou formation doctorale par ligne, « nom | présentation | spécialités séparées par des virgules ». Vide : les informations livrées avec le thème (s’il y en a).' ),
 				'campus_1'     => array( 'Campus : photo 1', 'media', 'Établissement seulement : la grande photo de la galerie. Sans aucune photo de campus, celles livrées avec le thème s’affichent.' ),
 				'legende_1'    => array( 'Légende de la photo 1', 'text', '' ),
 				'campus_2'     => array( 'Campus : photo 2', 'media', '' ),
@@ -54,14 +56,17 @@ function sueb_champs() {
 				'diplome'      => array( 'Diplôme délivré', 'text', 'Filière seulement (ex. Licence, Master).' ),
 				'niveaux'      => array( 'Niveaux ouverts', 'text', 'Filière seulement, séparés par des virgules (ex. L1, L2, L3, M1).' ),
 				'accroche'     => array( 'Accroche', 'textarea', 'Filière seulement : la phrase en grand en haut de sa page (ex. « Former les ingénieurs agronomes de demain. »). Le résumé s’affiche à côté.' ),
-				'contact_courriel'  => array( 'Courriel de contact', 'email', 'Filière seulement : affiché dans l’encadré « Contact » de sa page.' ),
-				'contact_telephone' => array( 'Téléphone de contact', 'text', 'Filière seulement.' ),
+				'contact_courriel'  => array( 'Courriel de contact', 'email', 'Établissement : affiché sur la page Contact. Filière : dans l’encadré « Contact » de sa page.' ),
+				'contact_telephone' => array( 'Téléphone de contact', 'text', 'Établissement ou filière.' ),
+				'coordonnees'       => array( 'Position sur la carte', 'text', 'Établissement seulement : latitude, longitude de son campus (ex. 2.9157, 11.1543), copiées depuis Google Maps (clic droit sur le lieu). Vide : le centre de sa ville.' ),
+				'adresse'           => array( 'Adresse', 'text', 'Établissement seulement, affichée sur la page Contact : campus, boîte postale (ex. Campus de Mekalat, BP 886 Ebolowa).' ),
 				'code'         => array( 'Code de l’UE', 'text', 'UE seulement (ex. MAT 111).' ),
 				'credits'      => array( 'Crédits', 'number', 'UE seulement.' ),
 				'semestre'     => array( 'Semestre', 'text', 'UE seulement (ex. S1).' ),
 				'volume'       => array( 'Volume horaire', 'text', 'UE seulement (ex. 60 h : 30 CM, 20 TD, 10 TP).' ),
 				'elements'     => array( 'Éléments constitutifs (EC)', 'textarea', 'UE seulement. Un EC par ligne : « code | intitulé | crédits | volume » (ex. « MES 511 | Introduction à l’idéation | 2 | 30 h : 4 CM, 4 TD, 18 TP, 4 TPE »).' ),
 				'syllabus'     => array( 'Syllabus (PDF)', 'media', 'UE seulement.' ),
+				'enseignants'  => array( 'Enseignants', 'personnes', 'UE seulement : les enseignants qui dispensent cette unité. Leur photo et un lien vers leur fiche s’affichent sur la page de la filière, et l’UE apparaît sur leur fiche.' ),
 			),
 		),
 		'ueb_partenaire' => array(
@@ -173,6 +178,15 @@ function sueb_boite_champs( $post, $boite ) {
 				echo '</select>';
 				break;
 
+			case 'personnes':
+				$choisis = sueb_ids( $val );
+				echo '<div style="max-height:240px;overflow:auto;padding:6px 10px;border:1px solid #c3c4c7;border-radius:4px;background:#fff">';
+				foreach ( get_posts( array( 'post_type' => 'ueb_personnel', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC' ) ) as $pers ) {
+					printf( '<label style="display:block;margin:3px 0"><input type="checkbox" name="%s[]" value="%d"%s> %s</label>', esc_attr( $nom ), $pers->ID, checked( in_array( $pers->ID, $choisis, true ), true, false ), esc_html( $pers->post_title ) );
+				}
+				echo '</div>';
+				break;
+
 			case 'media':
 				$apercu = '';
 				if ( $val ) {
@@ -219,6 +233,9 @@ add_action( 'save_post', function ( $post_id, $post ) {
 	foreach ( $tous[ $post->post_type ]['champs'] as $cle => $c ) {
 		$v = $recu[ $cle ] ?? '';
 		switch ( $c[1] ) {
+			case 'personnes':
+				$v = sueb_liste_ids( $v );
+				break;
 			case 'media':
 			case 'etablissement':
 			case 'departement':

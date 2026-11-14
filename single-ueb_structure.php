@@ -20,6 +20,13 @@ if ( 0 === sueb_profondeur( get_the_ID() ) ) {
 	return;
 }
 
+/* Un département a sa propre page : chef, présentation, filières (templates/departement.php). */
+if ( 1 === sueb_profondeur( get_the_ID() ) ) {
+	get_template_part( 'templates/departement', null, array( 'id' => get_the_ID() ) );
+	get_footer();
+	return;
+}
+
 /* Une filière a sa propre page : présentation et programme année par année (templates/filiere.php). */
 if ( 2 === sueb_profondeur( get_the_ID() ) ) {
 	get_template_part( 'templates/filiere', null, array( 'id' => get_the_ID() ) );
@@ -60,7 +67,7 @@ $reperes = array_filter( $reperes );
 <header class="page-tete page-tete--structure" style="--etab:<?php echo esc_attr( $couleur ); ?>">
 	<div class="conteneur">
 		<ol class="fil-ariane">
-			<li><a href="<?php echo esc_url( home_url( '/#etablissements' ) ); ?>">Établissements</a></li>
+			<li><a href="<?php echo esc_url( sueb_url_academie() ); ?>">Académie</a></li>
 			<?php foreach ( array_reverse( get_post_ancestors( $id ) ) as $a ) : ?>
 				<li><a href="<?php echo esc_url( get_permalink( $a ) ); ?>"><?php echo esc_html( sueb_meta( $a, 'sigle' ) ?: sueb_titre_et_code( get_the_title( $a ) )[0] ); ?></a></li>
 			<?php endforeach; ?>
@@ -140,6 +147,15 @@ $reperes = array_filter( $reperes );
 				<p class="vide">Syllabus bientôt disponible.</p>
 			<?php endif; ?>
 		</div>
+		<?php $profs_ue = sueb_enseignants_ue( $id ); ?>
+		<section class="ue-profs" aria-labelledby="titre-ue-profs">
+			<h2 class="titre-section" id="titre-ue-profs">Enseignants</h2>
+			<?php if ( $profs_ue ) : ?>
+				<ul class="profils"><?php foreach ( $profs_ue as $m ) { echo sueb_carte_personnel( $m ); } // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction ?></ul>
+			<?php else : ?>
+				<p class="vide">Les enseignants de cette unité seront bientôt présentés.</p>
+			<?php endif; ?>
+		</section>
 		<?php
 		/* Les éléments constitutifs, un par ligne : « code | intitulé | crédits | volume ». */
 		$elements = array_filter( array_map( 'trim', explode( "\n", (string) sueb_meta( $id, 'elements' ) ) ) );

@@ -13,7 +13,7 @@
 
 /* 1. JETONS ---------------------------------------------------------------- */
 .g-page {
-	--g-fond: #f2f5f2;
+	--g-fond: #f4f7f3;          /* papier des plateformes de préinscription et d'inscription */
 	--g-surface: #ffffff;
 	--g-surface-2: #f8faf8;
 	--g-survol: #eef4f0;
@@ -33,7 +33,7 @@
 	--g-ciel: #1f6f94;
 	--g-ciel-voile: rgba(55, 141, 183, .12);
 
-	--g-nav-fond: #123a24;
+	--g-nav-fond: #13351a;      /* vert du bandeau des plateformes */
 	--g-nav-texte: rgba(255, 255, 255, .74);
 	--g-nav-survol: rgba(255, 255, 255, .08);
 	--g-nav-filet: rgba(255, 255, 255, .13);
@@ -52,6 +52,7 @@
 	--g-r-s: 8px;
 	--g-r: 12px;
 	--g-r-l: 16px;
+	--g-nav-l: 252px;
 
 	--g-ease: cubic-bezier(.22, .61, .36, 1);
 	--g-ressort: cubic-bezier(.34, 1.28, .64, 1);
@@ -138,7 +139,7 @@
 
 /* 5. COQUILLE : MENU LATÉRAL + ZONE PRINCIPALE ------------------------------ */
 /* Le fond vert de la colonne du menu descend jusqu'en bas, même sur une page plus haute que l'écran. */
-.g-app { display: grid; grid-template-columns: 264px minmax(0, 1fr); min-height: calc(100vh - var(--g-barre-wp)); background: linear-gradient(90deg, var(--g-nav-fond) 264px, transparent 264px); }
+.g-app { display: grid; grid-template-columns: var(--g-nav-l) minmax(0, 1fr); min-height: calc(100vh - var(--g-barre-wp)); background: linear-gradient(90deg, var(--g-nav-fond) var(--g-nav-l), transparent var(--g-nav-l)); }
 .g-nav {
 	position: sticky; top: var(--g-barre-wp); z-index: 40;
 	display: flex; flex-direction: column;
@@ -175,7 +176,7 @@
 .g-nav__bas .g-ico { width: 16px; height: 16px; }
 
 .g-principal { min-width: 0; }
-.g-contenu { max-width: 1240px; padding: 1.75rem clamp(1rem, 2.5vw, 2.25rem) 4rem; outline: none; }
+.g-contenu { padding: 1.5rem clamp(1rem, 2.2vw, 2.4rem) 3rem; outline: none; }
 .g-mobile, .g-voile { display: none; }
 
 /* 6. EN-TÊTES D'ÉCRAN ------------------------------------------------------ */
@@ -441,3 +442,127 @@ td.g-actions > * + * { margin-left: .2rem; }
 .g-case--detail strong { color: var(--g-texte); font-weight: 600; }
 .g-case--detail small { color: var(--g-texte-pale); font-size: .8rem; line-height: 1.4; }
 .g-case:has(input:disabled) { cursor: not-allowed; opacity: .55; }
+
+
+/* =========================================================================
+   15. DISPOSITION DENSE, comme les espaces d'administration des plateformes de
+   préinscription et d'inscription : barre latérale vert bandeau, barre du haut
+   blanche (groupe › rubrique), zone de travail sur toute la largeur, panneaux
+   blancs à filet d'un pixel, formulaires sur deux colonnes en grand écran.
+   ========================================================================= */
+
+/* Barre latérale : onglets de 44 px, titres de groupe sobres (sans capitales). */
+.g-nav { padding-top: 1.4rem; }
+.g-nav__liens { padding: 0 .75rem; }
+.g-nav__groupe { margin: .9rem 0 .25rem; padding: .3rem .55rem .35rem; font-size: .78rem; letter-spacing: 0; text-transform: none; opacity: 1; }
+.g-nav__liens a { min-height: 44px; padding: 0 .85rem; border-radius: 10px; font-size: .92rem; }
+.g-nav__liens a[aria-current="page"]::before { left: -.75rem; }
+
+/* Barre du haut */
+.g-barre { position: sticky; top: var(--g-barre-wp); z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 60px; padding: .55rem clamp(1rem, 2.2vw, 2.4rem); border-bottom: 1px solid var(--g-filet); background: rgba(255, 255, 255, .96); backdrop-filter: blur(6px); }
+.g-barre__lieu { display: flex; align-items: center; gap: .5rem; min-width: 0; margin: 0; font-size: .9rem; color: var(--g-texte-doux); }
+.g-barre__ico { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 9px; background: #eef3ee; color: var(--g-primaire); }
+.g-barre__ico .g-ico { width: 17px; height: 17px; }
+.g-barre__groupe { font-weight: 600; white-space: nowrap; }
+.g-barre__sep { width: 15px; height: 15px; color: var(--g-texte-pale); }
+.g-barre__lieu b { overflow: hidden; font-weight: 700; color: var(--g-texte); text-overflow: ellipsis; white-space: nowrap; }
+.g-barre__actions { display: flex; align-items: center; gap: .75rem; flex: none; }
+.g-barre__compte { display: flex; align-items: center; gap: .5rem; font-size: .85rem; font-weight: 600; color: var(--g-texte-doux); }
+.g-barre__compte .g-compte__avatar { width: 32px; height: 32px; }
+.g-btn--petit { min-height: 36px; padding: 0 .85rem; font-size: .84rem; }
+.g-btn--petit .g-ico { width: 16px; height: 16px; color: var(--g-primaire); }
+
+/* En-têtes d'écran : titre en Source Serif, comme les plateformes. */
+.g-tete { margin-bottom: 1.25rem; }
+.g-tete h2 { font-family: var(--f-serif); font-weight: 700; font-size: clamp(1.45rem, 1.2rem + .8vw, 1.9rem); letter-spacing: -.015em; line-height: 1.15; }
+
+/* Panneaux : rayon de 16 px, filet d'un pixel, pas d'ombre au survol. */
+.g-panneau, .g-tableau, .g-kpi a { border-radius: var(--g-r-l); }
+.g-kpi a:hover { transform: none; box-shadow: var(--g-ombre-s); border-color: var(--g-primaire); }
+.g-kpis { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem; }
+.g-deux { gap: 1.25rem; }
+
+/* Tableaux denses : en-tête papier, sans capitales. */
+.g-tableau thead th { padding: .6rem 1rem; border-bottom-color: var(--g-filet-fort); background: var(--g-fond); font-size: .8rem; letter-spacing: 0; text-transform: none; }
+.g-tableau td, .g-tableau tbody th { padding: .8rem 1rem; }
+.g-tableau tr > :first-child { padding-left: 1.4rem; }
+.g-tableau tbody th { min-width: 18rem; }
+
+/* Formulaires : toute la largeur ; deux colonnes en grand écran, les champs longs
+   (texte riche, zones de texte, images, cases, intertitres) sur toute la ligne. */
+.g-form { max-width: none; }
+@media (min-width: 1200px) {
+	.g-form.g-panneau { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.15rem 1.75rem; align-items: start; }
+	.g-form.g-panneau > * { grid-column: 1 / -1; }
+	.g-form.g-panneau > .g-champ--text, .g-form.g-panneau > .g-champ--url, .g-form.g-panneau > .g-champ--email,
+	.g-form.g-panneau > .g-champ--number, .g-form.g-panneau > .g-champ--date, .g-form.g-panneau > .g-champ--datetime,
+	.g-form.g-panneau > .g-champ--select, .g-form.g-panneau > .g-champ--color, .g-form.g-panneau > .g-champ--parent,
+	.g-form.g-panneau > .g-champ--etablissement, .g-form.g-panneau > .g-champ--departement, .g-form.g-panneau > .g-champ--case,
+	.g-form.g-panneau > .g-champ--taxo:not(:has(fieldset)) { grid-column: auto; }
+	/* Le titre reste seul sur sa ligne : c'est le premier champ, le plus important. */
+	.g-form.g-panneau > .g-champ:first-child { grid-column: 1 / -1; }
+	.g-form.g-panneau .g-niveau { margin-top: 0; }
+	.g-form.g-panneau .g-riche__zone { min-height: 380px; }
+}
+.g-champ--case .g-case { min-height: 42px; }
+
+/* Médiathèque : vignettes un peu plus petites, plus nombreuses par ligne. */
+.g-medias { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+
+@media (max-width: 900px) {
+	.g-barre { display: none; }
+}
+
+/* =========================================================================
+   16. ÉDITEUR DE TEXTE ENRICHI : barre à icônes, liste des types de texte,
+   palettes de couleurs, tableaux, vidéo, compteur de mots, plein écran.
+   ========================================================================= */
+.g-riche__barre { align-items: center; gap: .3rem .5rem; padding: .4rem .5rem; }
+.g-riche__groupe { align-items: center; gap: .1rem; padding-right: .5rem; }
+.g-riche__outil { position: relative; display: inline-flex; }
+.g-riche__barre button { display: inline-grid; place-items: center; min-width: 34px; min-height: 34px; padding: 0 .4rem; color: var(--g-texte); font-size: .9rem; line-height: 1; }
+.g-riche__barre button .g-ico { width: 18px; height: 18px; }
+.g-riche__barre button sup, .g-riche__barre button sub { font-size: .6em; }
+.g-riche__bloc { min-height: 34px; padding: .3rem 2rem .3rem .6rem !important; border-radius: 6px !important; font-size: .85rem !important; font-weight: 600; color: var(--g-texte); background-color: var(--g-surface); cursor: pointer; }
+.g-riche__palette { position: absolute; top: calc(100% + 6px); left: 0; z-index: 10; display: grid; grid-template-columns: repeat(4, 30px); gap: .35rem; padding: .55rem; border: 1px solid var(--g-filet); border-radius: var(--g-r); background: var(--g-surface); box-shadow: var(--g-ombre-l); }
+.g-riche__palette[hidden] { display: none; }
+.g-riche__barre .g-riche__palette button { min-width: 30px; min-height: 30px; padding: 0; border: 1px solid var(--g-filet-fort); border-radius: 50%; background: var(--pastille); }
+.g-riche__barre .g-riche__palette button[data-valeur="transparent"] { background: linear-gradient(135deg, transparent 45%, var(--g-danger) 45% 55%, transparent 55%), var(--g-surface); }
+.g-riche__barre .g-riche__palette button:hover { transform: scale(1.12); border-color: var(--g-texte); }
+
+/* Ce que l'éditeur montre comme sur le site : alignements, tableaux, vidéo, exposants. */
+.g-riche__zone [style*="justify"] { hyphens: auto; }
+.g-riche__zone table { width: 100%; margin: 0 0 1rem; border-collapse: collapse; font-family: var(--f-texte); font-size: .92rem; }
+.g-riche__zone th, .g-riche__zone td { min-width: 4rem; padding: .5rem .65rem; border: 1px solid var(--g-filet-fort); vertical-align: top; }
+.g-riche__zone th { background: var(--g-surface-2); font-weight: 700; text-align: left; }
+.g-riche__zone .g-video { display: flex; align-items: center; gap: .6rem; padding: .85rem 1rem; border: 1px dashed var(--g-filet-fort); border-radius: var(--g-r-s); background: var(--g-surface-2); font-family: var(--f-texte); font-size: .9rem; color: var(--g-texte-doux); word-break: break-all; }
+.g-riche__zone .g-video::before { content: "▶ Vidéo :"; flex: none; font-weight: 700; color: var(--g-primaire); }
+.g-riche__pied { margin: 0; padding: .4rem .9rem; border-top: 1px solid var(--g-filet); background: var(--g-surface-2); font-size: .78rem; color: var(--g-texte-pale); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Plein écran : l'éditeur occupe toute la fenêtre, le texte en colonne de lecture. */
+.g-sans-defilement { overflow: hidden; }
+.g-riche--plein { position: fixed; inset: var(--g-barre-wp) 0 0 0; z-index: 150; display: flex; flex-direction: column; border-radius: 0; }
+.g-riche--plein .g-riche__barre { justify-content: center; }
+.g-riche--plein .g-riche__zone { flex: 1; overflow-y: auto; padding: 2rem max(1.5rem, calc((100% - 760px) / 2)); font-size: 1.1rem; }
+
+
+/* 17. SÉLECTION DES ENSEIGNANTS D'UNE UE ------------------------------------ */
+.g-personnes { overflow: hidden; border: 1px solid var(--g-filet-fort); border-radius: var(--g-r-s); background: var(--g-surface); }
+.g-personnes__tete { display: flex; align-items: center; gap: .75rem; padding: .5rem; border-bottom: 1px solid var(--g-filet); background: var(--g-surface-2); }
+.g-personnes__tete input { flex: 1; min-width: 0; padding: .45rem .7rem !important; font-size: .9rem !important; }
+.g-personnes__compte { flex: none; padding: .15rem .6rem; border-radius: 999px; background: var(--g-primaire-voile); color: var(--g-primaire); font-size: .78rem; font-weight: 700; }
+.g-personnes__liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .1rem .5rem; max-height: 260px; overflow-y: auto; padding: .4rem; }
+.g-personnes__liste label { display: flex; align-items: center; gap: .5rem; padding: .4rem .5rem; border-radius: 6px; font-size: .88rem; cursor: pointer; }
+.g-personnes__liste label:hover { background: var(--g-survol); }
+.g-personnes__liste label[hidden] { display: none; }
+.g-personnes__liste input { flex: none; width: 17px; height: 17px; accent-color: var(--g-primaire); }
+.g-personnes__liste span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-personnes__liste small { flex: none; font-size: .72rem; font-weight: 700; color: var(--g-texte-pale); }
+.g-personnes__liste label:has(input:checked) { background: var(--g-primaire-voile); }
+
+
+/* 18. CONTACTS ET SITES ---------------------------------------------------- */
+.g-contacts-rectorat { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem 1.25rem; padding: 1.25rem 1.4rem; }
+.g-contacts-rectorat input { width: 100%; }
+[data-liste="services"] input, [data-liste="etablissements"] input { width: 100%; min-width: 6rem; }
+[data-liste="etablissements"] tbody th { min-width: 10rem; }

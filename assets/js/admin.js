@@ -28,7 +28,7 @@
 	var ACCEPTE = { logo: 'image/*', photo_droite: 'image/*', photo_etudiant: 'image/*', campus_1: 'image/*', campus_2: 'image/*', campus_3: 'image/*', campus_4: 'image/*', syllabus: 'application/pdf', cv: 'application/pdf', media: 'video/*,audio/*' };
 
 	/* Niveaux (0 établissement … 3 UE) où chaque champ d'une structure a un sens. */
-	var NIVEAUX_CHAMPS = { sigle: [0, 1], ville: [0], couleur: [0], logo: [0], photo_etudiant: [0], intro_formations: [0], intro_tutelle: [0], intro_equipe: [0], intro_campus: [0], campus_1: [0], legende_1: [0], campus_2: [0], legende_2: [0], campus_3: [0], legende_3: [0], campus_4: [0], legende_4: [0], responsable: [0, 1, 2], diplome: [2], niveaux: [2], accroche: [2], contact_courriel: [2], contact_telephone: [2], code: [3], credits: [3], semestre: [3], volume: [3], elements: [3], syllabus: [3] };
+	var NIVEAUX_CHAMPS = { sigle: [0, 1], ville: [0], couleur: [0], logo: [0], photo_etudiant: [0], intro_formations: [0], intro_tutelle: [0], intro_equipe: [0], intro_campus: [0], campus_1: [0], legende_1: [0], campus_2: [0], legende_2: [0], campus_3: [0], legende_3: [0], campus_4: [0], legende_4: [0], responsable: [0, 1, 2], diplome: [2], niveaux: [2], accroche: [2], contact_courriel: [0, 2], contact_telephone: [0, 2], adresse: [0], coordonnees: [0], mission: [0], ecole_doctorale: [0], enseignants: [3], code: [3], credits: [3], semestre: [3], volume: [3], elements: [3], syllabus: [3] };
 
 	/** Les champs complémentaires d'un type, précédés d'un intertitre (`section` : un autre intertitre, ou false pour aucun). `cles` limite la sélection. */
 	function metas(type, cles, section) {
@@ -62,6 +62,7 @@
 	var COL = {
 		date: { t: 'Date', court: true, v: function (p) { return dateFr(p.date); } },
 		format: { t: 'Format', court: true, v: function (p) { return FORMATS[p.format] || ''; } },
+		une: { t: 'À la une', court: true, v: function (p) { return p.sticky ? '★ À la une' : ''; } },
 		ordre: { t: 'Ordre', court: true, v: function (p) { return String(p.menu_order || 0); } },
 		meta: function (t, cle) {
 			return { t: t, v: function (p) { return m(p, cle); } };
@@ -75,7 +76,7 @@
 	/* ---------- Droits du compte (inc/roles.php) ----------
 	   Chaque rubrique demande une permission ; le serveur vérifie de toute façon chaque action et la portée. */
 	var DROITS = C.droits || [];
-	var PERM = { actualites: 'sueb_actualites', evenements: 'sueb_evenements', pages: 'sueb_pages', etablissements: 'sueb_etablissements', formations: 'sueb_formations', personnel: 'sueb_personnel', dirigeants: 'sueb_dirigeants', partenaires: 'sueb_partenaires', institutions: 'sueb_partenaires', 'accueil-reglages': 'sueb_reglages', globaux: 'sueb_reglages', comptes: 'sueb_comptes' };
+	var PERM = { actualites: 'sueb_actualites', evenements: 'sueb_evenements', pages: 'sueb_pages', etablissements: 'sueb_etablissements', formations: 'sueb_formations', personnel: 'sueb_personnel', dirigeants: 'sueb_dirigeants', partenaires: 'sueb_partenaires', institutions: 'sueb_partenaires', 'accueil-reglages': 'sueb_reglages', 'etudiants-reglages': 'sueb_reglages', contacts: 'sueb_reglages', globaux: 'sueb_reglages', comptes: 'sueb_comptes' };
 	function a(perm) { return DROITS.indexOf(perm) > -1; }
 	function permis(id) { return !PERM[id] || a(PERM[id]); }
 	var TOUS = C.portee === 'tous';
@@ -108,7 +109,30 @@
 		gauche: '<path d="M19 12H5M12 19l-7-7 7-7"/>',
 		droite: '<path d="M5 12h14M12 5l7 7-7 7"/>',
 		fermer: '<path d="M18 6 6 18M6 6l12 12"/>',
-		cle: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2 2"/>'
+		cle: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2 2"/>',
+		/* Éditeur de texte */
+		'al-gauche': '<path d="M4 6h16M4 10h10M4 14h16M4 18h10"/>',
+		'al-centre': '<path d="M4 6h16M7 10h10M4 14h16M7 18h10"/>',
+		'al-droite': '<path d="M4 6h16M10 10h10M4 14h16M10 18h10"/>',
+		'al-justifie': '<path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>',
+		puces: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/>',
+		numeros: '<path d="M10 6h10M10 12h10M10 18h10M4 4.5h1.5V9M4 9h3M4 14.5c.4-.6 1-1 1.7-1 .8 0 1.3.5 1.3 1.2 0 1.2-3 2-3 3.3h3"/>',
+		'retrait-plus': '<path d="M4 5h16M11 10h9M11 14h9M4 19h16M4 9.5l3 2.5-3 2.5"/>',
+		'retrait-moins': '<path d="M4 5h16M11 10h9M11 14h9M4 19h16M7 9.5 4 12l3 2.5"/>',
+		citation: '<path d="M10 7H6a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h3v1a3 3 0 0 1-3 3M20 7h-4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h3v1a3 3 0 0 1-3 3"/>',
+		'sans-lien': '<path d="M10 13a5 5 0 0 0 7.5.5l1-1M14 11a5 5 0 0 0-7.5-.5l-1 1M4 4l16 16"/>',
+		document: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14l3 3 3-3"/>',
+		video: '<rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3"/>',
+		tableau2: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16M15 4v16"/>',
+		separateur: '<path d="M3 12h18M8 7h8M8 17h8"/>',
+		annuler: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+		retablir: '<path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>',
+		gomme: '<path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4L13 5a1 1 0 0 1 1.4 0l5.6 5.6a1 1 0 0 1 0 1.4L12 20"/><path d="M7 21h14M8.5 10.5l6 6"/>',
+		couleur: '<path d="m5 19 7-15 7 15M8 13h8"/>',
+		surligner: '<path d="m9 11-6 6v3h9l3-3M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/>',
+		guillemets: '<path d="m8 7-4 5 4 5M13 7l-4 5 4 5M16 7l4 5-4 5"/>',
+		'plein-ecran': '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+		'ecran-normal': '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>'
 	};
 
 	function ico(nom, classe) {
@@ -128,6 +152,8 @@
 		partenaires: ['lien', 'Conventions et partenaires de l’université.'],
 		institutions: ['carte', 'Universités partenaires et villes placées sur la carte.'],
 		'accueil-reglages': ['maison', 'Bannière, citation du Recteur, frise et vidéo de l’accueil.'],
+		'etudiants-reglages': ['personnes', 'Présentation, rubriques et photo de la page Vie étudiante.'],
+		contacts: ['carte', 'Rectorat, services centraux et établissements : contacts et position sur la carte de la page Contact.'],
 		globaux: ['contact', 'Boîte postale, téléphone, courriel, plateformes et réseaux.'],
 		comptes: ['cle', 'Rôles, permissions et comptes de la gestion.']
 	};
@@ -145,11 +171,12 @@
 	var RUBRIQUES = [
 		{
 			id: 'actualites', groupe: 0, titre: 'Actualités', endpoint: 'posts', singulier: 'l’actualité',
-			colonnes: [COL.date, COL.format],
+			colonnes: [COL.date, COL.une, COL.format],
 			champs: [
 				F.titre(),
 				{ path: 'date', label: 'Date de publication', type: 'datetime' },
 				F.statut,
+				{ path: 'sticky', label: 'À la une', type: 'case', texte: 'Mettre cet article à la une', aide: 'Les articles à la une défilent dans la bannière de la page d’accueil (les plus récents d’abord).' },
 				{ path: 'format', label: 'Format', type: 'select', options: [['standard', 'Article'], ['video', 'Vidéo'], ['audio', 'Audio']], aide: 'Choisir Vidéo ou Audio si l’actualité comporte un fichier ou un lien ci-dessous.' },
 				{ path: 'categories', label: 'Rubrique', type: 'taxo', endpoint: 'categories' },
 				F.resume('Affiché à la une et sur l’accueil.'),
@@ -186,7 +213,9 @@
 				[{ type: 'section', label: 'Présentation', aide: 'Le texte de la section « Présentation » de sa page ; le résumé s’affiche dans les listes.' }, F.resume('Courte présentation affichée dans les listes.'), F.texte('Présentation')],
 				[{ type: 'section', label: 'Photos', aide: 'La photo principale et la seconde photo habillent sa carte sur l’accueil ; la photo du bandeau et celles du campus, sa page.' }, F.image('Photo principale')],
 				metas('ueb_structure', ['photo_droite', 'photo_etudiant', 'campus_1', 'legende_1', 'campus_2', 'legende_2', 'campus_3', 'legende_3', 'campus_4', 'legende_4'], false),
-				metas('ueb_structure', ['intro_formations', 'intro_tutelle', 'intro_equipe', 'intro_campus'], { type: 'section', label: 'Textes des sections de sa page', aide: 'Laissez un champ vide pour garder le texte par défaut.' })
+				metas('ueb_structure', ['intro_formations', 'intro_tutelle', 'intro_equipe', 'intro_campus'], { type: 'section', label: 'Textes des sections de sa page', aide: 'Laissez un champ vide pour garder le texte par défaut.' }),
+				metas('ueb_structure', ['mission', 'ecole_doctorale'], { type: 'section', label: 'Missions et formation doctorale', aide: 'Affichées sur la page de l’établissement. Laissez vide pour garder les textes livrés avec le site.' }),
+				metas('ueb_structure', ['contact_courriel', 'contact_telephone', 'adresse', 'coordonnees'], { type: 'section', label: 'Contact', aide: 'Les coordonnées et la position affichées sur la page Contact du site.' })
 			)
 		},
 		{
@@ -202,7 +231,7 @@
 				{ path: 'parent', label: 'Rattaché à', type: 'parent', required: true, aide: 'Le niveau en découle : rattaché à un établissement = département, à un département = filière, à une filière = unité d’enseignement.' },
 				F.statut, F.ordre
 			].concat(
-				metas('ueb_structure', ['sigle', 'responsable', 'diplome', 'niveaux', 'accroche', 'contact_courriel', 'contact_telephone', 'code', 'credits', 'semestre', 'volume', 'elements', 'syllabus', 'photo_droite']),
+				metas('ueb_structure', ['sigle', 'responsable', 'diplome', 'niveaux', 'accroche', 'contact_courriel', 'contact_telephone', 'code', 'credits', 'semestre', 'volume', 'elements', 'syllabus', 'enseignants', 'photo_droite']),
 				[F.resume('Pour une filière : le texte à côté de l’accroche, en haut de sa page.'), F.image('Photo principale (pour une filière : le bandeau et la photo de sa page)'), F.texte('Présentation (pour une filière : la section « À propos de la filière »)')]
 			)
 		},
@@ -230,6 +259,8 @@
 		},
 		{ id: 'institutions', groupe: 3, titre: 'Universités et villes de la carte', carte: true },
 		{ id: 'accueil-reglages', groupe: 4, titre: 'Accueil (bannière, vidéo, frise)', reglages: 'accueil' },
+		{ id: 'etudiants-reglages', groupe: 4, titre: 'Vie étudiante', reglages: 'etudiants' },
+		{ id: 'contacts', groupe: 4, titre: 'Contacts et sites', contacts: true },
 		{ id: 'globaux', groupe: 4, titre: 'Coordonnées et liens', reglages: 'coordonnees' },
 		{ id: 'comptes', groupe: 5, titre: 'Rôles et comptes', comptes: true }
 	].filter(function (r) { return permis(r.id); });
@@ -241,24 +272,75 @@
 
 	/* ---------- Outils ---------- */
 
-	/* Barre d'outils de l'éditeur de texte : groupes de boutons.
-	   c = commande, t = texte du bouton, l = libellé, e = état suivi (gras, liste…), b = bloc suivi (titre, citation). */
+	/* Barre d'outils de l'éditeur de texte, par groupes.
+	   c = commande, i = icône (ou t = texte), l = libellé, e = état suivi (gras, liste, alignement…),
+	   v = valeur passée à la commande. Le type de bloc (paragraphe, titres, citation) est une liste déroulante. */
+	var BLOCS = [['p', 'Paragraphe'], ['h2', 'Titre de section'], ['h3', 'Sous-titre'], ['h4', 'Petit titre'], ['blockquote', 'Citation']];
 	var OUTILS = [
-		[{ c: 'p', t: '¶', l: 'Paragraphe', b: 'p' }, { c: 'h2', t: 'T2', l: 'Titre de section', b: 'h2' }, { c: 'h3', t: 'T3', l: 'Sous-titre', b: 'h3' }, { c: 'h4', t: 'T4', l: 'Petit titre', b: 'h4' }],
-		[{ c: 'bold', t: '<b>G</b>', l: 'Gras', e: 'bold' }, { c: 'italic', t: '<i>I</i>', l: 'Italique', e: 'italic' }, { c: 'underline', t: '<u>S</u>', l: 'Souligné', e: 'underline' }, { c: 'strikeThrough', t: '<s>B</s>', l: 'Barré', e: 'strikeThrough' }],
-		[{ c: 'insertUnorderedList', t: '• Liste', l: 'Liste à puces', e: 'insertUnorderedList' }, { c: 'insertOrderedList', t: '1. Liste', l: 'Liste numérotée', e: 'insertOrderedList' }, { c: 'blockquote', t: '❝ Citation', l: 'Citation', b: 'blockquote' }],
-		[{ c: 'justifyLeft', t: '⇤', l: 'Aligner à gauche', e: 'justifyLeft' }, { c: 'justifyCenter', t: '↔', l: 'Centrer', e: 'justifyCenter' }, { c: 'justifyRight', t: '⇥', l: 'Aligner à droite', e: 'justifyRight' }, { c: 'justifyFull', t: '☰', l: 'Justifier', e: 'justifyFull' }],
-		[{ c: 'link', t: 'Lien', l: 'Insérer un lien' }, { c: 'unlink', t: 'Sans lien', l: 'Retirer le lien' }, { c: 'image', t: 'Image', l: 'Insérer une image' }, { c: 'insertHorizontalRule', t: '―', l: 'Ligne de séparation' }],
-		[{ c: 'undo', t: '↶', l: 'Annuler' }, { c: 'redo', t: '↷', l: 'Rétablir' }, { c: 'removeFormat', t: 'Effacer', l: 'Effacer la mise en forme' }]
+		[{ c: 'bold', t: '<b>G</b>', l: 'Gras (Ctrl+B)', e: 'bold' }, { c: 'italic', t: '<i>I</i>', l: 'Italique (Ctrl+I)', e: 'italic' }, { c: 'underline', t: '<u>S</u>', l: 'Souligné (Ctrl+U)', e: 'underline' }, { c: 'strikeThrough', t: '<s>B</s>', l: 'Barré', e: 'strikeThrough' }, { c: 'superscript', t: 'x<sup>2</sup>', l: 'Exposant (ex. 1er, 2e)', e: 'superscript' }, { c: 'subscript', t: 'x<sub>2</sub>', l: 'Indice (ex. CO2)', e: 'subscript' }],
+		[{ c: 'palette-couleur', i: 'couleur', l: 'Couleur du texte', menu: 'couleur' }, { c: 'palette-surligner', i: 'surligner', l: 'Surligner', menu: 'surligner' }],
+		[{ c: 'justifyLeft', i: 'al-gauche', l: 'Aligner à gauche', e: 'justifyLeft' }, { c: 'justifyCenter', i: 'al-centre', l: 'Centrer', e: 'justifyCenter' }, { c: 'justifyRight', i: 'al-droite', l: 'Aligner à droite', e: 'justifyRight' }, { c: 'justifyFull', i: 'al-justifie', l: 'Justifier le texte', e: 'justifyFull' }],
+		[{ c: 'insertUnorderedList', i: 'puces', l: 'Liste à puces', e: 'insertUnorderedList' }, { c: 'insertOrderedList', i: 'numeros', l: 'Liste numérotée', e: 'insertOrderedList' }],
+		[{ c: 'link', i: 'lien', l: 'Insérer un lien (Ctrl+K)' }, { c: 'unlink', i: 'sans-lien', l: 'Retirer le lien' }, { c: 'image', i: 'image', l: 'Insérer une image' }, { c: 'document', i: 'document', l: 'Joindre un document (PDF, Word…)' }, { c: 'video', i: 'video', l: 'Insérer une vidéo YouTube ou Vimeo' }, { c: 'table', i: 'tableau2', l: 'Insérer un tableau' }, { c: 'insertHorizontalRule', i: 'separateur', l: 'Ligne de séparation' }, { c: 'guillemets', i: 'guillemets', l: 'Guillemets français « »' }],
+		[{ c: 'undo', i: 'annuler', l: 'Annuler (Ctrl+Z)' }, { c: 'redo', i: 'retablir', l: 'Rétablir (Ctrl+Y)' }, { c: 'removeFormat', i: 'gomme', l: 'Effacer la mise en forme' }],
+		[{ c: 'plein-ecran', i: 'plein-ecran', l: 'Plein écran', e: 'plein-ecran' }]
 	];
+	/* Couleurs de la charte, lisibles sur blanc. */
+	var COULEURS = {
+		couleur: [['#15231b', 'Noir (par défaut)'], ['#1d5a38', 'Vert UEb'], ['#9a6b00', 'Or foncé'], ['#1f6f94', 'Bleu'], ['#b3261e', 'Rouge'], ['#6a1b6d', 'Violet'], ['#4f5d55', 'Gris']],
+		surligner: [['transparent', 'Sans surlignage'], ['#fff3b0', 'Jaune'], ['#d8f0dc', 'Vert'], ['#d6ecf7', 'Bleu'], ['#fde2e0', 'Rose']]
+	};
 
 	function barreOutils() {
-		return OUTILS.map(function (g) {
+		var bloc = '<span class="g-riche__groupe" role="group"><select class="g-riche__bloc" data-bloc-choix title="Type de texte" aria-label="Type de texte">' +
+			BLOCS.map(function (b) { return '<option value="' + b[0] + '">' + esc(b[1]) + '</option>'; }).join('') + '</select></span>';
+		return bloc + OUTILS.map(function (g) {
 			return '<span class="g-riche__groupe" role="group">' + g.map(function (o) {
-				var etat = o.e || o.b ? ' aria-pressed="false"' + (o.e ? ' data-etat="' + o.e + '"' : ' data-bloc="' + o.b + '"') : '';
-				return '<button type="button" data-cmd="' + o.c + '" title="' + esc(o.l) + '" aria-label="' + esc(o.l) + '"' + etat + '>' + o.t + '</button>';
+				var etat = o.e ? ' aria-pressed="false" data-etat="' + o.e + '"' : '';
+				var menu = '';
+				if (o.menu) {
+					etat = ' aria-haspopup="true" aria-expanded="false"';
+					menu = '<span class="g-riche__palette" hidden>' + COULEURS[o.menu].map(function (c) {
+						var cmd = o.menu === 'couleur' ? 'foreColor' : 'hiliteColor';
+						return '<button type="button" data-cmd="' + cmd + '" data-valeur="' + c[0] + '" title="' + esc(c[1]) + '" aria-label="' + esc(c[1]) + '" style="--pastille:' + c[0] + '"></button>';
+					}).join('') + '</span>';
+				}
+				return '<span class="g-riche__outil"><button type="button" data-cmd="' + o.c + '" title="' + esc(o.l) + '" aria-label="' + esc(o.l) + '"' + etat + '>' + (o.i ? ico(o.i) : o.t) + '</button>' + menu + '</span>';
 			}).join('') + '</span>';
 		}).join('');
+	}
+
+	/* Nombre de mots et temps de lecture, sous l'éditeur. */
+	function compter(zone) {
+		var pied = zone.parentNode.querySelector('.g-riche__pied');
+		if (!pied) return;
+		var mots = (zone.innerText || '').trim().split(/\s+/).filter(Boolean).length;
+		pied.textContent = mots + ' mot' + (mots > 1 ? 's' : '') + ' · ' + Math.max(1, Math.round(mots / 220)) + ' min de lecture';
+	}
+
+	/* Texte collé (Word, page web…) : on garde la structure (titres, gras, listes, liens, tableaux)
+	   et on retire le reste (polices, couleurs, classes, styles), qui casserait la mise en page du site. */
+	var GARDER = { P: 1, H2: 1, H3: 1, H4: 1, B: 1, STRONG: 1, I: 1, EM: 1, U: 1, S: 1, SUP: 1, SUB: 1, A: 1, UL: 1, OL: 1, LI: 1, BLOCKQUOTE: 1, BR: 1, TABLE: 1, THEAD: 1, TBODY: 1, TR: 1, TH: 1, TD: 1, HR: 1 };
+	function nettoyerCollage(html) {
+		var doc = new DOMParser().parseFromString(html, 'text/html');
+		function propre(n) {
+			var sortie = document.createDocumentFragment();
+			[].forEach.call(n.childNodes, function (c) {
+				if (c.nodeType === 3) { sortie.appendChild(document.createTextNode(c.nodeValue)); return; }
+				if (c.nodeType !== 1 || /^(SCRIPT|STYLE|META|LINK|TITLE|O:P)$/.test(c.nodeName)) return;
+				var nom = c.nodeName === 'H1' ? 'H2' : (/^H[5-6]$/.test(c.nodeName) ? 'H4' : (c.nodeName === 'DIV' ? 'P' : c.nodeName));
+				var enfants = propre(c);
+				if (!GARDER[nom]) { sortie.appendChild(enfants); return; }
+				var el = document.createElement(nom);
+				if (nom === 'A' && /^(https?:|mailto:|tel:)/i.test(c.getAttribute('href') || '')) el.setAttribute('href', c.getAttribute('href'));
+				el.appendChild(enfants);
+				sortie.appendChild(el);
+			});
+			return sortie;
+		}
+		var boite = document.createElement('div');
+		boite.appendChild(propre(doc.body));
+		return boite.innerHTML.replace(/<p>\s*<\/p>/g, '');
 	}
 
 	function garderSelection(zone) {
@@ -287,18 +369,111 @@
 		});
 	}
 
-	function commande(zone, cmd) {
-		var blocs = { p: '<p>', h2: '<h2>', h3: '<h3>', h4: '<h4>', blockquote: '<blockquote>' };
+	function commande(zone, cmd, valeur) {
+		var riche = zone.closest('.g-riche');
 		if (cmd === 'link') return lien(zone);
-		if (cmd === 'image') {
+		if (cmd === 'image' || cmd === 'document') {
 			garderSelection(zone);
-			zone.parentNode.querySelector('.g-riche__fichier').click();
+			riche.querySelector(cmd === 'image' ? '.g-riche__fichier' : '.g-riche__document').click();
+			return;
+		}
+		if (cmd === 'plein-ecran') {
+			var plein = riche.classList.toggle('g-riche--plein');
+			document.documentElement.classList.toggle('g-sans-defilement', plein);
+			var b = riche.querySelector('[data-cmd="plein-ecran"]');
+			b.setAttribute('aria-pressed', plein ? 'true' : 'false');
+			b.innerHTML = ico(plein ? 'ecran-normal' : 'plein-ecran');
+			b.title = plein ? 'Quitter le plein écran (Échap)' : 'Plein écran';
+			zone.focus();
+			return;
+		}
+		if (cmd === 'palette-couleur' || cmd === 'palette-surligner') {
+			garderSelection(zone);
+			var bouton = riche.querySelector('[data-cmd="' + cmd + '"]');
+			var palette = bouton.nextElementSibling;
+			var ouvrir = palette.hidden;
+			fermerPalettes(riche);
+			palette.hidden = !ouvrir;
+			bouton.setAttribute('aria-expanded', ouvrir ? 'true' : 'false');
+			return;
+		}
+		if (cmd === 'video') {
+			garderSelection(zone);
+			var r1 = zone._range;
+			return demander({ titre: 'Insérer une vidéo', texte: 'Collez le lien de la vidéo YouTube ou Vimeo. Elle s’affichera en lecteur sur le site.', champ: 'https://', valider: 'Insérer', icone: 'video' }).then(function (url) {
+				if (url === null) return;
+				url = url.trim();
+				if (!/^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be|vimeo\.com)\//i.test(url)) return notifier('Lien invalide : il doit venir de YouTube ou de Vimeo.', true);
+				restaurer(zone, r1);
+				/* Seul sur sa ligne, le lien devient un lecteur vidéo à l'affichage (intégration de WordPress). */
+				document.execCommand('insertHTML', false, '<p class="g-video">' + esc(url) + '</p><p><br></p>');
+				compter(zone);
+			});
+		}
+		if (cmd === 'table') {
+			garderSelection(zone);
+			var r2 = zone._range;
+			return demander({ titre: 'Insérer un tableau', texte: 'Nombre de colonnes et de lignes, par exemple « 3 x 4 ». La première ligne sert d’en-tête.', champ: '3 x 4', valider: 'Insérer', icone: 'tableau2' }).then(function (v) {
+				if (v === null) return;
+				var m = String(v).match(/(\d+)\D+(\d+)/);
+				var col = Math.min(8, Math.max(1, m ? parseInt(m[1], 10) : 3));
+				var lig = Math.min(30, Math.max(1, m ? parseInt(m[2], 10) : 4));
+				var cellules = function (balise) { return new Array(col + 1).join('<' + balise + '><br></' + balise + '>'); };
+				var html = '<table><thead><tr>' + cellules('th') + '</tr></thead><tbody>' + new Array(lig).join('<tr>' + cellules('td') + '</tr>') + '</tbody></table><p><br></p>';
+				restaurer(zone, r2);
+				document.execCommand('insertHTML', false, html);
+			});
+		}
+		if (cmd === 'guillemets') {
+			zone.focus();
+			var sel = window.getSelection();
+			var texte = sel.rangeCount ? sel.toString() : '';
+			document.execCommand('insertText', false, '«\u00a0' + texte + '\u00a0»');
 			return;
 		}
 		zone.focus();
-		if (blocs[cmd]) document.execCommand('formatBlock', false, blocs[cmd]);
-		else document.execCommand(cmd, false, null);
+		if (cmd === 'foreColor' || cmd === 'hiliteColor') {
+			restaurer(zone, zone._range);
+			fermerPalettes(riche);
+			/* En CSS (span style) plutôt qu'en balise <font>, que le site n'accepte pas. */
+			document.execCommand('styleWithCSS', false, true);
+			document.execCommand(cmd, false, valeur);
+			document.execCommand('styleWithCSS', false, false);
+		} else if (cmd === 'bloc') {
+			document.execCommand('formatBlock', false, '<' + valeur + '>');
+		} else {
+			document.execCommand(cmd, false, null);
+		}
 		majOutils();
+		compter(zone);
+	}
+
+	function fermerPalettes(dans) {
+		[].forEach.call((dans || document).querySelectorAll('.g-riche__palette'), function (p) {
+			p.hidden = true;
+			var b = p.previousElementSibling;
+			if (b) b.setAttribute('aria-expanded', 'false');
+		});
+	}
+
+	/* Un document (PDF, Word, Excel…) : envoyé dans la médiathèque, puis inséré comme lien de téléchargement. */
+	function insererDocument(input) {
+		var zone = input.closest('.g-riche').querySelector('.g-riche__zone');
+		var fichier = input.files[0];
+		input.value = '';
+		if (!fichier) return;
+		var fd = new FormData();
+		fd.append('file', fichier, fichier.name);
+		notifier('Envoi du document…');
+		api('wp/v2/media', { method: 'POST', body: fd }).then(function (res) {
+			var nom = fichier.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+			var ext = (fichier.name.match(/\.([^.]+)$/) || ['', ''])[1].toUpperCase();
+			restaurer(zone, zone._range);
+			document.execCommand('insertHTML', false, '<p><a href="' + esc(res.data.source_url) + '">Télécharger : ' + esc(nom) + (ext ? ' (' + esc(ext) + ')' : '') + '</a></p>');
+			notifier('Document joint.');
+		}).catch(function (err) {
+			notifier('Envoi impossible : ' + err.message, true);
+		});
 	}
 
 	function insererImage(input) {
@@ -333,15 +508,14 @@
 		if (!zone) return;
 		var bloc = '';
 		try { bloc = String(document.queryCommandValue('formatBlock') || '').toLowerCase().replace(/[<>]/g, ''); } catch (e) { /* sans effet */ }
-		[].forEach.call(zone.parentNode.querySelectorAll('[data-etat],[data-bloc]'), function (b) {
+		[].forEach.call(zone.parentNode.querySelectorAll('[data-etat]'), function (b) {
+			if (b.getAttribute('data-etat') === 'plein-ecran') return;
 			var actif = false;
-			if (b.hasAttribute('data-etat')) {
-				try { actif = document.queryCommandState(b.getAttribute('data-etat')); } catch (e) { /* sans effet */ }
-			} else {
-				actif = b.getAttribute('data-bloc') === bloc || (b.getAttribute('data-bloc') === 'p' && (bloc === 'div' || bloc === ''));
-			}
+			try { actif = document.queryCommandState(b.getAttribute('data-etat')); } catch (e) { /* sans effet */ }
 			b.setAttribute('aria-pressed', actif ? 'true' : 'false');
 		});
+		var choix = zone.parentNode.querySelector('[data-bloc-choix]');
+		if (choix) choix.value = BLOCS.some(function (b) { return b[0] === bloc; }) ? bloc : 'p';
 	}
 
 	function esc(s) {
@@ -540,6 +714,10 @@
 			'<div class="g-principal">' +
 				'<header class="g-mobile"><button type="button" class="g-mobile__menu" aria-controls="g-nav" aria-expanded="false" data-ouvrir-nav>' + ico('menu') + '<span class="sr">Ouvrir le menu</span></button>' +
 				'<img src="' + esc(C.logo) + '" alt="" width="30" height="30"><span>Gestion du site</span></header>' +
+				/* Barre du haut, comme l'administration des inscriptions : où l'on est (groupe › rubrique), et l'accès au site. */
+				'<header class="g-barre"><p class="g-barre__lieu" id="g-lieu"></p>' +
+				'<div class="g-barre__actions"><a class="g-btn g-btn--petit" href="' + esc(C.site) + '" target="_blank" rel="noopener">' + ico('externe') + 'Voir le site</a>' +
+				'<span class="g-barre__compte" title="' + esc(C.nom) + '"><span class="g-compte__avatar" aria-hidden="true">' + esc(initiales(C.nom)) + '</span><span class="g-barre__nom">' + esc(C.nom) + '</span></span></div></header>' +
 				'<main class="g-contenu" id="g-contenu" tabindex="-1"></main>' +
 			'</div>' +
 			'<div class="g-toast" id="g-toast" role="status" aria-live="polite"></div>' +
@@ -567,6 +745,12 @@
 			if (a.getAttribute('data-menu') === id) a.setAttribute('aria-current', 'page');
 			else a.removeAttribute('aria-current');
 		});
+		/* La barre du haut : « Groupe › Rubrique », ou le tableau de bord. */
+		var lieu = document.getElementById('g-lieu');
+		if (!lieu) return;
+		var r = id ? trouver(id) : null;
+		lieu.innerHTML = '<span class="g-barre__ico">' + ico(r ? icone(r) : 'tableau') + '</span>' +
+			(r ? '<span class="g-barre__groupe">' + esc(GROUPES[r.groupe] || '') + '</span>' + ico('droite', 'g-barre__sep') + '<b>' + esc(r.titre) + '</b>' : '<b>Tableau de bord</b>');
 	}
 
 	/* ---------- Routeur ---------- */
@@ -582,6 +766,7 @@
 		if (etat.rubrique !== r.id) etat = { page: 1, recherche: '', statut: 'any', rubrique: r.id };
 		if (r.reglages) return reglages(r);
 		if (r.carte) return carte(r);
+		if (r.contacts) return contactsSites(r);
 		if (r.comptes) return comptes(r, h.slice(1));
 		if (r.mediatheque && (!h[1] || h[1] === 'new')) return mediatheque(r);
 		if (h[1] === 'new') return formulaire(r, 0);
@@ -678,7 +863,7 @@
 		var zone = document.getElementById('g-liste');
 		if (!zone) return;
 		var tri = r.ordre === 'menu_order' ? '&orderby=menu_order&order=asc' : '&orderby=date&order=desc';
-		var q = 'wp/v2/' + r.endpoint + '?context=edit&per_page=15&page=' + etat.page + '&status=' + etat.statut + tri + (r.filtre || '') + '&_fields=id,title,date,status,format,link,parent,menu_order,meta' + (r.pages ? ',sueb_gestion' : '');
+		var q = 'wp/v2/' + r.endpoint + '?context=edit&per_page=15&page=' + etat.page + '&status=' + etat.statut + tri + (r.filtre || '') + '&_fields=id,title,date,status,format,sticky,link,parent,menu_order,meta' + (r.pages ? ',sueb_gestion' : '');
 		if (etat.recherche) q += '&search=' + encodeURIComponent(etat.recherche);
 		var colonnes = (r.colonnes || []).concat([{ t: 'Statut', statut: true }]);
 		Promise.all([api(q), r.arbre ? chargerArbre() : null]).then(function (res) {
@@ -879,6 +1064,95 @@
 		});
 	}
 
+	/* ---------- Contacts et sites (route sueb/v1/contacts) ---------- */
+
+	function contactsSites(r) {
+		contenu.innerHTML = '<p class="g-chargement"><span class="g-roue"></span>Chargement…</p>';
+		api('sueb/v1/contacts').then(function (res) {
+			dessinerContacts(r, res.data);
+		}).catch(function (e) {
+			contenu.innerHTML = '<p class="g-erreur" role="alert">' + esc(e.message) + '</p>';
+		});
+	}
+
+	function champLigne(col, valeur, libelle, extra) {
+		return '<td><input type="' + (col === 'courriel' ? 'email' : 'text') + '" data-col="' + col + '" aria-label="' + esc(libelle) + '" value="' + esc(valeur == null ? '' : valeur) + '"' + (extra || '') + '></td>';
+	}
+
+	function ligneService(s) {
+		return '<tr>' + champLigne('nom', s.nom, 'Nom du service') + champLigne('lieu', s.lieu, 'Lieu ou adresse') + champLigne('tel', s.tel, 'Téléphone') +
+			champLigne('courriel', s.courriel, 'Courriel') + champLigne('lat', s.lat, 'Latitude', ' inputmode="decimal" size="8"') + champLigne('lon', s.lon, 'Longitude', ' inputmode="decimal" size="8"') + boutonsLigne(false) + '</tr>';
+	}
+
+	function ligneEtab(e) {
+		return '<tr><th scope="row"><input type="hidden" data-col="id" value="' + e.id + '"><strong>' + esc(e.sigle) + '</strong><span class="g-sous-ligne">' + esc(e.nom) + '</span></th>' +
+			champLigne('tel', e.tel, 'Téléphone de ' + e.sigle) + champLigne('courriel', e.courriel, 'Courriel de ' + e.sigle) + champLigne('adresse', e.adresse, 'Adresse de ' + e.sigle) +
+			champLigne('lat', e.lat, 'Latitude de ' + e.sigle, ' inputmode="decimal" size="8"') + champLigne('lon', e.lon, 'Longitude de ' + e.sigle, ' inputmode="decimal" size="8"') + '</tr>';
+	}
+
+	function dessinerContacts(r, d) {
+		var rc = d.rectorat;
+		var aidePos = 'Latitude et longitude en degrés décimaux (ex. 2,9157 et 11,1543) : dans Google Maps, un clic droit sur le lieu affiche ses coordonnées, un clic dessus les copie.';
+		contenu.innerHTML = entete(r.titre, description(r), '<a class="g-btn" href="' + esc(C.site.replace(/\/?$/, '/')) + 'contact/" target="_blank" rel="noopener">' + ico('externe') + 'Voir la page Contact</a>') +
+			'<form class="g-form g-form--large" novalidate>' +
+			'<div class="g-section"><h3>Rectorat</h3><p class="g-aide">Repris dans le pied de page de tout le site et en tête de la page Contact.</p></div>' +
+			'<div class="g-panneau g-contacts-rectorat">' +
+				'<div class="g-champ"><label for="rc-bp">Boîte postale</label><input type="text" id="rc-bp" data-rc="bp" value="' + esc(rc.bp) + '"></div>' +
+				'<div class="g-champ"><label for="rc-ville">Ville et région</label><input type="text" id="rc-ville" data-rc="ville" value="' + esc(rc.ville) + '"></div>' +
+				'<div class="g-champ"><label for="rc-tel">Téléphone</label><input type="text" id="rc-tel" data-rc="tel" value="' + esc(rc.tel) + '"></div>' +
+				'<div class="g-champ"><label for="rc-mail">Courriel</label><input type="email" id="rc-mail" data-rc="courriel" value="' + esc(rc.courriel) + '"></div>' +
+				'<div class="g-champ"><label for="rc-lat">Latitude</label><input type="text" inputmode="decimal" id="rc-lat" data-rc="lat" value="' + esc(rc.lat) + '"></div>' +
+				'<div class="g-champ"><label for="rc-lon">Longitude</label><input type="text" inputmode="decimal" id="rc-lon" data-rc="lon" value="' + esc(rc.lon) + '"></div>' +
+			'</div>' +
+			'<div class="g-section"><h3>Services centraux</h3><p class="g-aide">CMS, œuvres universitaires, scolarité, bibliothèque… Chacun apparaît sur la carte avec ses contacts ; sans téléphone ni courriel, la page renvoie au rectorat. ' + esc(aidePos) + '</p></div>' +
+			'<div class="g-tableau"><table class="g-lignes" data-liste="services"><thead><tr><th scope="col">Service</th><th scope="col">Lieu ou adresse</th><th scope="col">Téléphone</th><th scope="col">Courriel</th><th scope="col">Latitude</th><th scope="col">Longitude</th><th scope="col"><span class="sr">Actions</span></th></tr></thead><tbody>' +
+			d.services.map(ligneService).join('') + '</tbody></table></div>' +
+			'<p><button type="button" class="g-btn" data-ajouter="services">' + ico('plus') + 'Ajouter un service</button></p>' +
+			'<div class="g-section"><h3>Établissements</h3><p class="g-aide">Les mêmes champs que la section Contact de chaque fiche d’établissement. Sans position, l’établissement est placé au centre de sa ville.</p></div>' +
+			(d.etablissements.length
+				? '<div class="g-tableau"><table class="g-lignes" data-liste="etablissements"><thead><tr><th scope="col">Établissement</th><th scope="col">Téléphone</th><th scope="col">Courriel</th><th scope="col">Adresse</th><th scope="col">Latitude</th><th scope="col">Longitude</th></tr></thead><tbody>' + d.etablissements.map(ligneEtab).join('') + '</tbody></table></div>'
+				: '<p class="g-vide">Aucune fiche d’établissement modifiable avec ce compte.</p>') +
+			'<div class="g-form__actions"><button class="g-btn g-btn--primaire" type="submit">Enregistrer</button></div></form>';
+		var form = contenu.querySelector('form');
+
+		form.addEventListener('click', function (e) {
+			var b = e.target.closest('button');
+			if (!b) return;
+			var tr = b.closest('tr');
+			if (b.hasAttribute('data-ajouter')) {
+				var corps = form.querySelector('[data-liste="services"] tbody');
+				corps.insertAdjacentHTML('beforeend', ligneService({ nom: '', lieu: 'Ebolowa', tel: '', courriel: '', lat: rc.lat, lon: rc.lon }));
+				corps.lastElementChild.querySelector('input').focus();
+			} else if (b.hasAttribute('data-retirer-ligne')) {
+				tr.parentNode.removeChild(tr);
+			} else if (b.hasAttribute('data-bouger')) {
+				var voisin = b.getAttribute('data-bouger') === '-1' ? tr.previousElementSibling : tr.nextElementSibling;
+				if (!voisin) return;
+				tr.parentNode.insertBefore(tr, b.getAttribute('data-bouger') === '-1' ? voisin : voisin.nextElementSibling);
+				b.focus();
+			}
+		});
+		form.addEventListener('submit', function (e) {
+			e.preventDefault();
+			var lignes = function (liste) {
+				return [].map.call(form.querySelectorAll('[data-liste="' + liste + '"] tbody tr'), function (tr) {
+					var o = {};
+					[].forEach.call(tr.querySelectorAll('[data-col]'), function (el) { o[el.getAttribute('data-col')] = el.value.trim(); });
+					return o;
+				});
+			};
+			var rectorat = {};
+			[].forEach.call(form.querySelectorAll('[data-rc]'), function (el) { rectorat[el.getAttribute('data-rc')] = el.value.trim(); });
+			var bouton = form.querySelector('button[type=submit]');
+			bouton.disabled = true;
+			api('sueb/v1/contacts', { method: 'POST', body: { rectorat: rectorat, services: lignes('services'), etablissements: lignes('etablissements') } }).then(function () {
+				notifier('Contacts enregistrés.');
+			}).catch(function (err) {
+				notifier(err.message, true);
+			}).then(function () { bouton.disabled = false; });
+		});
+	}
+
 	function boutonsLigne(fixe) {
 		return '<td class="g-ligne__actions"><button type="button" data-bouger="-1" aria-label="Monter">↑</button><button type="button" data-bouger="1" aria-label="Descendre">↓</button>' +
 			(fixe ? '' : '<button type="button" class="g-danger" data-retirer-ligne aria-label="Retirer la ligne">✕</button>') + '</td>';
@@ -981,6 +1255,9 @@
 		var attentes = r.champs.filter(function (f) { return f.type === 'taxo' && !listes[f.endpoint]; }).map(function (f) {
 			return toutCharger('wp/v2/' + f.endpoint + '?_fields=id,name&hide_empty=false').then(function (l) { listes[f.endpoint] = l; });
 		});
+		if (!listes.__personnes && r.champs.some(function (f) { return f.type === 'personnes'; })) {
+			attentes.push(toutCharger('wp/v2/ueb_personnel?context=edit&status=publish,draft&orderby=title&order=asc&_fields=id,title,meta').then(function (l) { listes.__personnes = l; }));
+		}
 		var besoinArbre = r.champs.some(function (f) { return f.type === 'parent' || f.type === 'etablissement' || f.type === 'departement'; });
 		if (besoinArbre || r.arbre) attentes.push(chargerArbre());
 		return Promise.all(attentes);
@@ -1076,7 +1353,9 @@
 				}
 				h = '<span class="g-label" id="' + id + '-l">' + esc(f.label) + '</span><div class="g-riche"><div class="g-riche__barre" role="toolbar" aria-label="Mise en forme du texte">' + barreOutils() + '</div>' +
 					'<input type="file" class="g-riche__fichier" accept="image/*" hidden>' +
-					'<div class="g-riche__zone" id="' + id + '" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="' + id + '-l"' + nom + '>' + enParagraphes(v) + '</div></div>';
+					'<input type="file" class="g-riche__document" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.zip" hidden>' +
+					'<div class="g-riche__zone" id="' + id + '" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="' + id + '-l"' + nom + '>' + enParagraphes(v) + '</div>' +
+					'<p class="g-riche__pied" aria-live="polite"></p></div>';
 				break;
 			case 'image':
 			case 'fichier':
@@ -1084,6 +1363,27 @@
 				h = '<span class="g-label">' + esc(f.label) + '</span><div class="g-media" data-type="' + f.type + '"><input type="hidden"' + nom + ' value="' + (parseInt(v, 10) || '') + '">' +
 					'<div class="g-media__apercu"></div><label class="g-media__choisir">' + (f.type === 'image' ? 'Choisir une image' : 'Choisir un fichier') +
 					'<input type="file" accept="' + esc(accepte) + '"></label><button type="button" class="g-media__retirer" hidden>Retirer</button><span class="g-media__etat" role="status"></span></div>';
+				break;
+			case 'personnes':
+				/* Les enseignants d'une UE : recherche, puis cases à cocher (les personnes choisies en tête). */
+				var choisis = String(v || '').split(/[^\d]+/).filter(Boolean).map(Number);
+				var gens = (listes.__personnes || []).slice().sort(function (x, y) {
+					return (choisis.indexOf(y.id) > -1) - (choisis.indexOf(x.id) > -1);
+				});
+				var sigleDe = function (pers) {
+					var e = pers.meta && parseInt(pers.meta._sueb_etablissement, 10);
+					var n = e && arbre && arbre.par[e];
+					return n ? (n.sigle || n.nom) : '';
+				};
+				h = '<span class="g-label" id="' + id + '-l">' + esc(f.label) + '</span><div class="g-personnes" role="group" aria-labelledby="' + id + '-l"' + nom + '>' +
+					'<div class="g-personnes__tete"><input type="search" class="g-personnes__filtre" placeholder="Rechercher un nom" aria-label="Rechercher un enseignant"><span class="g-personnes__compte" aria-live="polite">' + choisis.length + ' choisi' + (choisis.length > 1 ? 's' : '') + '</span></div>' +
+					'<div class="g-personnes__liste">' + (gens.length ? gens.map(function (pers) {
+						var t = (pers.title && (pers.title.raw || pers.title.rendered)) || '';
+						return '<label data-nom="' + esc(t.toLowerCase()) + '"><input type="checkbox" value="' + pers.id + '"' + (choisis.indexOf(pers.id) > -1 ? ' checked' : '') + '><span>' + esc(t) + '</span>' + (sigleDe(pers) ? '<small>' + esc(sigleDe(pers)) + '</small>' : '') + '</label>';
+					}).join('') : '<p class="g-aide">Aucune fiche dans le Personnel pour le moment.</p>') + '</div></div>';
+				break;
+			case 'case':
+				h = '<span class="g-label">' + esc(f.label) + '</span><label class="g-case" for="' + id + '"><input type="checkbox" id="' + id + '"' + nom + decrit + (v ? ' checked' : '') + '> ' + esc(f.texte || f.label) + '</label>';
 				break;
 		}
 		var niveaux = f.niveaux ? ' data-niveaux="' + f.niveaux.join(',') + '"' : '';
@@ -1170,7 +1470,33 @@
 			['keyup', 'mouseup', 'focusout'].forEach(function (ev) {
 				zone.addEventListener(ev, function () { garderSelection(zone); });
 			});
+			compter(zone);
+			zone.addEventListener('input', function () { compter(zone); });
+			zone.addEventListener('paste', function (e) {
+				var html = e.clipboardData && e.clipboardData.getData('text/html');
+				if (!html) return; // texte brut : collé tel quel
+				e.preventDefault();
+				document.execCommand('insertHTML', false, nettoyerCollage(html));
+				compter(zone);
+			});
+			zone.addEventListener('keydown', function (e) {
+				if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); lien(zone); }
+				if (e.key === 'Escape' && zone.closest('.g-riche--plein')) commande(zone, 'plein-ecran');
+			});
 		});
+		[].forEach.call(form.querySelectorAll('[data-bloc-choix]'), function (choix) {
+			choix.addEventListener('change', function () {
+				var zone = choix.closest('.g-riche').querySelector('.g-riche__zone');
+				restaurer(zone, zone._range);
+				commande(zone, 'bloc', choix.value);
+			});
+		});
+		if (!fermerPalettes.ecoute) {
+			fermerPalettes.ecoute = true;
+			document.addEventListener('click', function (e) {
+				if (!e.target.closest('.g-riche__outil')) fermerPalettes();
+			});
+		}
 
 		form.addEventListener('mousedown', function (e) {
 			if (e.target.closest('[data-cmd]')) e.preventDefault(); // garde la sélection dans l'éditeur
@@ -1178,7 +1504,7 @@
 		form.addEventListener('click', function (e) {
 			var b = e.target.closest('[data-cmd]');
 			if (b) {
-				commande(b.closest('.g-riche').querySelector('.g-riche__zone'), b.getAttribute('data-cmd'));
+				commande(b.closest('.g-riche').querySelector('.g-riche__zone'), b.getAttribute('data-cmd'), b.getAttribute('data-valeur'));
 				return;
 			}
 			var x = e.target.closest('.g-media__retirer');
@@ -1186,9 +1512,23 @@
 			var cp = e.target.closest('[data-copier]');
 			if (cp) copier(cp.getAttribute('data-copier'));
 		});
+		form.addEventListener('input', function (e) {
+			if (!e.target.classList.contains('g-personnes__filtre')) return;
+			var q = e.target.value.trim().toLowerCase();
+			[].forEach.call(e.target.closest('.g-personnes').querySelectorAll('label[data-nom]'), function (l) {
+				l.hidden = q && l.getAttribute('data-nom').indexOf(q) === -1;
+			});
+		});
 		form.addEventListener('change', function (e) {
+			var groupe = e.target.closest('.g-personnes');
+			if (groupe) {
+				var n = groupe.querySelectorAll('input[type=checkbox]:checked').length;
+				groupe.querySelector('.g-personnes__compte').textContent = n + ' choisi' + (n > 1 ? 's' : '');
+				return;
+			}
 			if (e.target.getAttribute('data-path') === 'parent') return majNiveau(r, form);
 			if (e.target.classList.contains('g-riche__fichier')) return insererImage(e.target);
+			if (e.target.classList.contains('g-riche__document')) return insererDocument(e.target);
 			if (e.target.type === 'file' && e.target.files[0]) envoyerMedia(e.target);
 		});
 
@@ -1230,8 +1570,11 @@
 			/* Un champ masqué (sans objet à ce niveau) n'est pas envoyé : sa valeur éventuelle reste telle quelle. */
 			if (el.closest('.g-champ').hidden) return;
 			var estMeta = f.path.indexOf('meta.') === 0;
-			var v = f.type === 'richtext' ? el.innerHTML.replace(/^(<p><br><\/p>)+$/, '').trim() : el.value;
-			if (f.type === 'taxo') {
+			var v = f.type === 'richtext' ? el.innerHTML.replace(/^(<p><br><\/p>)+$/, '').trim() : f.type === 'case' ? el.checked : el.value;
+			if (f.type === 'personnes') {
+				var ids = [].map.call(el.querySelectorAll('input[type=checkbox]:checked'), function (c) { return c.value; });
+				v = ids.length ? ',' + ids.join(',') + ',' : '';
+			} else if (f.type === 'taxo') {
 				v = f.multiple
 					? [].map.call(el.querySelectorAll('input:checked'), function (c) { return parseInt(c.value, 10); })
 					: (v ? [parseInt(v, 10)] : []);

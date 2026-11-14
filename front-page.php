@@ -1,7 +1,7 @@
 <?php
 /**
  * Page d'accueil : les rubriques de l'université (découvrir, établissements,
- * nouvelles et évènements, personnel, partenariats).
+ * nouvelles et évènements, personnel, vie étudiante, partenariats).
  *
  * @package Site_UEB
  */
@@ -17,6 +17,7 @@ get_template_part( 'templates/accueil/decouvrir' );
 get_template_part( 'templates/accueil/etablissements', null, array( 'arbre' => $arbre ) );
 get_template_part( 'templates/accueil/actualites' );
 get_template_part( 'templates/accueil/personnel' );
+get_template_part( 'templates/accueil/etudiants' );
 get_template_part( 'templates/accueil/partenariats' );
 
 get_footer();

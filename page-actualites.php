@@ -36,6 +36,8 @@ if ( $numero > max( 1, $nb_pages ) ) {
 	exit;
 }
 $articles = $requete->posts;
+/* L'agenda partage la page : il s'affiche après les actualités, sur la page 1 sans recherche ni rubrique. */
+$agenda   = ! $filtre && 1 === $numero ? sueb_agenda() : null;
 $une      = ! $filtre && 1 === $numero && $articles ? array_shift( $articles ) : null;
 
 /* Les rubriques ne s'affichent qu'à partir de deux. */
@@ -147,5 +149,55 @@ get_header();
 		<?php endif; ?>
 	</div>
 </section>
+<?php if ( null !== $agenda ) : ?>
+	<section class="agenda-page" id="agenda" aria-labelledby="agenda-page-titre">
+		<div class="conteneur">
+			<div class="actus-liste__tete">
+				<h2 class="actus-liste__titre agenda-page__titre" id="agenda-page-titre"><?php echo sueb_icone( 'calendrier', 28 ); ?>Agenda</h2>
+				<p class="actus-liste__compte"><?php echo esc_html( sprintf( _n( '%d évènement à venir', '%d évènements à venir', count( $agenda['a_venir'] ) ), count( $agenda['a_venir'] ) ) ); ?></p>
+			</div>
+
+			<?php if ( $agenda['a_venir'] ) : ?>
+				<ol class="agenda-page__liste">
+					<?php foreach ( $agenda['a_venir'] as $ev ) : ?>
+						<li class="agenda-carte">
+							<time class="agenda-carte__date" datetime="<?php echo esc_attr( $ev['iso'] ); ?>"><strong><?php echo esc_html( $ev['jour'] ); ?></strong><?php echo esc_html( $ev['mois'] ); ?><small><?php echo esc_html( $ev['annee'] ); ?></small></time>
+							<div class="agenda-carte__texte">
+								<h3><a href="<?php echo esc_url( $ev['url'] ); ?>"><?php echo esc_html( $ev['titre'] ); ?></a></h3>
+								<p class="agenda-carte__infos">
+									<span><?php echo sueb_icone( 'horloge', 16 ); ?><?php echo esc_html( ucfirst( $ev['date'] ) . ( $ev['heure'] ? ', ' . $ev['heure'] : '' ) ); ?></span>
+									<?php if ( $ev['lieu'] ) : ?><span><?php echo sueb_icone( 'lieu', 16 ); ?><?php echo esc_html( $ev['lieu'] ); ?></span><?php endif; ?>
+								</p>
+								<?php if ( $ev['texte'] ) : ?><p class="agenda-carte__resume"><?php echo esc_html( $ev['texte'] ); ?></p><?php endif; ?>
+							</div>
+						</li>
+					<?php endforeach; ?>
+				</ol>
+			<?php else : ?>
+				<p class="agenda-page__vide"><strong>Aucun évènement programmé pour le moment.</strong> Les prochaines rencontres, soutenances et cérémonies seront annoncées ici.</p>
+			<?php endif; ?>
+
+			<?php if ( $agenda['passes'] ) : ?>
+				<details class="agenda-page__passes">
+					<summary>Évènements passés<?php echo sueb_icone( 'chevron', 18 ); ?></summary>
+					<ol class="agenda-page__liste agenda-page__liste--passes">
+						<?php foreach ( $agenda['passes'] as $ev ) : ?>
+						<li class="agenda-carte agenda-carte--passe">
+							<time class="agenda-carte__date" datetime="<?php echo esc_attr( $ev['iso'] ); ?>"><strong><?php echo esc_html( $ev['jour'] ); ?></strong><?php echo esc_html( $ev['mois'] ); ?><small><?php echo esc_html( $ev['annee'] ); ?></small></time>
+							<div class="agenda-carte__texte">
+								<h3><a href="<?php echo esc_url( $ev['url'] ); ?>"><?php echo esc_html( $ev['titre'] ); ?></a></h3>
+								<p class="agenda-carte__infos">
+									<span><?php echo sueb_icone( 'horloge', 16 ); ?><?php echo esc_html( ucfirst( $ev['date'] ) . ( $ev['heure'] ? ', ' . $ev['heure'] : '' ) ); ?></span>
+									<?php if ( $ev['lieu'] ) : ?><span><?php echo sueb_icone( 'lieu', 16 ); ?><?php echo esc_html( $ev['lieu'] ); ?></span><?php endif; ?>
+								</p>
+							</div>
+						</li>
+						<?php endforeach; ?>
+					</ol>
+				</details>
+			<?php endif; ?>
+		</div>
+	</section>
+<?php endif; ?>
 <?php
 get_footer();

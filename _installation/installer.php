@@ -189,6 +189,10 @@ foreach ( $partenaires as $i => $p ) {
 require __DIR__ . '/appliquer-offre.php';
 sueb_appliquer_offre_formation( require __DIR__ . '/offre-formation.php' );
 
+/* ---------- Unités d'enseignement de l'ESTLC et de l'ISABEE (ESTLC.xlsx, ISABEE.xlsx) ---------- */
+require __DIR__ . '/appliquer-syllabus.php';
+sueb_appliquer_syllabus( array_merge( require __DIR__ . '/syllabus-estlc.php', require __DIR__ . '/syllabus-isabee.php' ) );
+
 /* ---------- Deux enseignants d'exemple (FS), pour montrer la fiche CV ---------- */
 require __DIR__ . '/enseignants-exemple.php';
 sueb_enseignants_exemple();

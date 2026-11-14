@@ -53,8 +53,8 @@ $icones = array(
 	<div class="conteneur bandeau-haut__int">
 		<p class="bandeau-haut__devise"><span>République du Cameroun</span><em>Paix – Travail – Patrie</em></p>
 		<ul class="bandeau-haut__liens">
-			<li class="bandeau-haut__acces"><a href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription</a></li>
-			<li class="bandeau-haut__acces"><a href="<?php echo esc_url( SUEB_LIENS['inscription'] ); ?>">Inscription</a></li>
+			<li class="bandeau-haut__acces"><a href="<?php echo esc_url( sueb_lien( 'preinscription' ) ); ?>">Préinscription</a></li>
+			<li class="bandeau-haut__acces"><a href="<?php echo esc_url( sueb_lien( 'inscription' ) ); ?>">Inscription</a></li>
 			<li><a href="<?php echo esc_url( $base . '#agenda' ); ?>">Agenda</a></li>
 			<li><a href="<?php echo esc_url( $base . '#contact' ); ?>">Contact</a></li>
 		</ul>
@@ -87,8 +87,8 @@ $icones = array(
 						<?php endif; ?>
 					</li>
 					<?php if ( 0 === $i ) : ?>
-						<li class="nav__item nav__item--mobile"><a class="nav__lien" href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription</a></li>
-						<li class="nav__item nav__item--mobile"><a class="nav__lien" href="<?php echo esc_url( SUEB_LIENS['inscription'] ); ?>">Inscription</a></li>
+						<li class="nav__item nav__item--mobile"><a class="nav__lien" href="<?php echo esc_url( sueb_lien( 'preinscription' ) ); ?>">Préinscription</a></li>
+						<li class="nav__item nav__item--mobile"><a class="nav__lien" href="<?php echo esc_url( sueb_lien( 'inscription' ) ); ?>">Inscription</a></li>
 					<?php endif; ?>
 				<?php endforeach; ?>
 			</ul>

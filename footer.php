@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$u    = SUEB_UNIVERSITE;
+$u    = sueb_universite();
 $base = is_front_page() ? '' : home_url( '/' );
 ?>
 </main>
@@ -18,7 +18,7 @@ $base = is_front_page() ? '' : home_url( '/' );
 		<div class="pied__appel revele">
 			<p class="pied__accroche">Votre parcours commence à Ebolowa.</p>
 			<div class="pied__actions">
-				<a class="btn btn--or" href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription en ligne<?php echo sueb_icone( 'fleche', 18 ); ?></a>
+				<a class="btn btn--or" href="<?php echo esc_url( sueb_lien( 'preinscription' ) ); ?>">Préinscription en ligne<?php echo sueb_icone( 'fleche', 18 ); ?></a>
 				<a class="btn btn--verre" href="mailto:<?php echo esc_attr( $u['email'] ); ?>"><?php echo sueb_icone( 'courriel', 18 ); ?>Nous écrire</a>
 			</div>
 		</div>
@@ -31,8 +31,8 @@ $base = is_front_page() ? '' : home_url( '/' );
 				</a>
 				<p class="pied__propos">Neuf établissements à Ebolowa, Sangmélima, Ambam et Kribi pour former, chercher et entreprendre au cœur de la région du Sud.</p>
 				<ul class="pied__reseaux">
-					<li><a href="<?php echo esc_url( SUEB_LIENS['facebook'] ); ?>" target="_blank" rel="noopener" aria-label="L’UEb sur Facebook"><?php echo sueb_icone( 'facebook', 20 ); ?></a></li>
-					<li><a href="<?php echo esc_url( SUEB_LIENS['youtube'] ); ?>" target="_blank" rel="noopener" aria-label="L’UEb sur YouTube"><?php echo sueb_icone( 'youtube', 20 ); ?></a></li>
+					<li><a href="<?php echo esc_url( sueb_lien( 'facebook' ) ); ?>" target="_blank" rel="noopener" aria-label="L’UEb sur Facebook"><?php echo sueb_icone( 'facebook', 20 ); ?></a></li>
+					<li><a href="<?php echo esc_url( sueb_lien( 'youtube' ) ); ?>" target="_blank" rel="noopener" aria-label="L’UEb sur YouTube"><?php echo sueb_icone( 'youtube', 20 ); ?></a></li>
 				</ul>
 			</div>
 
@@ -50,8 +50,8 @@ $base = is_front_page() ? '' : home_url( '/' );
 			<nav class="pied__colonne" aria-labelledby="pied-etudier">
 				<h2 class="pied__titre" id="pied-etudier">Étudier à l’UEb</h2>
 				<ul class="pied__liens">
-					<li><a href="<?php echo esc_url( SUEB_LIENS['preinscription'] ); ?>">Préinscription en ligne</a></li>
-					<li><a href="<?php echo esc_url( SUEB_LIENS['inscription'] ); ?>">Inscription administrative</a></li>
+					<li><a href="<?php echo esc_url( sueb_lien( 'preinscription' ) ); ?>">Préinscription en ligne</a></li>
+					<li><a href="<?php echo esc_url( sueb_lien( 'inscription' ) ); ?>">Inscription administrative</a></li>
 					<li><a href="<?php echo esc_url( $base . '#etablissements' ); ?>">Formations et syllabus</a></li>
 					<li><a href="<?php echo esc_url( sueb_url_actualites() ); ?>">Actualités</a></li>
 					<li><a href="<?php echo esc_url( $base . '#agenda' ); ?>">Agenda</a></li>

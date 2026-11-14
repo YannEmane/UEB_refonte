@@ -37,7 +37,13 @@ function sueb_repli_article() {
 }
 
 /** Photo d'étudiant(e) d'un établissement (assets/images/etudiants/<sigle>.webp ou .png), ou chaîne vide. */
-function sueb_photo_etudiant( $sigle ) {
+function sueb_photo_etudiant( $sigle, $id = 0 ) {
+	/* La photo choisie dans la gestion (champ photo_etudiant de l'établissement), sinon celle du thème. */
+	$media = $id ? (int) get_post_meta( (int) $id, '_sueb_photo_etudiant', true ) : 0;
+	$url   = $media ? (string) wp_get_attachment_image_url( $media, 'large' ) : '';
+	if ( $url ) {
+		return $url;
+	}
 	$sigle = strtolower( $sigle );
 	foreach ( array( 'webp', 'png' ) as $ext ) {
 		if ( file_exists( SUEB_DIR . "/assets/images/etudiants/$sigle.$ext" ) ) {

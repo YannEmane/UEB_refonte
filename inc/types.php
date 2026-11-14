@@ -29,6 +29,8 @@ add_action( 'init', function () {
 	};
 
 	register_post_type( 'ueb_dirigeant', array(
+		'capability_type' => array( 'ueb_dirigeant', 'ueb_dirigeants' ), // droits propres : voir inc/roles.php
+		'map_meta_cap'    => true,
 		'labels'        => array_merge( $etiquettes( 'Dirigeant', 'Dirigeants du rectorat' ), array( 'all_items' => 'Dirigeants', 'enter_title_here' => 'Nom complet (ex. Pr Jean Dupont)' ) ),
 		'public'        => false,
 		'show_ui'       => true,
@@ -39,6 +41,8 @@ add_action( 'init', function () {
 	) );
 
 	register_post_type( 'ueb_structure', array(
+		'capability_type' => array( 'ueb_structure', 'ueb_structures' ), // droits propres : voir inc/roles.php
+		'map_meta_cap'    => true,
 		'labels'        => array_merge( $etiquettes( 'Structure', 'Offre de formation', true ), array(
 			'all_items'        => 'Établissements, départements…',
 			'add_new_item'     => 'Ajouter un établissement, un département, une filière ou une UE',
@@ -56,6 +60,8 @@ add_action( 'init', function () {
 	) );
 
 	register_post_type( 'ueb_partenaire', array(
+		'capability_type' => array( 'ueb_partenaire', 'ueb_partenaires' ), // droits propres : voir inc/roles.php
+		'map_meta_cap'    => true,
 		'labels'        => $etiquettes( 'Partenaire', 'Partenariats' ),
 		'public'        => true,
 		'menu_icon'     => 'dashicons-admin-links',
@@ -67,6 +73,8 @@ add_action( 'init', function () {
 	) );
 
 	register_post_type( 'ueb_evenement', array(
+		'capability_type' => array( 'ueb_evenement', 'ueb_evenements' ), // droits propres : voir inc/roles.php
+		'map_meta_cap'    => true,
 		'labels'        => $etiquettes( 'Évènement', 'Évènements' ),
 		'public'        => true,
 		'menu_icon'     => 'dashicons-calendar-alt',
@@ -78,6 +86,8 @@ add_action( 'init', function () {
 	) );
 
 	register_post_type( 'ueb_personnel', array(
+		'capability_type' => array( 'ueb_personnel', 'ueb_personnels' ), // droits propres : voir inc/roles.php
+		'map_meta_cap'    => true,
 		'labels'        => array_merge( $etiquettes( 'Membre du personnel', 'Personnel' ), array( 'all_items' => 'Tout le personnel', 'enter_title_here' => 'Nom complet' ) ),
 		'public'        => true,
 		'menu_icon'     => 'dashicons-id',
@@ -89,6 +99,7 @@ add_action( 'init', function () {
 	) );
 
 	register_taxonomy( 'ueb_corps', 'ueb_personnel', array(
+		'capabilities'      => array( 'manage_terms' => 'manage_categories', 'edit_terms' => 'manage_categories', 'delete_terms' => 'manage_categories', 'assign_terms' => 'edit_ueb_personnels' ),
 		'labels'            => array( 'name' => 'Catégories du personnel', 'singular_name' => 'Catégorie', 'add_new_item' => 'Ajouter une catégorie' ),
 		'hierarchical'      => true,
 		'show_admin_column' => true,

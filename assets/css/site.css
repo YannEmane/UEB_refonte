@@ -2377,6 +2377,7 @@ a.parcours__lien:focus-visible { outline: 3px solid var(--blanc); outline-offset
 .acad-autres a { padding: .45rem 1rem; border: 1px solid var(--filet-fort); border-radius: 999px; background: var(--blanc); font-size: .875rem; font-weight: 600; color: var(--foret-900); text-decoration: none; transition: background .3s, border-color .3s, color .3s, transform .4s var(--ease); }
 .acad-autres a:hover, .acad-autres a:focus-visible { background: var(--foret-900); border-color: var(--foret-900); color: var(--blanc); transform: translateY(-2px); }
 .acad-corps .cursus__liste { background: transparent; }
+.cursus__compte { font-size: .875rem; font-weight: 600; color: var(--foret-800); white-space: nowrap; }
 
 @media (max-width: 760px) {
 	.parcours { grid-template-columns: minmax(0, 1fr); }
@@ -2385,4 +2386,5 @@ a.parcours__lien:focus-visible { outline: 3px solid var(--blanc); outline-offset
 	.acad-tete__logo { width: 64px; height: 64px; padding: 6px; }
 	.acad-etapes { gap: .6rem 1.25rem; }
 	.acad-etapes li + li::before { display: none; }
+	.cursus__compte { grid-column: 2; grid-row: 2; justify-self: start; }
 }

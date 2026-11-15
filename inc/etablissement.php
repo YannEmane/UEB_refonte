@@ -59,8 +59,11 @@ function sueb_niveau_ue( $semestre, $diplome ) {
 	return 'Niveau ' . $annee;
 }
 
-/** Nom complet d'un niveau : L1 donne « Licence 1 », M1 pro « Master 1 professionnel » ; les autres restent tels quels. */
+/** Nom complet d'un niveau : L1 donne « Licence 1 », M1 pro « Master 1 professionnel », A2 « 2e année » ; les autres restent tels quels. */
 function sueb_nom_niveau( $niveau ) {
+	if ( preg_match( '/^A\s?(\d)$/i', trim( $niveau ), $m ) ) {
+		return $m[1] . ( '1' === $m[1] ? 're' : 'e' ) . ' année';
+	}
 	if ( preg_match( '/^([LM])(\d)( pro)?$/i', trim( $niveau ), $m ) ) {
 		return ( 'L' === strtoupper( $m[1] ) ? 'Licence ' : 'Master ' ) . $m[2] . ( empty( $m[3] ) ? '' : ' professionnel' );
 	}
@@ -357,9 +360,9 @@ add_action( 'pre_get_posts', function ( $q ) {
 
 /* Une fois : l'adresse /academie/ entre dans les règles de réécriture. */
 add_action( 'init', function () {
-	if ( 'a2' !== get_option( 'sueb_regles_academie' ) ) { // a2 : les adresses des parcours (inc/parcours.php)
+	if ( 'a3' !== get_option( 'sueb_regles_academie' ) ) { // a2, a3 : les adresses des parcours et de leurs départements (inc/parcours.php)
 		flush_rewrite_rules( false );
-		update_option( 'sueb_regles_academie', 'a2' );
+		update_option( 'sueb_regles_academie', 'a3' );
 	}
 }, 99 );
 

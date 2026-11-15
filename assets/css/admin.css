@@ -566,3 +566,12 @@ td.g-actions > * + * { margin-left: .2rem; }
 .g-contacts-rectorat input { width: 100%; }
 [data-liste="services"] input, [data-liste="etablissements"] input { width: 100%; min-width: 6rem; }
 [data-liste="etablissements"] tbody th { min-width: 10rem; }
+
+/* Formations : « Vous ajoutez » puis son rattachement ; niveaux ouverts d'une filière, en cases selon le parcours. */
+.g-label-suite { display: block; margin-top: 1rem; }
+.g-niveaux-ouverts-cadre { display: block; }
+.g-niveaux-ouverts__liste { display: flex; flex-wrap: wrap; gap: .5rem .6rem; }
+.g-niveaux-ouverts__liste label { padding: .4rem .8rem; border: 1px solid var(--g-filet-fort); border-radius: 999px; cursor: pointer; }
+.g-niveaux-ouverts__liste label:has(input:checked) { border-color: var(--g-primaire); background: color-mix(in srgb, var(--g-primaire) 10%, transparent); font-weight: 600; }
+.g-niveaux-ouverts .g-aide { margin: .6rem 0 .4rem; }
+.g-niveaux-ouverts .g-aide:first-child { margin-top: 0; }

@@ -63,6 +63,7 @@ function sueb_champs() {
 				'adresse'           => array( 'Adresse', 'text', 'Établissement seulement, affichée sur la page Contact : campus, boîte postale (ex. Campus de Mekalat, BP 886 Ebolowa).' ),
 				'code'         => array( 'Code de l’UE', 'text', 'UE seulement (ex. MAT 111).' ),
 				'credits'      => array( 'Crédits', 'number', 'UE seulement.' ),
+				'niveau_ue'    => array( 'Niveau', 'niveau_ue', 'UE seulement : le niveau de la filière où l’unité est enseignée (ex. L1, BTS 2, A3). Vide : déduit du semestre.' ),
 				'semestre'     => array( 'Semestre', 'text', 'UE seulement (ex. S1).' ),
 				'volume'       => array( 'Volume horaire', 'text', 'UE seulement (ex. 60 h : 30 CM, 20 TD, 10 TP).' ),
 				'elements'     => array( 'Éléments constitutifs (EC)', 'textarea', 'UE seulement. Un EC par ligne : « code | intitulé | crédits | volume » (ex. « MES 511 | Introduction à l’idéation | 2 | 30 h : 4 CM, 4 TD, 18 TP, 4 TPE »).' ),

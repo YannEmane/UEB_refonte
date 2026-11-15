@@ -28,7 +28,7 @@
 	var ACCEPTE = { logo: 'image/*', photo_droite: 'image/*', photo_etudiant: 'image/*', campus_1: 'image/*', campus_2: 'image/*', campus_3: 'image/*', campus_4: 'image/*', syllabus: 'application/pdf', cv: 'application/pdf', media: 'video/*,audio/*' };
 
 	/* Niveaux (0 établissement … 3 UE) où chaque champ d'une structure a un sens. */
-	var NIVEAUX_CHAMPS = { sigle: [0, 1], ville: [0], couleur: [0], logo: [0], photo_etudiant: [0], intro_formations: [0], intro_tutelle: [0], intro_equipe: [0], intro_campus: [0], campus_1: [0], legende_1: [0], campus_2: [0], legende_2: [0], campus_3: [0], legende_3: [0], campus_4: [0], legende_4: [0], responsable: [0, 1, 2], diplome: [2], niveaux: [2], parcours: [2], accroche: [2], contact_courriel: [0, 2], contact_telephone: [0, 2], adresse: [0], coordonnees: [0], mission: [0], ecole_doctorale: [0], enseignants: [3], code: [3], credits: [3], semestre: [3], volume: [3], elements: [3], syllabus: [3] };
+	var NIVEAUX_CHAMPS = { sigle: [0, 1], ville: [0], couleur: [0], logo: [0], photo_etudiant: [0], intro_formations: [0], intro_tutelle: [0], intro_equipe: [0], intro_campus: [0], campus_1: [0], legende_1: [0], campus_2: [0], legende_2: [0], campus_3: [0], legende_3: [0], campus_4: [0], legende_4: [0], responsable: [0, 1, 2], diplome: [2], niveaux: [2], parcours: [2], accroche: [2], contact_courriel: [0, 2], contact_telephone: [0, 2], adresse: [0], coordonnees: [0], mission: [0], ecole_doctorale: [0], enseignants: [3], code: [3], niveau_ue: [3], credits: [3], semestre: [3], volume: [3], elements: [3], syllabus: [3] };
 
 	/** Les champs complémentaires d'un type, précédés d'un intertitre (`section` : un autre intertitre, ou false pour aucun). `cles` limite la sélection. */
 	function metas(type, cles, section) {
@@ -76,7 +76,7 @@
 	/* ---------- Droits du compte (inc/roles.php) ----------
 	   Chaque rubrique demande une permission ; le serveur vérifie de toute façon chaque action et la portée. */
 	var DROITS = C.droits || [];
-	var PERM = { actualites: 'sueb_actualites', evenements: 'sueb_evenements', pages: 'sueb_pages', etablissements: 'sueb_etablissements', formations: 'sueb_formations', personnel: 'sueb_personnel', dirigeants: 'sueb_dirigeants', partenaires: 'sueb_partenaires', institutions: 'sueb_partenaires', 'accueil-reglages': 'sueb_reglages', 'etudiants-reglages': 'sueb_reglages', contacts: 'sueb_reglages', globaux: 'sueb_reglages', comptes: 'sueb_comptes' };
+	var PERM = { actualites: 'sueb_actualites', evenements: 'sueb_evenements', pages: 'sueb_pages', etablissements: 'sueb_etablissements', formations: 'sueb_formations', departements: 'sueb_formations', filieres: 'sueb_formations', personnel: 'sueb_personnel', dirigeants: 'sueb_dirigeants', partenaires: 'sueb_partenaires', institutions: 'sueb_partenaires', 'accueil-reglages': 'sueb_reglages', 'etudiants-reglages': 'sueb_reglages', contacts: 'sueb_reglages', globaux: 'sueb_reglages', comptes: 'sueb_comptes' };
 	function a(perm) { return DROITS.indexOf(perm) > -1; }
 	function permis(id) { return !PERM[id] || a(PERM[id]); }
 	var TOUS = C.portee === 'tous';
@@ -147,6 +147,8 @@
 		mediatheque: ['image', 'Images, vidéos et documents envoyés sur le site.'],
 		etablissements: ['batiment', 'Facultés et écoles : identité, couleur, logo, présentation.'],
 		formations: ['diplome', 'Départements, filières et unités d’enseignement.'],
+		departements: ['batiment', 'Les départements de l’établissement.'],
+		filieres: ['diplome', 'Les filières de chaque département, leurs niveaux et leurs unités d’enseignement.'],
 		personnel: ['personnes', 'Fiches de l’annuaire : fonction, grade, parcours, CV.'],
 		dirigeants: ['medaille', 'Recteur, vice-recteurs et dirigeants du rectorat.'],
 		partenaires: ['lien', 'Conventions et partenaires de l’université.'],
@@ -231,7 +233,7 @@
 				{ path: 'parent', label: 'Rattaché à', type: 'parent', required: true, genre: true },
 				F.statut, F.ordre
 			].concat(
-				metas('ueb_structure', ['sigle', 'responsable', 'parcours', 'niveaux', 'diplome', 'accroche', 'contact_courriel', 'contact_telephone', 'code', 'credits', 'semestre', 'volume', 'elements', 'syllabus', 'enseignants', 'photo_droite'], { type: 'section', label: 'Détails', aide: 'Seuls les champs utiles à ce que vous ajoutez (département, filière ou unité d’enseignement) sont affichés.' }),
+				metas('ueb_structure', ['sigle', 'responsable', 'parcours', 'niveaux', 'diplome', 'accroche', 'contact_courriel', 'contact_telephone', 'code', 'credits', 'niveau_ue', 'semestre', 'volume', 'elements', 'syllabus', 'enseignants', 'photo_droite'], { type: 'section', label: 'Détails', aide: 'Seuls les champs utiles à ce que vous ajoutez (département, filière ou unité d’enseignement) sont affichés.' }),
 				[F.resume('Pour une filière : le texte à côté de l’accroche, en haut de sa page.'), F.image('Photo principale (pour une filière : le bandeau et la photo de sa page)'), F.texte('Présentation (pour une filière : la section « À propos de la filière »)')]
 			)
 		},
@@ -264,6 +266,18 @@
 		{ id: 'globaux', groupe: 4, titre: 'Coordonnées et liens', reglages: 'coordonnees' },
 		{ id: 'comptes', groupe: 5, titre: 'Rôles et comptes', comptes: true }
 	].filter(function (r) { return permis(r.id); });
+
+	/* L'offre de formation a deux entrées dans le menu : « Départements » et « Filières » (les UE s'ajoutent depuis
+	   leur filière). Elles reprennent les champs de la rubrique « formations », qui ne garde que la liste
+	   complète et la corbeille (#formations/liste) et n'apparaît plus dans le menu. `genre` : 1 département, 2 filière, 3 UE. */
+	RUBRIQUES.forEach(function (r, i) {
+		if (r.id !== 'formations' || r.cache) return;
+		r.cache = true;
+		RUBRIQUES.splice(i + 1, 0,
+			Object.assign({}, r, { id: 'departements', titre: 'Départements', singulier: 'un département', genre: 1, cache: false }),
+			Object.assign({}, r, { id: 'filieres', titre: 'Filières', singulier: 'une filière', genre: 2, cache: false }));
+	});
+	var genreFixe = 0; // le genre imposé au formulaire en cours (0 : au choix)
 
 	var etat = { page: 1, recherche: '', statut: 'any', rubrique: '' };
 	var listes = {};
@@ -627,10 +641,10 @@
 		if (arbre) return Promise.resolve(arbre);
 		/* Sans droit sur les structures (ex. personnel seul), l'arbre public suffit aux listes de choix. */
 		var edition = a('sueb_etablissements') || a('sueb_formations');
-		return toutCharger('wp/v2/ueb_structure?' + (edition ? 'context=edit&status=any&' : '') + 'orderby=menu_order&order=asc&_fields=id,title,parent,menu_order,status,meta._sueb_sigle').then(function (tous) {
+		return toutCharger('wp/v2/ueb_structure?' + (edition ? 'context=edit&status=any&' : '') + 'orderby=menu_order&order=asc&_fields=id,title,parent,menu_order,status,meta._sueb_sigle,meta._sueb_niveaux,meta._sueb_parcours,meta._sueb_diplome,meta._sueb_code,meta._sueb_credits,meta._sueb_semestre,meta._sueb_niveau_ue').then(function (tous) {
 			var a = { par: {}, enfants: {}, ordre: [] };
 			tous.forEach(function (p) {
-				a.par[p.id] = { id: p.id, parent: p.parent || 0, ordre: p.menu_order || 0, nom: titreDe(p), sigle: m(p, 'sigle') };
+				a.par[p.id] = { id: p.id, parent: p.parent || 0, ordre: p.menu_order || 0, nom: titreDe(p), sigle: m(p, 'sigle'), statut: p.status, niveaux: m(p, 'niveaux'), parcours: m(p, 'parcours'), diplome: m(p, 'diplome'), code: m(p, 'code'), credits: m(p, 'credits'), semestre: m(p, 'semestre'), niveauUE: m(p, 'niveau_ue') };
 			});
 			/* Un compte qui gère les formations sans la page de l'établissement ne reçoit pas ce dernier de l'API
 			   (il ne peut pas le modifier) : on le replace à la racine, pour y rattacher ses départements. */
@@ -755,7 +769,7 @@
 
 	function monter() {
 		var menu = GROUPES.map(function (g, i) {
-			var items = RUBRIQUES.filter(function (r) { return r.groupe === i; }).map(function (r) {
+			var items = RUBRIQUES.filter(function (r) { return r.groupe === i && !r.cache; }).map(function (r) {
 				return '<li><a href="#' + r.id + '" data-menu="' + r.id + '">' + ico(icone(r)) + '<span>' + esc(r.titre) + '</span></a></li>';
 			}).join('');
 			return items ? '<p class="g-nav__groupe">' + esc(g) + '</p><ul>' + items + '</ul>' : '';
@@ -830,6 +844,22 @@
 		if (r.contacts) return contactsSites(r);
 		if (r.comptes) return comptes(r, h.slice(1));
 		if (r.mediatheque && (!h[1] || h[1] === 'new')) return mediatheque(r);
+		if (r.id === 'formations') {
+			/* Il n'en reste que la liste complète (et sa corbeille) ; le reste passe par « Départements » et « Filières ». */
+			if (h[1] === 'liste') return liste(r);
+			if (!h[1] || h[1] === 'dans') { location.hash = '#departements'; return; }
+		}
+		if (r.genre) {
+			if (h[1] === 'ue') {
+				/* Une UE s'ajoute et se modifie depuis sa filière : #filieres/ue/new/<filière>/<niveau>, #filieres/ue/<id>. */
+				var rue = Object.assign({}, r, { genre: 3, singulier: 'une unité d’enseignement' });
+				return h[2] === 'new' ? formulaire(rue, 0, { parent: parseInt(h[3], 10) || 0, niveau: h[4] ? decodeURIComponent(h[4]) : '' }) : formulaire(rue, parseInt(h[2], 10));
+			}
+			if (h[1] === 'new') return formulaire(r, 0, { parent: parseInt(h[2], 10) || 0 });
+			if (h[1] === 'dans') return explorer(r, parseInt(h[2], 10) || 0);
+			if (h[1]) return formulaire(r, parseInt(h[1], 10));
+			return explorer(r, 0);
+		}
 		if (h[1] === 'new') return formulaire(r, 0);
 		if (h[1]) return formulaire(r, parseInt(h[1], 10));
 		liste(r);
@@ -841,7 +871,7 @@
 		{ t: 'Brouillons', i: 'crayon', q: 'wp/v2/posts?status=draft', lien: 'actualites', pied: 'actualités à terminer', ton: 'or' },
 		{ t: 'Évènements', i: 'agenda', q: 'wp/v2/ueb_evenement?status=publish', lien: 'evenements', pied: 'dans l’agenda' },
 		{ t: 'Personnel', i: 'personnes', q: 'wp/v2/ueb_personnel?status=publish', lien: 'personnel', pied: 'fiches de l’annuaire' },
-		{ t: 'Offre de formation', i: 'diplome', q: 'wp/v2/ueb_structure?status=publish', lien: 'formations', pied: 'établissements, filières, UE' },
+		{ t: 'Offre de formation', i: 'diplome', q: 'wp/v2/ueb_structure?status=publish', lien: 'filieres', pied: 'établissements, filières, UE' },
 		{ t: 'Médiathèque', i: 'image', q: 'wp/v2/media?status=inherit' + (a('sueb_mediatheque') ? '' : '&author=' + C.id), lien: 'mediatheque', pied: 'fichiers envoyés', ton: 'ciel' }
 	];
 
@@ -856,7 +886,7 @@
 				'<span class="g-kpi__tete"><span class="g-kpi__libelle">' + esc(k.t) + '</span><span class="g-kpi__ico">' + ico(k.i) + '</span></span>' +
 				'<strong class="g-kpi__valeur" data-kpi="' + n + '"><span class="g-squelette"></span></strong><span class="g-kpi__pied">' + esc(k.pied) + '</span></a></li>';
 		}).join('');
-		var raccourcis = RUBRIQUES.map(function (r) {
+		var raccourcis = RUBRIQUES.filter(function (r) { return !r.cache; }).map(function (r) {
 			return '<li><a href="#' + r.id + '"><span class="g-raccourci__ico">' + ico(icone(r)) + '</span><span><strong>' + esc(r.titre) + '</strong><small>' + esc(description(r)) + '</small></span></a></li>';
 		}).join('');
 		contenu.innerHTML = entete((heure < 18 ? 'Bonjour' : 'Bonsoir') + (prenom ? ', ' + prenom : ''), aujourdhui.charAt(0).toUpperCase() + aujourdhui.slice(1) + ' · vue d’ensemble du site',
@@ -897,7 +927,7 @@
 			return '<option value="' + s[0] + '"' + (etat.statut === s[0] ? ' selected' : '') + '>' + s[1] + '</option>';
 		}).join('');
 		contenu.innerHTML =
-			entete(r.titre, description(r), r.id === 'etablissements' && !TOUS ? '' : '<a class="g-btn g-btn--primaire" href="#' + r.id + '/new">' + ico('plus') + 'Ajouter</a>') +
+			entete(r.id === 'formations' ? 'Liste complète et corbeille' : r.titre, description(r), r.id === 'etablissements' && !TOUS ? '' : '<a class="g-btn g-btn--primaire" href="#' + r.id + '/new">' + ico('plus') + 'Ajouter</a>', r.id === 'formations' ? ['#departements', 'Départements'] : null) +
 			'<div class="g-outils"><div class="g-recherche">' + ico('recherche') + '<label class="sr" for="g-q">Rechercher</label><input type="search" id="g-q" placeholder="Rechercher par titre…" value="' + esc(etat.recherche) + '"></div>' +
 			'<label class="sr" for="g-st">Statut</label><select id="g-st">' + statuts + '</select></div><div id="g-liste" aria-live="polite"><p class="g-chargement"><span class="g-roue"></span>Chargement…</p></div>';
 
@@ -962,7 +992,115 @@
 		});
 	}
 
-	function action(r, act, id, titre) {
+	/* ---------- Départements et filières ----------
+	   « Départements » liste les départements (bouton « Ajouter un département ») ; « Filières » liste les filières,
+	   toutes ou celles d'un département (bouton « Ajouter une filière »). Une filière ouverte montre ses UE rangées
+	   par niveau, avec un bouton d'ajout par niveau. */
+
+	function explorer(r, id) {
+		contenu.innerHTML = '<p class="g-chargement"><span class="g-roue"></span>Chargement…</p>';
+		chargerArbre().then(function () {
+			var etabs = (arbre.enfants[0] || []).filter(function (e) { return TOUS || (C.etablissements || []).some(function (x) { return x.id === e.id; }); });
+			var plusieurs = etabs.length > 1;
+			var n = id ? arbre.par[id] : null;
+			var pl = function (k, un, plus) { return k + ' ' + (k > 1 ? plus : un); };
+			var etatDe = function (x) { return '<span class="g-etat g-etat--' + esc(x.statut || 'publish') + '">' + esc(STATUTS[x.statut] || 'Publié') + '</span>'; };
+			var liste = function (texte) { return String(texte || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean); };
+			var puces = function (texte) {
+				var l = liste(texte);
+				return l.length ? '<span class="g-puces">' + l.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</span>' : '<span class="g-pale">—</span>';
+			};
+			var actions = function (x, voir, modifier) {
+				return '<td class="g-actions">' + (voir ? '<a href="' + voir[0] + '">' + voir[1] + '</a>' : '') + '<a href="' + modifier + '">Modifier</a>' +
+					'<button type="button" class="g-danger" data-act="corbeille" data-id="' + x.id + '" data-titre="' + esc(x.nom) + '">Supprimer</button></td>';
+			};
+			var tableau = function (colonnes, lignes) {
+				return '<div class="g-tableau"><table><thead><tr>' + colonnes.filter(Boolean).map(function (c) { return '<th scope="col">' + c + '</th>'; }).join('') + '<th scope="col"><span class="sr">Actions</span></th></tr></thead><tbody>' + lignes.join('') + '</tbody></table></div>';
+			};
+			var bouton = function (libelle, lien, discret) {
+				return '<a class="g-btn' + (discret ? ' g-btn--petit' : ' g-btn--primaire') + '" href="' + lien + '">' + ico('plus') + libelle + '</a>';
+			};
+			var noms = {};
+			(C.parcours || []).forEach(function (x) { noms[x.cle] = x.nom; });
+			var sigleEtab = function (x) { for (var e = x; e; e = arbre.par[e.parent]) { if (!e.parent) return e.sigle || e.nom; } return ''; };
+			var deps = [];
+			etabs.forEach(function (e) { deps = deps.concat(arbre.enfants[e.id] || []); });
+			var h;
+
+			if (r.genre === 1) {
+				/* Les départements, avec l'établissement de chacun quand le compte en gère plusieurs. */
+				var ajoutDep = bouton('Ajouter un département', '#departements/new' + (plusieurs ? '' : '/' + (etabs[0] ? etabs[0].id : '')));
+				h = entete('Départements', pl(deps.length, 'département', 'départements') + (plusieurs ? '' : (etabs[0] ? ' · ' + etabs[0].nom : '')) + '.', ajoutDep) +
+					(deps.length ? tableau(['Département', 'Sigle', plusieurs ? 'Établissement' : '', 'Filières', 'Statut'], deps.map(function (d) {
+						return '<tr><th scope="row">' + esc(d.nom) + '</th><td class="g-court">' + esc(d.sigle || '—') + '</td>' + (plusieurs ? '<td class="g-court">' + esc(sigleEtab(d)) + '</td>' : '') +
+							'<td class="g-court">' + (arbre.enfants[d.id] || []).length + '</td><td>' + etatDe(d) + '</td>' + actions(d, ['#filieres/dans/' + d.id, 'Voir ses filières'], '#departements/' + d.id) + '</tr>';
+					})) : '<p class="g-vide">Aucun département pour l’instant.</p>');
+			} else if (n && n.prof === 2) {
+				/* Une filière : ses UE par niveau, les niveaux ouverts d'abord (même vides), puis les UE sans niveau choisi. */
+				var ues = arbre.enfants[n.id] || [];
+				var ouverts = liste(n.niveaux);
+				var groupes = {};
+				ouverts.forEach(function (x) { groupes[x] = []; });
+				ues.forEach(function (u) { (groupes[u.niveauUE || ''] = groupes[u.niveauUE || ''] || []).push(u); });
+				var sections = Object.keys(groupes).filter(function (k) { return k !== ''; }).concat(groupes[''] ? [''] : []).map(function (k) {
+					var l = groupes[k].slice().sort(function (x, y) { return String(x.semestre).localeCompare(String(y.semestre), 'fr', { numeric: true }) || String(x.code).localeCompare(String(y.code), 'fr', { numeric: true }); });
+					return '<section class="g-panneau g-etage"><div class="g-panneau__tete"><h3>' + (k ? esc(k) : 'Sans niveau choisi <small>(niveau déduit du semestre)</small>') + ' <span class="g-etage__compte">' + l.length + ' UE</span></h3>' + (k ? bouton('Ajouter une UE en ' + esc(k), '#filieres/ue/new/' + n.id + '/' + encodeURIComponent(k), true) : '') + '</div>' +
+						(l.length ? tableau(['Unité d’enseignement', 'Code', 'Semestre', 'Crédits', 'Statut'], l.map(function (u) {
+							return '<tr><th scope="row">' + esc(u.nom) + '</th><td class="g-court">' + esc(u.code || '—') + '</td><td class="g-court">' + esc(u.semestre || '—') + '</td><td class="g-court">' + esc(u.credits || '—') + '</td><td>' + etatDe(u) + '</td>' + actions(u, null, '#filieres/ue/' + u.id) + '</tr>';
+						})) : '<p class="g-vide">Aucune unité d’enseignement à ce niveau.</p>') + '</section>';
+				}).join('');
+				var dep = arbre.par[n.parent];
+				h = entete(n.nom, 'Filière · ' + pl(ues.length, 'unité d’enseignement', 'unités d’enseignement') + (ouverts.length ? ', ' + pl(ouverts.length, 'niveau ouvert', 'niveaux ouverts') : '') + '.',
+						'<a class="g-btn" href="#filieres/' + n.id + '">Modifier la filière</a>' + bouton('Ajouter une UE', '#filieres/ue/new/' + n.id), dep ? ['#filieres/dans/' + dep.id, dep.nom] : ['#filieres', 'Filières']) +
+					(sections || '<p class="g-vide">Cette filière n’a ni niveau ouvert ni unité d’enseignement. Cochez ses niveaux dans « Modifier la filière », ou ajoutez une UE.</p>');
+			} else {
+				/* Les filières : toutes, ou celles du département choisi (liste déroulante ou « Voir ses filières »). */
+				var d0 = n && n.prof === 1 ? n : null;
+				var fils = [];
+				(d0 ? [d0] : deps).forEach(function (d) { (arbre.enfants[d.id] || []).forEach(function (f) { fils.push([f, d]); }); });
+				var choix = '<label class="sr" for="g-dep">Département</label><select id="g-dep" class="g-filtre"><option value="">Tous les départements</option>' + etabs.map(function (e) {
+					var o = (arbre.enfants[e.id] || []).map(function (d) { return '<option value="' + d.id + '"' + (d0 && d0.id === d.id ? ' selected' : '') + '>' + esc(d.nom) + '</option>'; }).join('');
+					return plusieurs ? (o ? '<optgroup label="' + esc(e.sigle || e.nom) + '">' + o + '</optgroup>' : '') : o;
+				}).join('') + '</select>';
+				h = entete('Filières', pl(fils.length, 'filière', 'filières') + (d0 ? ' · ' + d0.nom : '') + '.', bouton('Ajouter une filière', '#filieres/new' + (d0 ? '/' + d0.id : ''))) +
+					'<div class="g-outils">' + choix + '</div>' +
+					(fils.length ? tableau(['Filière', d0 ? '' : 'Département', 'Parcours', 'Niveaux ouverts', 'UE', 'Statut'], fils.map(function (c) {
+						var f = c[0];
+						/* Sans parcours enregistré : celui de ses niveaux, sinon celui de l'établissement (comme sur le site, inc/parcours.php). */
+						var parc = f.parcours || liste(f.niveaux).map(parcoursDuNiveau).filter(Boolean)[0] || (['ESTLC', 'ENSTMO', 'ISABEE'].indexOf(String(sigleEtab(f)).toUpperCase()) > -1 ? 'bts-ingenierie' : 'classique');
+						return '<tr><th scope="row">' + esc(f.nom) + (f.diplome ? '<small class="g-sous">' + esc(f.diplome) + '</small>' : '') + '</th>' + (d0 ? '' : '<td>' + esc((plusieurs ? sigleEtab(c[1]) + ' · ' : '') + (c[1].sigle || c[1].nom)) + '</td>') +
+							'<td class="g-court">' + esc(noms[parc] || '—') + '</td><td>' + puces(f.niveaux) + '</td><td class="g-court">' + (arbre.enfants[f.id] || []).length + '</td><td>' + etatDe(f) + '</td>' + actions(f, ['#filieres/dans/' + f.id, 'Voir ses UE'], '#filieres/' + f.id) + '</tr>';
+					})) : '<p class="g-vide">' + (d0 ? 'Aucune filière dans ce département.' : 'Aucune filière pour l’instant.') + '</p>');
+			}
+			contenu.innerHTML = '<div class="g-explo">' + h + '<p class="g-explo__pied"><a href="#formations/liste">Liste complète et corbeille</a></p></div>';
+			var explo = contenu.querySelector('.g-explo');
+			explo.addEventListener('click', function (e) {
+				var b = e.target.closest('[data-act]');
+				if (b) action(r, b.getAttribute('data-act'), parseInt(b.getAttribute('data-id'), 10), b.getAttribute('data-titre'), function () { explorer(r, id); });
+			});
+			explo.addEventListener('change', function (e) {
+				if (e.target.id === 'g-dep') location.hash = e.target.value ? '#filieres/dans/' + e.target.value : '#filieres';
+			});
+		}).catch(function (e) {
+			contenu.innerHTML = '<p class="g-erreur" role="alert">' + esc(e.message) + '</p>';
+		});
+	}
+
+	/* Le niveau d'une UE se choisit parmi les niveaux ouverts de sa filière (celle du champ « Filière »). */
+	function majNiveauUE(form) {
+		var sel = form.querySelector('[data-path="meta._sueb_niveau_ue"]');
+		var parent = form.querySelector('[data-path="parent"]');
+		if (!sel || !arbre) return;
+		var f = parent && arbre.par[parent.value];
+		var choisi = sel.value || sel.getAttribute('data-enregistre') || '';
+		var liste = String((f && f.prof === 2 && f.niveaux) || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+		if (choisi && liste.indexOf(choisi) === -1) liste.push(choisi);
+		sel.innerHTML = '<option value="">— Déduit du semestre —</option>' + liste.map(function (x) {
+			return '<option value="' + esc(x) + '"' + (x === choisi ? ' selected' : '') + '>' + esc(x) + '</option>';
+		}).join('');
+	}
+
+	function action(r, act, id, titre, apres) {
 		var base = 'wp/v2/' + r.endpoint + '/' + id;
 		var tache;
 		var enfants = r.arbre && arbre && arbre.enfants[id] ? arbre.enfants[id].length : 0;
@@ -981,7 +1119,7 @@
 			} else if (act === 'supprimer') {
 				tache = api(base + '?force=true', { method: 'DELETE' }).then(function () { notifier('Supprimé définitivement.'); });
 			}
-			if (tache) tache.then(function () { if (r.arbre) arbre = null; charger(r); }).catch(function (e) { notifier(e.message, true); });
+			if (tache) tache.then(function () { if (r.arbre) arbre = null; (apres || function () { charger(r); })(); }).catch(function (e) { notifier(e.message, true); });
 		});
 	}
 
@@ -1325,9 +1463,12 @@
 		return Promise.all(attentes);
 	}
 
-	function formulaire(r, id) {
+	function formulaire(r, id, pre) {
 		contenu.innerHTML = '<p class="g-chargement"><span class="g-roue"></span>Chargement…</p>';
 		var vide = Object.assign({ status: 'publish', format: 'standard', menu_order: 0, meta: {} }, r.defauts || {});
+		/* Ajout depuis l'écran d'un département ou d'une filière : le rattachement (et le niveau d'une UE) sont déjà choisis. */
+		if (pre && pre.parent) vide.parent = pre.parent;
+		if (pre && pre.niveau) vide.meta = { _sueb_niveau_ue: pre.niveau };
 		var lecture = id ? api('wp/v2/' + r.endpoint + '/' + id + '?context=edit') : Promise.resolve({ data: vide });
 		Promise.all([lecture, chargerListes(r)]).then(function (res) {
 			dessiner(r, id, res[0].data);
@@ -1394,11 +1535,12 @@
 					/* Ce qu'on ajoute d'abord, puis son rattachement au niveau juste au-dessus. */
 					var noeud = arbre.par[p.id];
 					var pere = arbre.par[v];
-					var genre = Math.min(3, Math.max(1, noeud ? noeud.prof : (pere ? pere.prof + 1 : 2)));
-					h = '<label for="f-genre">' + (p.id ? 'Il s’agit de' : 'Vous ajoutez') + '</label><select id="f-genre" data-genre>' + [1, 2, 3].map(function (g) {
+					var genre = genreFixe || Math.min(3, Math.max(1, noeud ? noeud.prof : (pere ? pere.prof + 1 : 2)));
+					/* Depuis « Départements » ou « Filières », on sait ce qu'on ajoute : seul le rattachement se choisit. */
+					h = (genreFixe ? '<input type="hidden" data-genre value="' + genre + '">' : '<label for="f-genre">' + (p.id ? 'Il s’agit de' : 'Vous ajoutez') + '</label><select id="f-genre" data-genre>' + [1, 2, 3].map(function (g) {
 						return '<option value="' + g + '"' + (g === genre ? ' selected' : '') + '>' + esc(GENRES[g][0]) + '</option>';
-					}).join('') + '</select>' +
-						'<label for="' + id + '" class="g-label-suite" data-libelle-parent>' + esc(GENRES[genre][1]) + ' *</label>' +
+					}).join('') + '</select>') +
+						'<label for="' + id + '"' + (genreFixe ? '' : ' class="g-label-suite"') + ' data-libelle-parent>' + esc(GENRES[genre][1]) + ' *</label>' +
 						'<select id="' + id + '"' + nom + req + ' data-courant="' + (p.id || '') + '">' + optionsRattachement(genre, v, p.id) + '</select>';
 					break;
 				}
@@ -1406,6 +1548,9 @@
 			case 'etablissement':
 			case 'departement':
 				h = libelle + '<select id="' + id + '"' + nom + req + decrit + '>' + optionsStructures(f, v, p.id) + '</select>';
+				break;
+			case 'niveau_ue':
+				h = libelle + '<select id="' + id + '"' + nom + decrit + ' data-enregistre="' + esc(v || '') + '"></select>';
 				break;
 			case 'niveaux':
 				h = '<fieldset class="g-cases g-niveaux-ouverts-cadre"><legend>' + esc(f.label) + '</legend><div class="g-niveaux-ouverts"' + nom + ' data-enregistres="' + esc(v || '') + '"></div></fieldset>';
@@ -1527,9 +1672,17 @@
 	}
 
 	function dessiner(r, id, p) {
+		/* Les formations reviennent à l'écran de l'étage d'où l'on vient (le département, la filière). */
+		genreFixe = r.genre || 0;
+		var retourDe = function (parent) {
+			if (r.id === 'formations') return '#formations/liste';
+			if (r.genre === 1) return '#departements';
+			return r.genre ? (parent ? '#filieres/dans/' + parent : '#filieres') : '#' + r.id;
+		};
+		var retourListe = retourDe(p.parent);
 		var tete = r.reglages
 			? entete(r.titre, description(r))
-			: entete((id ? 'Modifier ' : 'Ajouter ') + r.singulier, id ? titreDe(p) : '', '', ['#' + r.id, r.titre]);
+			: entete((id ? 'Modifier ' : 'Ajouter ') + r.singulier, id ? titreDe(p) : '', '', [retourListe, r.genre > 1 && p.parent && arbre && arbre.par[p.parent] ? arbre.par[p.parent].nom : (r.id === 'formations' ? 'Liste complète' : r.titre)]);
 		var role = p.sueb_gestion && p.sueb_gestion.role
 			? '<p class="g-aide g-role">Utilisée par le site : ' + esc(p.sueb_gestion.role) + '. Son adresse ne change pas et elle ne peut pas être supprimée.</p>'
 			: '';
@@ -1537,13 +1690,14 @@
 			'<form class="g-form g-panneau" novalidate>' + r.champs.map(function (f) {
 				return champ(f, p) + (f.type === 'parent' ? '<p class="g-niveau" aria-live="polite"></p>' : '');
 			}).join('') +
-			'<div class="g-form__actions"><button class="g-btn g-btn--primaire" type="submit">Enregistrer</button>' + (r.reglages ? '' : '<a class="g-btn" href="#' + r.id + '">Annuler</a>') + '</div></form>';
+			'<div class="g-form__actions"><button class="g-btn g-btn--primaire" type="submit">Enregistrer</button>' + (r.reglages ? '' : '<a class="g-btn" href="' + retourListe + '">Annuler</a>') + '</div></form>';
 		var form = contenu.querySelector('form');
 
 		try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) { /* sans effet */ }
 
 		if (form.querySelector('[data-niveaux]')) majNiveau(r, form);
 		majNiveauxOuverts(form, true);
+		majNiveauUE(form);
 
 		apercusMedias(form); // aperçu des médias déjà choisis
 
@@ -1612,11 +1766,12 @@
 				var g = parseInt(e.target.value, 10);
 				var rattache = form.querySelector('[data-path="parent"]');
 				rattache.innerHTML = optionsRattachement(g, '', parseInt(rattache.getAttribute('data-courant'), 10) || 0);
+				majNiveauUE(form);
 				form.querySelector('[data-libelle-parent]').textContent = GENRES[g][1] + ' *';
 				return majNiveau(r, form);
 			}
 			if (e.target.getAttribute('data-path') === 'meta._sueb_parcours') return majNiveauxOuverts(form, false);
-			if (e.target.getAttribute('data-path') === 'parent') return majNiveau(r, form);
+			if (e.target.getAttribute('data-path') === 'parent') { majNiveauUE(form); return majNiveau(r, form); }
 			if (e.target.classList.contains('g-riche__fichier')) return insererImage(e.target);
 			if (e.target.classList.contains('g-riche__document')) return insererDocument(e.target);
 			if (e.target.type === 'file' && e.target.files[0]) envoyerMedia(e.target);
@@ -1636,14 +1791,14 @@
 			var bouton = form.querySelector('button[type=submit]');
 			bouton.disabled = true;
 			var cible = r.reglages ? 'sueb/v1/reglages' : 'wp/v2/' + r.endpoint + (id ? '/' + id : '');
-			api(cible, { method: 'POST', body: collecter(r, form) }).then(function () {
+			api(cible, { method: 'POST', body: collecter(r, form) }).then(function (res) {
 				notifier('Enregistré.');
 				if (r.reglages) {
 					bouton.disabled = false;
 					return;
 				}
 				if (r.arbre || r.endpoint === 'ueb_structure') arbre = null;
-				location.hash = '#' + r.id;
+				location.hash = retourDe(res.data && res.data.parent);
 			}).catch(function (err) {
 				notifier(err.message, true);
 				bouton.disabled = false;

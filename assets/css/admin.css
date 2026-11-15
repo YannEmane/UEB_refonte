@@ -575,3 +575,24 @@ td.g-actions > * + * { margin-left: .2rem; }
 .g-niveaux-ouverts__liste label:has(input:checked) { border-color: var(--g-primaire); background: color-mix(in srgb, var(--g-primaire) 10%, transparent); font-weight: 600; }
 .g-niveaux-ouverts .g-aide { margin: .6rem 0 .4rem; }
 .g-niveaux-ouverts .g-aide:first-child { margin-top: 0; }
+
+/* Formations : un écran par étage (départements, filières, UE par niveau). */
+.g-explo { display: grid; gap: 1.25rem; }
+.g-explo .g-tete { margin-bottom: 0; }
+.g-lien-fort { color: var(--g-texte); font-weight: 600; text-decoration: none; }
+.g-lien-fort:hover { color: var(--g-primaire); text-decoration: underline; text-underline-offset: .2em; }
+.g-sous { display: block; margin-top: .15rem; font-weight: 400; color: var(--g-texte-pale); }
+.g-pale { color: var(--g-texte-pale); }
+.g-puces { display: inline-flex; flex-wrap: wrap; gap: .25rem; }
+.g-puces span { padding: .1rem .5rem; border: 1px solid var(--g-filet-fort); border-radius: 999px; font-size: .75rem; font-weight: 600; white-space: nowrap; }
+.g-etage .g-panneau__tete h3 small { font-weight: 400; color: var(--g-texte-pale); }
+.g-etage__compte { margin-left: .4rem; padding: .1rem .55rem; border-radius: 999px; background: var(--g-surface-2); font-size: .75rem; font-weight: 600; color: var(--g-texte-doux); }
+.g-etage .g-tableau { border: 0; border-radius: 0 0 var(--g-r-l) var(--g-r-l); box-shadow: none; }
+.g-vide .g-btn { margin-left: .5rem; vertical-align: middle; }
+.g-explo__pied { margin: 0; font-size: .875rem; text-align: right; }
+.g-explo .g-outils { margin: 0; }
+.g-filtre { max-width: 26rem; }
+.g-explo .g-tableau tbody th { min-width: 11rem; }
+.g-explo .g-tableau td, .g-explo .g-tableau tbody th { padding-inline: .7rem; }
+.g-explo .g-tableau tr > :first-child { padding-left: 1.2rem; }
+.g-explo .g-actions a, .g-explo .g-actions button { padding-inline: .45rem; }

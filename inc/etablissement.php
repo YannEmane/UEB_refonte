@@ -45,7 +45,11 @@ function sueb_lien_etablissement( $sigle ) {
 }
 
 /** Niveau d'une UE d'après son semestre et le diplôme de la filière : S1-S2 donnent L1 (ou M1 pour un master), Niveau 1 pour un autre diplôme, etc. */
-function sueb_niveau_ue( $semestre, $diplome ) {
+function sueb_niveau_ue( $semestre, $diplome, $choisi = '' ) {
+	/* Le niveau choisi dans la gestion (champ « Niveau » de l'UE) l'emporte sur celui déduit du semestre. */
+	if ( '' !== trim( (string) $choisi ) ) {
+		return trim( (string) $choisi );
+	}
 	if ( ! preg_match( '/(\d+)/', (string) $semestre, $m ) ) {
 		return 'Autres';
 	}
@@ -106,7 +110,7 @@ function sueb_filiere( $f ) {
 			'url'      => get_permalink( $u ),
 			'profs'    => array_values( array_intersect_key( $personnes, array_flip( sueb_ids( sueb_meta( $u->ID, 'enseignants' ) ) ) ) ),
 		);
-		$niveaux[ sueb_niveau_ue( $ue['semestre'], $diplome ) ][] = $ue;
+		$niveaux[ sueb_niveau_ue( $ue['semestre'], $diplome, sueb_meta( $u->ID, 'niveau_ue' ) ) ][] = $ue;
 		$credits += (int) $ue['credits'];
 	}
 	ksort( $niveaux, SORT_NATURAL );
@@ -181,7 +185,7 @@ function sueb_page_etablissement( $id ) {
 			$niveaux = array();
 			foreach ( $les_ues[ $f->ID ] as $u ) {
 				$syllabus = (int) sueb_meta( $u->ID, 'syllabus' );
-				$niveau   = sueb_niveau_ue( sueb_meta( $u->ID, 'semestre' ), $diplome );
+				$niveau   = sueb_niveau_ue( sueb_meta( $u->ID, 'semestre' ), $diplome, sueb_meta( $u->ID, 'niveau_ue' ) );
 				$niveaux[ $niveau ][] = array(
 					'titre'    => $u->post_title,
 					'code'     => (string) sueb_meta( $u->ID, 'code' ),
@@ -442,7 +446,7 @@ function sueb_ue_enseignees( $personne_id ) {
 			'code'     => (string) sueb_meta( $u->ID, 'code' ),
 			'credits'  => (string) sueb_meta( $u->ID, 'credits' ),
 			'volume'   => (string) sueb_meta( $u->ID, 'volume' ),
-			'niveau'   => sueb_nom_niveau( sueb_niveau_ue( sueb_meta( $u->ID, 'semestre' ), sueb_meta( $filiere, 'diplome' ) ) ),
+			'niveau'   => sueb_nom_niveau( sueb_niveau_ue( sueb_meta( $u->ID, 'semestre' ), sueb_meta( $filiere, 'diplome' ), sueb_meta( $u->ID, 'niveau_ue' ) ) ),
 			'filiere'  => sueb_titre_et_code( get_the_title( $filiere ) )[0],
 			'f_url'    => get_permalink( $filiere ),
 			'syllabus' => $syllabus ? (string) wp_get_attachment_url( $syllabus ) : '',

@@ -21,7 +21,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const SUEB_ROLES_VERSION = '1';
+const SUEB_ROLES_VERSION = '2';
 
 /**
  * Liste blanche des permissions, par groupe. « types » : types de contenu dont la
@@ -120,9 +120,12 @@ function sueb_nouveau_slug_role() {
 
 /* Mise en place (une fois) : l'administrateur reçoit toutes les permissions ; l'ancien rôle
    « Gestionnaire UEb » entre dans le registre, avec tout et pour tous ; un rôle d'exemple
-   pour confier la page d'un établissement à son équipe. Aucun compte n'est modifié. */
+   pour confier la page d'un établissement à son équipe ; un autre (version 2) pour qu'une école
+   ajoute elle-même ses départements, ses filières et leurs niveaux, sans toucher à sa page ni
+   aux autres établissements. Aucun compte n'est modifié. */
 add_action( 'init', function () {
-	if ( get_option( 'sueb_roles_version' ) === SUEB_ROLES_VERSION ) {
+	$faite = (string) get_option( 'sueb_roles_version' );
+	if ( SUEB_ROLES_VERSION === $faite ) {
 		return;
 	}
 	$admin = get_role( 'administrator' );
@@ -131,11 +134,15 @@ add_action( 'init', function () {
 			$admin->add_cap( $cap );
 		}
 	}
-	if ( ! sueb_role( 'gestionnaire_ueb' ) ) {
+	/* Les rôles de la première mise en place ne reviennent pas s'ils ont été supprimés depuis. */
+	if ( '' === $faite && ! sueb_role( 'gestionnaire_ueb' ) ) {
 		sueb_enregistrer_role( 'gestionnaire_ueb', array( 'nom' => 'Gestionnaire du site', 'permissions' => array_keys( sueb_permissions() ), 'portee' => 'tous' ) );
 	}
-	if ( ! array_filter( sueb_roles(), function ( $d ) { return 'un' === $d['portee']; } ) ) {
+	if ( '' === $faite && ! array_filter( sueb_roles(), function ( $d ) { return 'un' === $d['portee']; } ) ) {
 		sueb_enregistrer_role( sueb_nouveau_slug_role(), array( 'nom' => 'Responsable de la page d’un établissement', 'permissions' => array( 'sueb_etablissements', 'sueb_formations', 'sueb_personnel' ), 'portee' => 'un' ) );
+	}
+	if ( ! array_filter( sueb_roles(), function ( $d ) { return 'un' === $d['portee'] && array( 'sueb_formations' ) === $d['permissions']; } ) ) {
+		sueb_enregistrer_role( sueb_nouveau_slug_role(), array( 'nom' => 'Responsable des formations d’un établissement', 'permissions' => array( 'sueb_formations' ), 'portee' => 'un' ) );
 	}
 	update_option( 'sueb_roles_version', SUEB_ROLES_VERSION );
 }, 5 );

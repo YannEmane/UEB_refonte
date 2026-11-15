@@ -125,6 +125,9 @@ add_action( 'wp_enqueue_scripts', function () {
 				'champs'      => sueb_champs_gestion(),
 				'reglages'    => sueb_reglages_gestion(),
 				'niveaux'     => wp_list_pluck( sueb_niveaux(), 'un' ),
+				'parcours'    => array_map( function ( $cle, $p ) {
+					return array( 'cle' => $cle, 'nom' => $p['court'], 'niveaux' => $p['niveaux'] );
+				}, array_keys( sueb_parcours() ), sueb_parcours() ),
 				'droits'      => sueb_permissions_de(),
 				'portee'      => $portee,
 				'id'          => $u->ID,

@@ -28,7 +28,7 @@
 	var ACCEPTE = { logo: 'image/*', photo_droite: 'image/*', photo_etudiant: 'image/*', campus_1: 'image/*', campus_2: 'image/*', campus_3: 'image/*', campus_4: 'image/*', syllabus: 'application/pdf', cv: 'application/pdf', media: 'video/*,audio/*' };
 
 	/* Niveaux (0 établissement … 3 UE) où chaque champ d'une structure a un sens. */
-	var NIVEAUX_CHAMPS = { sigle: [0, 1], ville: [0], couleur: [0], logo: [0], photo_etudiant: [0], intro_formations: [0], intro_tutelle: [0], intro_equipe: [0], intro_campus: [0], campus_1: [0], legende_1: [0], campus_2: [0], legende_2: [0], campus_3: [0], legende_3: [0], campus_4: [0], legende_4: [0], responsable: [0, 1, 2], diplome: [2], niveaux: [2], accroche: [2], contact_courriel: [0, 2], contact_telephone: [0, 2], adresse: [0], coordonnees: [0], mission: [0], ecole_doctorale: [0], enseignants: [3], code: [3], credits: [3], semestre: [3], volume: [3], elements: [3], syllabus: [3] };
+	var NIVEAUX_CHAMPS = { sigle: [0, 1], ville: [0], couleur: [0], logo: [0], photo_etudiant: [0], intro_formations: [0], intro_tutelle: [0], intro_equipe: [0], intro_campus: [0], campus_1: [0], legende_1: [0], campus_2: [0], legende_2: [0], campus_3: [0], legende_3: [0], campus_4: [0], legende_4: [0], responsable: [0, 1, 2], diplome: [2], niveaux: [2], parcours: [2], accroche: [2], contact_courriel: [0, 2], contact_telephone: [0, 2], adresse: [0], coordonnees: [0], mission: [0], ecole_doctorale: [0], enseignants: [3], code: [3], credits: [3], semestre: [3], volume: [3], elements: [3], syllabus: [3] };
 
 	/** Les champs complémentaires d'un type, précédés d'un intertitre (`section` : un autre intertitre, ou false pour aucun). `cles` limite la sélection. */
 	function metas(type, cles, section) {
@@ -228,10 +228,10 @@
 			],
 			champs: [
 				F.titre('Intitulé'),
-				{ path: 'parent', label: 'Rattaché à', type: 'parent', required: true, aide: 'Le niveau en découle : rattaché à un établissement = département, à un département = filière, à une filière = unité d’enseignement.' },
+				{ path: 'parent', label: 'Rattaché à', type: 'parent', required: true, genre: true },
 				F.statut, F.ordre
 			].concat(
-				metas('ueb_structure', ['sigle', 'responsable', 'diplome', 'niveaux', 'accroche', 'contact_courriel', 'contact_telephone', 'code', 'credits', 'semestre', 'volume', 'elements', 'syllabus', 'enseignants', 'photo_droite']),
+				metas('ueb_structure', ['sigle', 'responsable', 'parcours', 'niveaux', 'diplome', 'accroche', 'contact_courriel', 'contact_telephone', 'code', 'credits', 'semestre', 'volume', 'elements', 'syllabus', 'enseignants', 'photo_droite'], { type: 'section', label: 'Détails', aide: 'Seuls les champs utiles à ce que vous ajoutez (département, filière ou unité d’enseignement) sont affichés.' }),
 				[F.resume('Pour une filière : le texte à côté de l’accroche, en haut de sa page.'), F.image('Photo principale (pour une filière : le bandeau et la photo de sa page)'), F.texte('Présentation (pour une filière : la section « À propos de la filière »)')]
 			)
 		},
@@ -632,6 +632,11 @@
 			tous.forEach(function (p) {
 				a.par[p.id] = { id: p.id, parent: p.parent || 0, ordre: p.menu_order || 0, nom: titreDe(p), sigle: m(p, 'sigle') };
 			});
+			/* Un compte qui gère les formations sans la page de l'établissement ne reçoit pas ce dernier de l'API
+			   (il ne peut pas le modifier) : on le replace à la racine, pour y rattacher ses départements. */
+			(C.etablissements || []).forEach(function (e, i) {
+				if (!a.par[e.id]) a.par[e.id] = { id: e.id, parent: 0, ordre: i, nom: e.nom, sigle: e.sigle || '' };
+			});
 			Object.keys(a.par).forEach(function (id) {
 				var n = a.par[id];
 				var parent = a.par[n.parent] ? n.parent : 0;
@@ -684,6 +689,62 @@
 		}).map(function (n) {
 			return opt(n, new Array(n.prof + 1).join('— ') + n.nom + ' (' + NIVEAUX[n.prof] + ')');
 		}).join('');
+	}
+
+	/* Formations : ce qu'on ajoute (1 département, 2 filière, 3 UE) décide de la liste de rattachement,
+	   limitée au niveau juste au-dessus et rangée par établissement (puis par département pour une UE). */
+	var GENRES = { 1: ['Un département', 'Établissement'], 2: ['Une filière', 'Département'], 3: ['Une unité d’enseignement (UE)', 'Filière'] };
+
+	function optionsRattachement(genre, v, idCourant) {
+		var choisi = String(v || '');
+		var opt = function (n) {
+			return '<option value="' + n.id + '"' + (String(n.id) === choisi ? ' selected' : '') + '>' + esc(n.nom) + '</option>';
+		};
+		var libre = function (n) { return !(idCourant && descendDe(n.id, idCourant)); };
+		var etabs = (arbre.enfants[0] || []).filter(function (e) { return TOUS || (C.etablissements || []).some(function (x) { return x.id === e.id; }); });
+		var vide = '<option value="">— Choisir —</option>';
+		if (genre === 1) return vide + etabs.filter(libre).map(opt).join('');
+		var groupe = function (titre, noeuds) {
+			noeuds = noeuds.filter(libre);
+			return noeuds.length ? '<optgroup label="' + esc(titre) + '">' + noeuds.map(opt).join('') + '</optgroup>' : '';
+		};
+		return vide + etabs.map(function (e) {
+			var deps = arbre.enfants[e.id] || [];
+			if (genre === 2) return groupe(e.sigle || e.nom, deps);
+			return deps.map(function (d) { return groupe((e.sigle || e.nom) + ' › ' + d.nom, arbre.enfants[d.id] || []); }).join('');
+		}).join('');
+	}
+
+	/* Parcours d'un niveau qui le dit lui-même (BTS 1, Niveau 3, L3 pro, A2) ; '' pour L1, M2 et les autres. */
+	function parcoursDuNiveau(n) {
+		if (/bts|^niveau\s*\d/i.test(n)) return 'bts-ingenierie';
+		if (/\bpro\b|^[LM]P\s?\d/i.test(n)) return 'pro';
+		if (/^A\s?\d$/i.test(n)) return 'medecine';
+		return /^[LM]\s?\d$/i.test(n) ? 'classique' : '';
+	}
+
+	/* Les cases « Niveaux ouverts » d'une filière suivent le parcours choisi. Les niveaux déjà enregistrés
+	   qui n'en font pas partie (BTS d'une filière qui va jusqu'à la licence professionnelle, « 1er cycle »…)
+	   restent proposés à part, cochés : rien ne se perd à l'enregistrement. */
+	function majNiveauxOuverts(form, initial) {
+		var zone = form.querySelector('.g-niveaux-ouverts');
+		var sel = form.querySelector('[data-path="meta._sueb_parcours"]');
+		if (!zone) return;
+		var gardes = zone.getAttribute('data-enregistres').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+		if (sel && initial && !sel.value) {
+			/* Filière sans parcours enregistré : celui de son premier niveau reconnu. */
+			sel.value = gardes.map(parcoursDuNiveau).filter(Boolean)[0] || '';
+		}
+		var p = (C.parcours || []).filter(function (x) { return sel && x.cle === sel.value; })[0];
+		var coches = initial ? gardes : [].map.call(zone.querySelectorAll('input:checked'), function (c) { return c.value; }).filter(function (n) { return gardes.indexOf(n) > -1; });
+		var cases = function (liste) {
+			return liste.map(function (n) {
+				return '<label><input type="checkbox" value="' + esc(n) + '"' + (coches.indexOf(n) > -1 ? ' checked' : '') + '> ' + esc(n) + '</label>';
+			}).join('');
+		};
+		var autres = gardes.filter(function (n) { return !p || p.niveaux.indexOf(n) === -1; });
+		zone.innerHTML = (p ? '<div class="g-niveaux-ouverts__liste">' + cases(p.niveaux) + '</div>' : '<p class="g-aide">Choisissez d’abord le parcours : ses niveaux s’afficheront ici.</p>') +
+			(autres.length ? '<p class="g-aide">Autres niveaux déjà enregistrés :</p><div class="g-niveaux-ouverts__liste">' + cases(autres) + '</div>' : '');
 	}
 
 	/* ---------- Coque : barre, menu, zone de contenu ---------- */
@@ -1256,7 +1317,8 @@
 			return toutCharger('wp/v2/' + f.endpoint + '?_fields=id,name&hide_empty=false').then(function (l) { listes[f.endpoint] = l; });
 		});
 		if (!listes.__personnes && r.champs.some(function (f) { return f.type === 'personnes'; })) {
-			attentes.push(toutCharger('wp/v2/ueb_personnel?context=edit&status=publish,draft&orderby=title&order=asc&_fields=id,title,meta').then(function (l) { listes.__personnes = l; }));
+			/* Sans droit sur le personnel (formations seules), l'annuaire public suffit pour choisir les enseignants d'une UE. */
+			attentes.push(toutCharger('wp/v2/ueb_personnel?' + (a('sueb_personnel') ? 'context=edit&status=publish,draft&' : '') + 'orderby=title&order=asc&_fields=id,title,meta').then(function (l) { listes.__personnes = l; }));
 		}
 		var besoinArbre = r.champs.some(function (f) { return f.type === 'parent' || f.type === 'etablissement' || f.type === 'departement'; });
 		if (besoinArbre || r.arbre) attentes.push(chargerArbre());
@@ -1328,9 +1390,26 @@
 				}).join('') + '</select>';
 				break;
 			case 'parent':
+				if (f.genre) {
+					/* Ce qu'on ajoute d'abord, puis son rattachement au niveau juste au-dessus. */
+					var noeud = arbre.par[p.id];
+					var pere = arbre.par[v];
+					var genre = Math.min(3, Math.max(1, noeud ? noeud.prof : (pere ? pere.prof + 1 : 2)));
+					h = '<label for="f-genre">' + (p.id ? 'Il s’agit de' : 'Vous ajoutez') + '</label><select id="f-genre" data-genre>' + [1, 2, 3].map(function (g) {
+						return '<option value="' + g + '"' + (g === genre ? ' selected' : '') + '>' + esc(GENRES[g][0]) + '</option>';
+					}).join('') + '</select>' +
+						'<label for="' + id + '" class="g-label-suite" data-libelle-parent>' + esc(GENRES[genre][1]) + ' *</label>' +
+						'<select id="' + id + '"' + nom + req + ' data-courant="' + (p.id || '') + '">' + optionsRattachement(genre, v, p.id) + '</select>';
+					break;
+				}
+				/* falls through */
 			case 'etablissement':
 			case 'departement':
 				h = libelle + '<select id="' + id + '"' + nom + req + decrit + '>' + optionsStructures(f, v, p.id) + '</select>';
+				break;
+			case 'niveaux':
+				h = '<fieldset class="g-cases g-niveaux-ouverts-cadre"><legend>' + esc(f.label) + '</legend><div class="g-niveaux-ouverts"' + nom + ' data-enregistres="' + esc(v || '') + '"></div></fieldset>';
+				aide = '';
 				break;
 			case 'taxo':
 				var termes = listes[f.endpoint] || [];
@@ -1437,13 +1516,14 @@
 		if (niveau == null) {
 			var sel = form.querySelector('[data-path="parent"]');
 			var parent = sel && arbre && arbre.par[sel.value];
-			niveau = parent ? parent.prof + 1 : -1;
+			var genre = form.querySelector('[data-genre]');
+			niveau = genre ? parseInt(genre.value, 10) : (parent ? parent.prof + 1 : -1);
 		}
 		[].forEach.call(form.querySelectorAll('[data-niveaux]'), function (c) {
 			c.hidden = niveau > -1 && c.getAttribute('data-niveaux').split(',').indexOf(String(niveau)) === -1;
 		});
 		var info = form.querySelector('.g-niveau');
-		if (info) info.textContent = niveau > -1 ? 'Niveau : ' + NIVEAUX[niveau] : '';
+		if (info) info.textContent = niveau > -1 && !form.querySelector('[data-genre]') ? 'Niveau : ' + NIVEAUX[niveau] : '';
 	}
 
 	function dessiner(r, id, p) {
@@ -1463,6 +1543,7 @@
 		try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) { /* sans effet */ }
 
 		if (form.querySelector('[data-niveaux]')) majNiveau(r, form);
+		majNiveauxOuverts(form, true);
 
 		apercusMedias(form); // aperçu des médias déjà choisis
 
@@ -1526,6 +1607,15 @@
 				groupe.querySelector('.g-personnes__compte').textContent = n + ' choisi' + (n > 1 ? 's' : '');
 				return;
 			}
+			if (e.target.hasAttribute('data-genre')) {
+				/* On change ce qu'on ajoute : la liste de rattachement et son libellé suivent. */
+				var g = parseInt(e.target.value, 10);
+				var rattache = form.querySelector('[data-path="parent"]');
+				rattache.innerHTML = optionsRattachement(g, '', parseInt(rattache.getAttribute('data-courant'), 10) || 0);
+				form.querySelector('[data-libelle-parent]').textContent = GENRES[g][1] + ' *';
+				return majNiveau(r, form);
+			}
+			if (e.target.getAttribute('data-path') === 'meta._sueb_parcours') return majNiveauxOuverts(form, false);
 			if (e.target.getAttribute('data-path') === 'parent') return majNiveau(r, form);
 			if (e.target.classList.contains('g-riche__fichier')) return insererImage(e.target);
 			if (e.target.classList.contains('g-riche__document')) return insererDocument(e.target);
@@ -1571,7 +1661,9 @@
 			if (el.closest('.g-champ').hidden) return;
 			var estMeta = f.path.indexOf('meta.') === 0;
 			var v = f.type === 'richtext' ? el.innerHTML.replace(/^(<p><br><\/p>)+$/, '').trim() : f.type === 'case' ? el.checked : el.value;
-			if (f.type === 'personnes') {
+			if (f.type === 'niveaux') {
+				v = [].map.call(el.querySelectorAll('input:checked'), function (c) { return c.value; }).join(', ');
+			} else if (f.type === 'personnes') {
 				var ids = [].map.call(el.querySelectorAll('input[type=checkbox]:checked'), function (c) { return c.value; });
 				v = ids.length ? ',' + ids.join(',') + ',' : '';
 			} else if (f.type === 'taxo') {

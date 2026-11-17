@@ -14,6 +14,10 @@ defined( 'ABSPATH' ) || exit;
    Rôles, permissions et portée : inc/roles.php (sueb_peut_gerer(), sueb_permissions_de(), sueb_portee()). */
 
 function sueb_url_gestion() {
+	$structure = (string) get_option( 'permalink_structure' );
+	if ( false !== strpos( $structure, 'index.php' ) ) {
+		return home_url( '/index.php/gestion/' );
+	}
 	return home_url( '/gestion/' );
 }
 

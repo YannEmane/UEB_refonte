@@ -251,6 +251,52 @@ add_action( 'init', function () {
 	}
 }, 20 );
 
+/* ---------- Unités d'enseignement : niveau et crédits obligatoires ---------- */
+
+/**
+ * Vérifie une UE envoyée par l'API : elle se range dans un niveau ouvert de sa filière
+ * et compte de 1 à 60 crédits (mêmes règles que verifierUE() dans assets/js/admin.js).
+ * À la création, les deux champs sont exigés ; à la modification, seuls ceux envoyés sont vérifiés.
+ *
+ * @return true|WP_Error
+ */
+function sueb_verifier_ue( $prepare, $requete ) {
+	$nouveau = empty( $prepare->ID );
+	$parent  = isset( $prepare->post_parent ) ? (int) $prepare->post_parent : (int) wp_get_post_parent_id( $prepare->ID );
+	/* Une UE est rattachée à une filière, elle-même à deux niveaux de l'établissement. */
+	if ( ! $parent || 2 !== count( get_post_ancestors( $parent ) ) ) {
+		return true;
+	}
+	$meta = (array) ( $requete['meta'] ?? array() );
+
+	if ( $nouveau || array_key_exists( '_sueb_niveau_ue', $meta ) || isset( $requete['parent'] ) ) {
+		$niveau  = trim( (string) ( $meta['_sueb_niveau_ue'] ?? ( $nouveau ? '' : get_post_meta( $prepare->ID, '_sueb_niveau_ue', true ) ) ) );
+		$ouverts = array_values( array_filter( array_map( 'trim', explode( ',', (string) get_post_meta( $parent, '_sueb_niveaux', true ) ) ) ) );
+		if ( ! $ouverts ) {
+			return new WP_Error( 'sueb_ue_niveau', 'La filière n’a aucun niveau ouvert : cochez d’abord ses niveaux dans « Modifier la filière ».', array( 'status' => 400 ) );
+		}
+		if ( ! in_array( $niveau, $ouverts, true ) ) {
+			return new WP_Error( 'sueb_ue_niveau', 'Choisissez le niveau de l’UE parmi les niveaux ouverts de la filière (' . implode( ', ', $ouverts ) . ').', array( 'status' => 400 ) );
+		}
+	}
+
+	if ( $nouveau || array_key_exists( '_sueb_credits', $meta ) ) {
+		$credits = trim( (string) ( $meta['_sueb_credits'] ?? '' ) );
+		if ( ! preg_match( '/^\d+$/', $credits ) || (int) $credits < 1 || (int) $credits > 60 ) {
+			return new WP_Error( 'sueb_ue_credits', 'Indiquez le nombre de crédits de l’UE (un nombre entier de 1 à 60).', array( 'status' => 400 ) );
+		}
+	}
+	return true;
+}
+
+add_filter( 'rest_pre_insert_ueb_structure', function ( $prepare, $requete ) {
+	if ( is_wp_error( $prepare ) ) {
+		return $prepare;
+	}
+	$verifie = sueb_verifier_ue( $prepare, $requete );
+	return is_wp_error( $verifie ) ? $verifie : $prepare;
+}, 20, 2 );
+
 /* ---------- Pages fixes ---------- */
 
 /** Pages dont le thème a besoin, retrouvées par leur adresse : ni supprimées ni renommées depuis la gestion. */

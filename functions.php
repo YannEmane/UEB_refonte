@@ -26,6 +26,8 @@ require SUEB_DIR . '/inc/etablissement.php';
 require SUEB_DIR . '/inc/parcours.php';
 require SUEB_DIR . '/inc/roles.php';
 require SUEB_DIR . '/inc/admin.php';
+require SUEB_DIR . '/inc/protection.php';
+require SUEB_DIR . '/inc/connexion-wp.php';
 
 add_action( 'after_setup_theme', function () {
 	add_theme_support( 'title-tag' );

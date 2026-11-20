@@ -44,6 +44,9 @@
 			}
 			if (c.type === 'datetime-local') f.type = 'datetime';
 			if (type === 'ueb_structure' && NIVEAUX_CHAMPS[c.cle]) f.niveaux = NIVEAUX_CHAMPS[c.cle];
+			/* Une UE se range dans un niveau de sa filière et compte des crédits. */
+			if (type === 'ueb_structure' && (c.cle === 'credits' || c.cle === 'niveau_ue')) f.requisUE = true;
+			if (c.cle === 'credits') { f.min = 1; f.max = 60; }
 			return f;
 		}));
 	}
@@ -1042,15 +1045,17 @@
 				var groupes = {};
 				ouverts.forEach(function (x) { groupes[x] = []; });
 				ues.forEach(function (u) { (groupes[u.niveauUE || ''] = groupes[u.niveauUE || ''] || []).push(u); });
+				/* Total des crédits d'une liste d'UE (une année LMD en compte normalement 60). */
+				var credits = function (l) { return l.reduce(function (s, u) { return s + (parseInt(u.credits, 10) || 0); }, 0); };
 				var sections = Object.keys(groupes).filter(function (k) { return k !== ''; }).concat(groupes[''] ? [''] : []).map(function (k) {
 					var l = groupes[k].slice().sort(function (x, y) { return String(x.semestre).localeCompare(String(y.semestre), 'fr', { numeric: true }) || String(x.code).localeCompare(String(y.code), 'fr', { numeric: true }); });
-					return '<section class="g-panneau g-etage"><div class="g-panneau__tete"><h3>' + (k ? esc(k) : 'Sans niveau choisi <small>(niveau déduit du semestre)</small>') + ' <span class="g-etage__compte">' + l.length + ' UE</span></h3>' + (k ? bouton('Ajouter une UE en ' + esc(k), '#filieres/ue/new/' + n.id + '/' + encodeURIComponent(k), true) : '') + '</div>' +
+					return '<section class="g-panneau g-etage"><div class="g-panneau__tete"><h3>' + (k ? esc(k) : 'Sans niveau choisi <small>(niveau déduit du semestre)</small>') + ' <span class="g-etage__compte">' + l.length + ' UE · ' + pl(credits(l), 'crédit', 'crédits') + '</span></h3>' + (k ? bouton('Ajouter une UE en ' + esc(k), '#filieres/ue/new/' + n.id + '/' + encodeURIComponent(k), true) : '') + '</div>' +
 						(l.length ? tableau(['Unité d’enseignement', 'Code', 'Semestre', 'Crédits', 'Statut'], l.map(function (u) {
 							return '<tr><th scope="row">' + esc(u.nom) + '</th><td class="g-court">' + esc(u.code || '—') + '</td><td class="g-court">' + esc(u.semestre || '—') + '</td><td class="g-court">' + esc(u.credits || '—') + '</td><td>' + etatDe(u) + '</td>' + actions(u, null, '#filieres/ue/' + u.id) + '</tr>';
 						})) : '<p class="g-vide">Aucune unité d’enseignement à ce niveau.</p>') + '</section>';
 				}).join('');
 				var dep = arbre.par[n.parent];
-				h = entete(n.nom, 'Filière · ' + pl(ues.length, 'unité d’enseignement', 'unités d’enseignement') + (ouverts.length ? ', ' + pl(ouverts.length, 'niveau ouvert', 'niveaux ouverts') : '') + '.',
+				h = entete(n.nom, 'Filière · ' + pl(ues.length, 'unité d’enseignement', 'unités d’enseignement') + ' · ' + pl(credits(ues), 'crédit', 'crédits') + (ouverts.length ? ', ' + pl(ouverts.length, 'niveau ouvert', 'niveaux ouverts') : '') + '.',
 						'<a class="g-btn" href="#filieres/' + n.id + '">Modifier la filière</a>' + bouton('Ajouter une UE', '#filieres/ue/new/' + n.id), dep ? ['#filieres/dans/' + dep.id, dep.nom] : ['#filieres', 'Filières']) +
 					(sections || '<p class="g-vide">Cette filière n’a ni niveau ouvert ni unité d’enseignement. Cochez ses niveaux dans « Modifier la filière », ou ajoutez une UE.</p>');
 			} else {
@@ -1095,9 +1100,26 @@
 		var choisi = sel.value || sel.getAttribute('data-enregistre') || '';
 		var liste = String((f && f.prof === 2 && f.niveaux) || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
 		if (choisi && liste.indexOf(choisi) === -1) liste.push(choisi);
-		sel.innerHTML = '<option value="">— Déduit du semestre —</option>' + liste.map(function (x) {
+		sel.innerHTML = '<option value="">— Choisir —</option>' + liste.map(function (x) {
 			return '<option value="' + esc(x) + '"' + (x === choisi ? ' selected' : '') + '>' + esc(x) + '</option>';
 		}).join('');
+	}
+
+	/* Une UE (champs visibles seulement à ce niveau) : un niveau ouvert de sa filière et de 1 à 60 crédits.
+	   Renvoie [message, champ] ou null. Mêmes règles côté serveur (sueb_verifier_ue, inc/admin.php). */
+	function verifierUE(form) {
+		var visible = function (el) { var c = el && el.closest('[data-niveaux]'); return el && !(c && c.hidden); };
+		var niveau = form.querySelector('[data-path="meta._sueb_niveau_ue"]');
+		var credits = form.querySelector('[data-path="meta._sueb_credits"]');
+		if (!visible(niveau) || !visible(credits)) return null;
+		if (!niveau.value) {
+			return [niveau.options.length > 1
+				? 'Choisissez le niveau de l’UE.'
+				: 'La filière n’a aucun niveau ouvert : cochez d’abord ses niveaux dans « Modifier la filière ».', niveau];
+		}
+		var n = String(credits.value).trim();
+		if (!/^\d+$/.test(n) || +n < 1 || +n > 60) return ['Indiquez le nombre de crédits de l’UE (un nombre entier de 1 à 60).', credits];
+		return null;
 	}
 
 	function action(r, act, id, titre, apres) {
@@ -1505,7 +1527,7 @@
 		var req = f.required ? ' required' : '';
 		var aide = f.aide ? '<p class="g-aide" id="' + id + '-aide">' + esc(f.aide) + '</p>' : '';
 		var decrit = f.aide ? ' aria-describedby="' + id + '-aide"' : '';
-		var libelle = '<label for="' + id + '">' + esc(f.label) + (f.required ? ' *' : '') + '</label>';
+		var libelle = '<label for="' + id + '">' + esc(f.label) + (f.required || f.requisUE ? ' *' : '') + '</label>';
 		var h;
 		switch (f.type) {
 			case 'text':
@@ -1514,7 +1536,7 @@
 			case 'number':
 			case 'date':
 				if (f.type === 'number' && (v === 0 || v === '0') && f.path.indexOf('meta.') === 0) v = '';
-				h = libelle + '<input type="' + f.type + '" id="' + id + '"' + nom + req + decrit + (f.type === 'number' ? ' min="0" step="1"' : '') + ' value="' + esc(v == null ? '' : v) + '">';
+				h = libelle + '<input type="' + f.type + '" id="' + id + '"' + nom + req + decrit + (f.type === 'number' ? ' min="' + (f.min || 0) + '"' + (f.max ? ' max="' + f.max + '"' : '') + ' step="1"' : '') + ' value="' + esc(v == null ? '' : v) + '">';
 				break;
 			case 'color':
 				h = libelle + '<input type="color" id="' + id + '"' + nom + decrit + ' value="' + esc(v || '#0f2c1f') + '">';
@@ -1786,6 +1808,12 @@
 			if (manquant) {
 				notifier('Le champ « ' + manquant.label + ' » est obligatoire.', true);
 				form.querySelector('[data-path="' + manquant.path + '"]').focus();
+				return;
+			}
+			var erreurUE = verifierUE(form);
+			if (erreurUE) {
+				notifier(erreurUE[0], true);
+				erreurUE[1].focus();
 				return;
 			}
 			var bouton = form.querySelector('button[type=submit]');

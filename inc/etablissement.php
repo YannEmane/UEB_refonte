@@ -44,6 +44,17 @@ function sueb_lien_etablissement( $sigle ) {
 	return $liens[ strtoupper( $sigle ) ] ?? home_url( '/#etab-' . strtolower( $sigle ) );
 }
 
+/**
+ * Semestre d'une UE dans son année : « S1 » ou « S2 ». Les anciennes fiches comptaient les semestres
+ * sur tout le cursus (S5 = premier semestre de la 3e année) : S5 donne S1, S6 donne S2.
+ */
+function sueb_semestre_annee( $semestre ) {
+	if ( ! preg_match( '/(\d+)/', (string) $semestre, $m ) || ! (int) $m[1] ) {
+		return trim( (string) $semestre );
+	}
+	return 'S' . ( ( (int) $m[1] - 1 ) % 2 + 1 );
+}
+
 /** Niveau d'une UE d'après son semestre et le diplôme de la filière : S1-S2 donnent L1 (ou M1 pour un master), Niveau 1 pour un autre diplôme, etc. */
 function sueb_niveau_ue( $semestre, $diplome, $choisi = '' ) {
 	/* Le niveau choisi dans la gestion (champ « Niveau » de l'UE) l'emporte sur celui déduit du semestre. */
@@ -104,13 +115,13 @@ function sueb_filiere( $f ) {
 			'titre'    => $u->post_title,
 			'code'     => (string) sueb_meta( $u->ID, 'code' ),
 			'credits'  => (string) sueb_meta( $u->ID, 'credits' ),
-			'semestre' => (string) sueb_meta( $u->ID, 'semestre' ),
+			'semestre' => sueb_semestre_annee( sueb_meta( $u->ID, 'semestre' ) ),
 			'volume'   => (string) sueb_meta( $u->ID, 'volume' ),
 			'syllabus' => $syllabus ? (string) wp_get_attachment_url( $syllabus ) : '',
 			'url'      => get_permalink( $u ),
 			'profs'    => array_values( array_intersect_key( $personnes, array_flip( sueb_ids( sueb_meta( $u->ID, 'enseignants' ) ) ) ) ),
 		);
-		$niveaux[ sueb_niveau_ue( $ue['semestre'], $diplome, sueb_meta( $u->ID, 'niveau_ue' ) ) ][] = $ue;
+		$niveaux[ sueb_niveau_ue( sueb_meta( $u->ID, 'semestre' ), $diplome, sueb_meta( $u->ID, 'niveau_ue' ) ) ][] = $ue;
 		$credits += (int) $ue['credits'];
 	}
 	ksort( $niveaux, SORT_NATURAL );
@@ -190,7 +201,7 @@ function sueb_page_etablissement( $id ) {
 					'titre'    => $u->post_title,
 					'code'     => (string) sueb_meta( $u->ID, 'code' ),
 					'credits'  => (string) sueb_meta( $u->ID, 'credits' ),
-					'semestre' => (string) sueb_meta( $u->ID, 'semestre' ),
+					'semestre' => sueb_semestre_annee( sueb_meta( $u->ID, 'semestre' ) ),
 					'volume'   => (string) sueb_meta( $u->ID, 'volume' ),
 					'syllabus' => $syllabus ? (string) wp_get_attachment_url( $syllabus ) : '',
 					'url'      => get_permalink( $u ),

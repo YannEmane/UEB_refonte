@@ -596,3 +596,36 @@ td.g-actions > * + * { margin-left: .2rem; }
 .g-explo .g-tableau td, .g-explo .g-tableau tbody th { padding-inline: .7rem; }
 .g-explo .g-tableau tr > :first-child { padding-left: 1.2rem; }
 .g-explo .g-actions a, .g-explo .g-actions button { padding-inline: .45rem; }
+
+/* Champ numérique suivi de son unité (« heures », « crédits »). */
+.g-suffixe { display: flex; align-items: stretch; max-width: 14rem; }
+.g-suffixe input[type="number"] { flex: 1; min-width: 0; max-width: none; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.g-suffixe > span { display: flex; align-items: center; padding: 0 .8rem; border: 1px solid var(--g-filet-fort); border-left: 0; border-radius: 0 var(--g-r-s) var(--g-r-s) 0; background: var(--g-fond); color: var(--g-texte-doux); font-size: .85rem; white-space: nowrap; }
+
+/* Formulaire d'une UE : département et filière côte à côte, niveau, semestre, crédits et code sur une ligne,
+   le volume horaire en une rangée d'heures ; une colonne sur petit écran. */
+.g-paire { display: grid; gap: 1.15rem 1.75rem; }
+.g-volume { margin: 0; padding: 0; border: 0; min-width: 0; }
+.g-volume legend { padding: 0; margin-bottom: .5rem; font-size: .85rem; font-weight: 600; color: var(--g-texte-doux); }
+.g-volume__grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1rem 1.25rem; }
+.g-volume__grille .g-suffixe { max-width: none; }
+.g-volume__grille .g-champ:last-child label { color: var(--g-texte); }
+.g-volume__grille input[readonly] { background: var(--g-fond); font-weight: 700; cursor: default; }
+.g-volume__grille input[readonly]:focus { border-color: var(--g-filet-fort); box-shadow: none; }
+.g-form--ue .g-niveau:empty { display: none; }
+.g-form--ue .g-suffixe { max-width: none; }
+@media (min-width: 700px) {
+	.g-paire { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	/* Grille de 6 : code (1) + département et filière (5) ; niveau, semestre, crédits (2 chacun) ; statut, ordre (3 chacun). */
+	.g-form.g-form--ue { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1.15rem 1.75rem; align-items: start; }
+	.g-form.g-form--ue > * { grid-column: 1 / -1; }
+	.g-form.g-form--ue > [data-cle="code"] { grid-column: span 1; }
+	.g-form.g-form--ue > .g-champ--parent { grid-column: span 5; }
+	.g-form.g-form--ue > [data-cle="niveau_ue"], .g-form.g-form--ue > [data-cle="semestre"], .g-form.g-form--ue > [data-cle="credits"] { grid-column: span 2; }
+	.g-form.g-form--ue > .g-champ--select:not([data-cle]), .g-form.g-form--ue > .g-champ--number:not([data-cle]) { grid-column: span 3; }
+}
+@media (min-width: 700px) and (max-width: 1099px) {
+	/* Écran moyen : le code prend un peu plus de place pour rester lisible. */
+	.g-form.g-form--ue > [data-cle="code"] { grid-column: span 2; }
+	.g-form.g-form--ue > .g-champ--parent { grid-column: span 4; }
+}

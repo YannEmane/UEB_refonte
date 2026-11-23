@@ -46,7 +46,8 @@
 			if (type === 'ueb_structure' && NIVEAUX_CHAMPS[c.cle]) f.niveaux = NIVEAUX_CHAMPS[c.cle];
 			/* Une UE se range dans un niveau de sa filière et compte des crédits. */
 			if (type === 'ueb_structure' && (c.cle === 'credits' || c.cle === 'niveau_ue')) f.requisUE = true;
-			if (c.cle === 'credits') { f.min = 1; f.max = 60; }
+			if (c.cle === 'credits') { f.min = 1; f.suffixe = 'crédits'; }
+			if (type === 'ueb_structure' && c.cle === 'volume') f.type = 'volume';
 			return f;
 		}));
 	}
@@ -79,7 +80,7 @@
 	/* ---------- Droits du compte (inc/roles.php) ----------
 	   Chaque rubrique demande une permission ; le serveur vérifie de toute façon chaque action et la portée. */
 	var DROITS = C.droits || [];
-	var PERM = { actualites: 'sueb_actualites', evenements: 'sueb_evenements', pages: 'sueb_pages', etablissements: 'sueb_etablissements', formations: 'sueb_formations', departements: 'sueb_formations', filieres: 'sueb_formations', personnel: 'sueb_personnel', dirigeants: 'sueb_dirigeants', partenaires: 'sueb_partenaires', institutions: 'sueb_partenaires', 'accueil-reglages': 'sueb_reglages', 'etudiants-reglages': 'sueb_reglages', contacts: 'sueb_reglages', globaux: 'sueb_reglages', comptes: 'sueb_comptes' };
+	var PERM = { actualites: 'sueb_actualites', evenements: 'sueb_evenements', pages: 'sueb_pages', etablissements: 'sueb_etablissements', formations: 'sueb_formations', departements: 'sueb_formations', filieres: 'sueb_formations', ues: 'sueb_formations', personnel: 'sueb_personnel', dirigeants: 'sueb_dirigeants', partenaires: 'sueb_partenaires', institutions: 'sueb_partenaires', 'accueil-reglages': 'sueb_reglages', 'etudiants-reglages': 'sueb_reglages', contacts: 'sueb_reglages', globaux: 'sueb_reglages', comptes: 'sueb_comptes' };
 	function a(perm) { return DROITS.indexOf(perm) > -1; }
 	function permis(id) { return !PERM[id] || a(PERM[id]); }
 	var TOUS = C.portee === 'tous';
@@ -112,6 +113,7 @@
 		gauche: '<path d="M19 12H5M12 19l-7-7 7-7"/>',
 		droite: '<path d="M5 12h14M12 5l7 7-7 7"/>',
 		fermer: '<path d="M18 6 6 18M6 6l12 12"/>',
+		livre: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5M9 7h7M9 11h5"/>',
 		cle: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2 2"/>',
 		/* Éditeur de texte */
 		'al-gauche': '<path d="M4 6h16M4 10h10M4 14h16M4 18h10"/>',
@@ -152,6 +154,7 @@
 		formations: ['diplome', 'Départements, filières et unités d’enseignement.'],
 		departements: ['batiment', 'Les départements de l’établissement.'],
 		filieres: ['diplome', 'Les filières de chaque département, leurs niveaux et leurs unités d’enseignement.'],
+		ues: ['livre', 'Les unités d’enseignement de chaque filière : niveau, crédits, code, semestre, contenu.'],
 		personnel: ['personnes', 'Fiches de l’annuaire : fonction, grade, parcours, CV.'],
 		dirigeants: ['medaille', 'Recteur, vice-recteurs et dirigeants du rectorat.'],
 		partenaires: ['lien', 'Conventions et partenaires de l’université.'],
@@ -270,15 +273,36 @@
 		{ id: 'comptes', groupe: 5, titre: 'Rôles et comptes', comptes: true }
 	].filter(function (r) { return permis(r.id); });
 
-	/* L'offre de formation a deux entrées dans le menu : « Départements » et « Filières » (les UE s'ajoutent depuis
-	   leur filière). Elles reprennent les champs de la rubrique « formations », qui ne garde que la liste
+	/* Le formulaire d'une UE : la filière (choisie par son département), puis le niveau et les crédits, obligatoires. */
+	var CHAMPS_UE = [
+		F.titre('Intitulé de l’UE')
+	].concat(
+		/* Sous l'intitulé, sur une ligne : le code (court), puis le département et la filière (longs). */
+		metas('ueb_structure', ['code'], false),
+		[{ path: 'parent', label: 'Filière', type: 'parent', required: true, genre: true }],
+		/* Puis, sur une ligne : niveau, semestre, crédits. */
+		metas('ueb_structure', ['niveau_ue'], false),
+		metas('ueb_structure', ['semestre'], false),
+		metas('ueb_structure', ['credits'], false),
+		metas('ueb_structure', ['volume', 'elements', 'syllabus', 'enseignants'], { type: 'section', label: 'Contenu de l’UE', aide: 'Volume horaire, éléments constitutifs, syllabus et enseignants, affichés sur la page de la filière.' }),
+		/* En dernier : la publication. */
+		[{ type: 'section', label: 'Publication' }, F.statut, F.ordre]
+	).map(function (f) {
+		/* Aides courtes : ces champs partagent une ligne. */
+		var aides = { niveau_ue: 'Parmi les niveaux ouverts de la filière.', semestre: 'Dans l’année du niveau.', credits: 'Un nombre entier, au moins 1.', code: 'Ex. MAT 111.' };
+		return f.cle in aides ? Object.assign({}, f, { aide: aides[f.cle] }) : f;
+	});
+
+	/* L'offre de formation a trois entrées dans le menu : « Départements » et « Filières » (les UE s'ajoutent aussi depuis
+	   leur filière), « Unités d'enseignement ». Elles reprennent les champs de la rubrique « formations », qui ne garde que la liste
 	   complète et la corbeille (#formations/liste) et n'apparaît plus dans le menu. `genre` : 1 département, 2 filière, 3 UE. */
 	RUBRIQUES.forEach(function (r, i) {
 		if (r.id !== 'formations' || r.cache) return;
 		r.cache = true;
 		RUBRIQUES.splice(i + 1, 0,
 			Object.assign({}, r, { id: 'departements', titre: 'Départements', singulier: 'un département', genre: 1, cache: false }),
-			Object.assign({}, r, { id: 'filieres', titre: 'Filières', singulier: 'une filière', genre: 2, cache: false }));
+			Object.assign({}, r, { id: 'filieres', titre: 'Filières', singulier: 'une filière', genre: 2, cache: false }),
+			Object.assign({}, r, { id: 'ues', titre: 'Unités d’enseignement', singulier: 'une unité d’enseignement', genre: 3, cache: false, champs: CHAMPS_UE }));
 	});
 	var genreFixe = 0; // le genre imposé au formulaire en cours (0 : au choix)
 
@@ -732,6 +756,74 @@
 		}).join('');
 	}
 
+	/* Semestre d'une UE dans son année (S1 ou S2), comme sueb_semestre_annee() dans inc/etablissement.php. */
+	function semestreAnnee(v) {
+		var n = /(\d+)/.exec(String(v || ''));
+		return n && +n[1] ? 'S' + ((+n[1] - 1) % 2 + 1) : String(v || '');
+	}
+
+	/* Volume horaire d'une UE : un nombre d'heures par activité, enregistré en texte (« 60 h : 30 CM, 20 TD, 10 TP »)
+	   comme l'affiche la page de la filière. Le total est la somme des heures (un champ vide compte 0) ; il ne se saisit pas. */
+	var VOLUME = [['cm', 'CM', 'Cours magistraux (CM)'], ['td', 'TD', 'Travaux dirigés (TD)'], ['tp', 'TP', 'Travaux pratiques (TP)'], ['tpe', 'TPE', 'Travail personnel (TPE)']];
+
+	function lireVolume(texte) {
+		var t = String(texte || '');
+		var d = { total: '' };
+		var m = /^\s*(\d+(?:[.,]\d+)?)\s*h\b/i.exec(t);
+		if (m) d.total = m[1];
+		var re = /(\d+(?:[.,]\d+)?)\s*(CM|TD|TPE|TP)\b/gi;
+		var x;
+		while ((x = re.exec(t))) d[x[2].toLowerCase()] = x[1];
+		d.lu = !t.trim() || !!m || VOLUME.some(function (c) { return d[c[0]]; });
+		return d;
+	}
+
+	function champVolume(f, v, id, nom) {
+		var d = lireVolume(v);
+		var somme = VOLUME.reduce(function (s, c) { return s + nombreHeures(d[c[0]]); }, 0);
+		var case_ = function (cle, libelle, valeur, extra) {
+			return '<div class="g-champ"><label for="' + id + '-' + cle + '">' + esc(libelle) + '</label><span class="g-suffixe"><input type="number" min="0" step="1" id="' + id + '-' + cle + '" data-vol="' + cle + '" value="' + esc(valeur) + '"' + (extra || '') + '><span aria-hidden="true">heures</span></span></div>';
+		};
+		return '<fieldset class="g-volume"><legend>' + esc(f.label) + '</legend><input type="hidden" id="' + id + '"' + nom + ' value="' + esc(v || '') + '">' +
+			'<div class="g-volume__grille">' + VOLUME.map(function (c) { return case_(c[0], c[2], d[c[0]] || '0'); }).join('') +
+			case_('total', 'Total (calculé)', String(somme), ' readonly tabindex="-1" aria-live="polite"') + '</div>' +
+			(d.lu ? '' : '<p class="g-aide">Valeur actuelle : « ' + esc(v) + ' ». Elle est gardée telle quelle tant que vous ne remplissez pas les heures ci-dessus.</p>') + '</fieldset>';
+	}
+
+	function nombreHeures(v) {
+		var n = parseFloat(String(v == null ? '' : v).replace(',', '.'));
+		return n > 0 ? n : 0;
+	}
+
+	function majVolume(champ) {
+		var cadre = champ.closest('.g-volume');
+		var heures = function (cle) { return nombreHeures(cadre.querySelector('[data-vol="' + cle + '"]').value); };
+		/* Seules les activités qui comptent des heures figurent dans le texte enregistré. */
+		var parties = VOLUME.filter(function (c) { return heures(c[0]) > 0; });
+		var somme = parties.reduce(function (s, c) { return s + heures(c[0]); }, 0);
+		cadre.querySelector('[data-vol="total"]').value = String(somme);
+		cadre.querySelector('[data-path]').value = somme ? somme + ' h : ' + parties.map(function (c) { return heures(c[0]) + ' ' + c[1]; }).join(', ') : '';
+	}
+
+	/* Formulaire d'une UE : les départements (par établissement), puis les filières du département choisi. */
+	function optionsDepartementsUE(choisi) {
+		var etabs = (arbre.enfants[0] || []).filter(function (e) { return TOUS || (C.etablissements || []).some(function (x) { return x.id === e.id; }); });
+		return '<option value="">— Choisir —</option>' + etabs.map(function (e) {
+			var o = (arbre.enfants[e.id] || []).map(function (d) {
+				return '<option value="' + d.id + '"' + (String(d.id) === String(choisi) ? ' selected' : '') + '>' + esc(d.nom) + '</option>';
+			}).join('');
+			return o && etabs.length > 1 ? '<optgroup label="' + esc(e.sigle || e.nom) + '">' + o + '</optgroup>' : o;
+		}).join('');
+	}
+
+	function optionsFilieresUE(dep, choisi) {
+		if (!dep) return '<option value="">— Choisissez d’abord le département —</option>';
+		var fils = arbre.enfants[dep] || [];
+		return (fils.length ? '<option value="">— Choisir —</option>' : '<option value="">— Aucune filière dans ce département —</option>') + fils.map(function (f) {
+			return '<option value="' + f.id + '"' + (String(f.id) === String(choisi) ? ' selected' : '') + '>' + esc(f.nom) + (f.niveaux ? ' (' + esc(f.niveaux) + ')' : '') + '</option>';
+		}).join('');
+	}
+
 	/* Parcours d'un niveau qui le dit lui-même (BTS 1, Niveau 3, L3 pro, A2) ; '' pour L1, M2 et les autres. */
 	function parcoursDuNiveau(n) {
 		if (/bts|^niveau\s*\d/i.test(n)) return 'bts-ingenierie';
@@ -855,11 +947,11 @@
 		if (r.genre) {
 			if (h[1] === 'ue') {
 				/* Une UE s'ajoute et se modifie depuis sa filière : #filieres/ue/new/<filière>/<niveau>, #filieres/ue/<id>. */
-				var rue = Object.assign({}, r, { genre: 3, singulier: 'une unité d’enseignement' });
+				var rue = Object.assign({}, r, { genre: 3, singulier: 'une unité d’enseignement', champs: CHAMPS_UE });
 				return h[2] === 'new' ? formulaire(rue, 0, { parent: parseInt(h[3], 10) || 0, niveau: h[4] ? decodeURIComponent(h[4]) : '' }) : formulaire(rue, parseInt(h[2], 10));
 			}
-			if (h[1] === 'new') return formulaire(r, 0, { parent: parseInt(h[2], 10) || 0 });
-			if (h[1] === 'dans') return explorer(r, parseInt(h[2], 10) || 0);
+			if (h[1] === 'new') return formulaire(r, 0, { parent: parseInt(h[2], 10) || 0, niveau: h[3] ? decodeURIComponent(h[3]) : '' });
+			if (h[1] === 'dans') return explorer(r, parseInt(h[2], 10) || 0, h[3] ? decodeURIComponent(h[3]) : '');
 			if (h[1]) return formulaire(r, parseInt(h[1], 10));
 			return explorer(r, 0);
 		}
@@ -998,9 +1090,10 @@
 	/* ---------- Départements et filières ----------
 	   « Départements » liste les départements (bouton « Ajouter un département ») ; « Filières » liste les filières,
 	   toutes ou celles d'un département (bouton « Ajouter une filière »). Une filière ouverte montre ses UE rangées
-	   par niveau, avec un bouton d'ajout par niveau. */
+	   par niveau, avec un bouton d'ajout par niveau. « Unités d'enseignement » liste les UE, filtrées par
+	   département, filière et niveau (#ues/dans/<département ou filière>/<niveau>). */
 
-	function explorer(r, id) {
+	function explorer(r, id, niveauFiltre) {
 		contenu.innerHTML = '<p class="g-chargement"><span class="g-roue"></span>Chargement…</p>';
 		chargerArbre().then(function () {
 			var etabs = (arbre.enfants[0] || []).filter(function (e) { return TOUS || (C.etablissements || []).some(function (x) { return x.id === e.id; }); });
@@ -1030,7 +1123,62 @@
 			etabs.forEach(function (e) { deps = deps.concat(arbre.enfants[e.id] || []); });
 			var h;
 
-			if (r.genre === 1) {
+			if (r.genre === 3) {
+				/* Les UE : de toutes les filières, d'un département ou d'une filière, et éventuellement d'un niveau. */
+				var fSel = n && n.prof === 2 ? n : null;
+				var dSel = fSel ? arbre.par[fSel.parent] : (n && n.prof === 1 ? n : null);
+				var filsUE = [];
+				(dSel ? [dSel] : deps).forEach(function (d) { filsUE = filsUE.concat(arbre.enfants[d.id] || []); });
+				var vues = fSel ? [fSel] : filsUE;
+				var lignesUE = [];
+				vues.forEach(function (f) {
+					var rang = liste(f.niveaux);
+					(arbre.enfants[f.id] || []).forEach(function (u) {
+						if (niveauFiltre && (u.niveauUE || '') !== niveauFiltre) return;
+						lignesUE.push({ u: u, f: f, rang: rang.indexOf(u.niveauUE) === -1 ? 99 : rang.indexOf(u.niveauUE) });
+					});
+				});
+				var ordreF = {};
+				arbre.ordre.forEach(function (x, i) { ordreF[x.id] = i; });
+				lignesUE.sort(function (x, y) {
+					return ordreF[x.f.id] - ordreF[y.f.id] || x.rang - y.rang ||
+						String(x.u.semestre).localeCompare(String(y.u.semestre), 'fr', { numeric: true }) || String(x.u.code).localeCompare(String(y.u.code), 'fr', { numeric: true });
+				});
+				/* Les niveaux proposés au filtre : ceux de la filière choisie, sinon tous ceux des filières affichées. */
+				var nivs = [];
+				vues.forEach(function (f) {
+					liste(f.niveaux).concat((arbre.enfants[f.id] || []).map(function (u) { return u.niveauUE; })).forEach(function (x) {
+						if (x && nivs.indexOf(x) === -1) nivs.push(x);
+					});
+				});
+				var totalCredits = lignesUE.reduce(function (s, l) { return s + (parseInt(l.u.credits, 10) || 0); }, 0);
+				var opt = function (x, val, choisi) { return '<option value="' + esc(val) + '"' + (choisi ? ' selected' : '') + '>' + esc(x) + '</option>'; };
+				var choixDep = '<label class="sr" for="g-ue-dep">Département</label><select id="g-ue-dep" class="g-filtre"><option value="">Tous les départements</option>' + etabs.map(function (e) {
+					var o = (arbre.enfants[e.id] || []).map(function (d) { return opt(d.nom, d.id, dSel && dSel.id === d.id); }).join('');
+					return plusieurs ? (o ? '<optgroup label="' + esc(e.sigle || e.nom) + '">' + o + '</optgroup>' : '') : o;
+				}).join('') + '</select>';
+				var choixFil = '<label class="sr" for="g-ue-fil">Filière</label><select id="g-ue-fil" class="g-filtre"><option value="">Toutes les filières</option>' + (dSel ? filsUE.map(function (f) {
+					return opt(f.nom, f.id, fSel && fSel.id === f.id);
+				}).join('') : deps.map(function (d) {
+					var o = (arbre.enfants[d.id] || []).map(function (f) { return opt(f.nom, f.id, false); }).join('');
+					return o ? '<optgroup label="' + esc((plusieurs ? sigleEtab(d) + ' › ' : '') + d.nom) + '">' + o + '</optgroup>' : '';
+				}).join('')) + '</select>';
+				var choixNiv = '<label class="sr" for="g-ue-niv">Niveau</label><select id="g-ue-niv" class="g-filtre"><option value="">Tous les niveaux</option>' + nivs.map(function (x) {
+					return opt(x, x, x === niveauFiltre);
+				}).join('') + '</select>';
+				var recherche = '<label class="sr" for="g-ue-q">Rechercher une UE</label><input type="search" id="g-ue-q" placeholder="Rechercher (intitulé, code)…">';
+				var ajoutUE = bouton('Ajouter une UE', '#ues/new' + (n ? '/' + n.id + (fSel && niveauFiltre ? '/' + encodeURIComponent(niveauFiltre) : '') : ''));
+				h = entete('Unités d’enseignement', pl(lignesUE.length, 'unité d’enseignement', 'unités d’enseignement') + ' · ' + pl(totalCredits, 'crédit', 'crédits') +
+						(fSel ? ' · ' + fSel.nom : (dSel ? ' · ' + dSel.nom : '')) + (niveauFiltre ? ' · ' + niveauFiltre : '') + '.', ajoutUE) +
+					'<div class="g-outils">' + choixDep + choixFil + choixNiv + recherche + '</div>' +
+					(lignesUE.length ? tableau(['Unité d’enseignement', 'Code', fSel ? '' : 'Filière', 'Niveau', 'Semestre', 'Crédits', 'Statut'], lignesUE.map(function (l) {
+						var u = l.u;
+						return '<tr data-cherche="' + esc((u.nom + ' ' + (u.code || '')).toLowerCase()) + '"><th scope="row">' + esc(u.nom) + '</th><td class="g-court">' + esc(u.code || '—') + '</td>' +
+							(fSel ? '' : '<td>' + esc(l.f.nom) + '</td>') + '<td class="g-court">' + esc(u.niveauUE || '—') + '</td><td class="g-court">' + esc(semestreAnnee(u.semestre) || '—') + '</td><td class="g-court">' + esc(u.credits || '—') + '</td><td>' + etatDe(u) + '</td>' +
+							actions(u, null, '#ues/' + u.id) + '</tr>';
+					})) + '<p class="g-vide" id="g-ue-aucune" hidden>Aucune UE ne correspond à la recherche.</p>'
+					: '<p class="g-vide">' + (filsUE.length || fSel ? 'Aucune unité d’enseignement ' + (niveauFiltre ? 'à ce niveau' : 'pour l’instant') + '.' : 'Aucune filière : ajoutez d’abord une filière dans « Filières ».') + '</p>');
+			} else if (r.genre === 1) {
 				/* Les départements, avec l'établissement de chacun quand le compte en gère plusieurs. */
 				var ajoutDep = bouton('Ajouter un département', '#departements/new' + (plusieurs ? '' : '/' + (etabs[0] ? etabs[0].id : '')));
 				h = entete('Départements', pl(deps.length, 'département', 'départements') + (plusieurs ? '' : (etabs[0] ? ' · ' + etabs[0].nom : '')) + '.', ajoutDep) +
@@ -1051,7 +1199,7 @@
 					var l = groupes[k].slice().sort(function (x, y) { return String(x.semestre).localeCompare(String(y.semestre), 'fr', { numeric: true }) || String(x.code).localeCompare(String(y.code), 'fr', { numeric: true }); });
 					return '<section class="g-panneau g-etage"><div class="g-panneau__tete"><h3>' + (k ? esc(k) : 'Sans niveau choisi <small>(niveau déduit du semestre)</small>') + ' <span class="g-etage__compte">' + l.length + ' UE · ' + pl(credits(l), 'crédit', 'crédits') + '</span></h3>' + (k ? bouton('Ajouter une UE en ' + esc(k), '#filieres/ue/new/' + n.id + '/' + encodeURIComponent(k), true) : '') + '</div>' +
 						(l.length ? tableau(['Unité d’enseignement', 'Code', 'Semestre', 'Crédits', 'Statut'], l.map(function (u) {
-							return '<tr><th scope="row">' + esc(u.nom) + '</th><td class="g-court">' + esc(u.code || '—') + '</td><td class="g-court">' + esc(u.semestre || '—') + '</td><td class="g-court">' + esc(u.credits || '—') + '</td><td>' + etatDe(u) + '</td>' + actions(u, null, '#filieres/ue/' + u.id) + '</tr>';
+							return '<tr><th scope="row">' + esc(u.nom) + '</th><td class="g-court">' + esc(u.code || '—') + '</td><td class="g-court">' + esc(semestreAnnee(u.semestre) || '—') + '</td><td class="g-court">' + esc(u.credits || '—') + '</td><td>' + etatDe(u) + '</td>' + actions(u, null, '#filieres/ue/' + u.id) + '</tr>';
 						})) : '<p class="g-vide">Aucune unité d’enseignement à ce niveau.</p>') + '</section>';
 				}).join('');
 				var dep = arbre.par[n.parent];
@@ -1081,10 +1229,31 @@
 			var explo = contenu.querySelector('.g-explo');
 			explo.addEventListener('click', function (e) {
 				var b = e.target.closest('[data-act]');
-				if (b) action(r, b.getAttribute('data-act'), parseInt(b.getAttribute('data-id'), 10), b.getAttribute('data-titre'), function () { explorer(r, id); });
+				if (b) action(r, b.getAttribute('data-act'), parseInt(b.getAttribute('data-id'), 10), b.getAttribute('data-titre'), function () { explorer(r, id, niveauFiltre); });
 			});
 			explo.addEventListener('change', function (e) {
 				if (e.target.id === 'g-dep') location.hash = e.target.value ? '#filieres/dans/' + e.target.value : '#filieres';
+				/* Filtres des UE : changer de département repart de toutes ses filières ; le niveau se garde pour une filière. */
+				if (e.target.id === 'g-ue-dep') location.hash = e.target.value ? '#ues/dans/' + e.target.value : '#ues';
+				if (e.target.id === 'g-ue-fil') {
+					var dep = explo.querySelector('#g-ue-dep').value;
+					location.hash = e.target.value ? '#ues/dans/' + e.target.value : (dep ? '#ues/dans/' + dep : '#ues');
+				}
+				if (e.target.id === 'g-ue-niv') {
+					var base = id ? '#ues/dans/' + id : '#ues/dans/0';
+					location.hash = e.target.value ? base + '/' + encodeURIComponent(e.target.value) : (id ? base : '#ues');
+				}
+			});
+			explo.addEventListener('input', function (e) {
+				if (e.target.id !== 'g-ue-q') return;
+				var q = e.target.value.trim().toLowerCase();
+				var vus = 0;
+				[].forEach.call(explo.querySelectorAll('tr[data-cherche]'), function (tr) {
+					tr.hidden = q && tr.getAttribute('data-cherche').indexOf(q) === -1;
+					if (!tr.hidden) vus++;
+				});
+				var aucune = explo.querySelector('#g-ue-aucune');
+				if (aucune) aucune.hidden = vus > 0;
 			});
 		}).catch(function (e) {
 			contenu.innerHTML = '<p class="g-erreur" role="alert">' + esc(e.message) + '</p>';
@@ -1105,7 +1274,7 @@
 		}).join('');
 	}
 
-	/* Une UE (champs visibles seulement à ce niveau) : un niveau ouvert de sa filière et de 1 à 60 crédits.
+	/* Une UE (champs visibles seulement à ce niveau) : un niveau ouvert de sa filière et au moins un crédit.
 	   Renvoie [message, champ] ou null. Mêmes règles côté serveur (sueb_verifier_ue, inc/admin.php). */
 	function verifierUE(form) {
 		var visible = function (el) { var c = el && el.closest('[data-niveaux]'); return el && !(c && c.hidden); };
@@ -1118,7 +1287,7 @@
 				: 'La filière n’a aucun niveau ouvert : cochez d’abord ses niveaux dans « Modifier la filière ».', niveau];
 		}
 		var n = String(credits.value).trim();
-		if (!/^\d+$/.test(n) || +n < 1 || +n > 60) return ['Indiquez le nombre de crédits de l’UE (un nombre entier de 1 à 60).', credits];
+		if (!/^\d+$/.test(n) || +n < 1) return ['Indiquez le nombre de crédits de l’UE (un nombre entier, au moins 1).', credits];
 		return null;
 	}
 
@@ -1536,7 +1705,8 @@
 			case 'number':
 			case 'date':
 				if (f.type === 'number' && (v === 0 || v === '0') && f.path.indexOf('meta.') === 0) v = '';
-				h = libelle + '<input type="' + f.type + '" id="' + id + '"' + nom + req + decrit + (f.type === 'number' ? ' min="' + (f.min || 0) + '"' + (f.max ? ' max="' + f.max + '"' : '') + ' step="1"' : '') + ' value="' + esc(v == null ? '' : v) + '">';
+				h = '<input type="' + f.type + '" id="' + id + '"' + nom + req + decrit + (f.type === 'number' ? ' min="' + (f.min || 0) + '"' + (f.max ? ' max="' + f.max + '"' : '') + ' step="1"' : '') + ' value="' + esc(v == null ? '' : v) + '">';
+				h = libelle + (f.suffixe ? '<span class="g-suffixe">' + h + '<span aria-hidden="true">' + esc(f.suffixe) + '</span></span>' : h);
 				break;
 			case 'color':
 				h = libelle + '<input type="color" id="' + id + '"' + nom + decrit + ' value="' + esc(v || '#0f2c1f') + '">';
@@ -1548,6 +1718,8 @@
 				h = libelle + '<input type="datetime-local" id="' + id + '"' + nom + decrit + ' value="' + esc(String(v || '').slice(0, 16)) + '">';
 				break;
 			case 'select':
+				/* Semestre d'une UE : les anciennes fiches comptaient sur tout le cursus (S5 = 1er semestre de la 3e année). */
+				if (f.cle === 'semestre') v = semestreAnnee(v);
 				h = libelle + '<select id="' + id + '"' + nom + decrit + '>' + f.options.map(function (o) {
 					return '<option value="' + esc(o[0]) + '"' + (String(v == null ? '' : v) === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
 				}).join('') + '</select>';
@@ -1558,6 +1730,16 @@
 					var noeud = arbre.par[p.id];
 					var pere = arbre.par[v];
 					var genre = genreFixe || Math.min(3, Math.max(1, noeud ? noeud.prof : (pere ? pere.prof + 1 : 2)));
+					if (genreFixe === 3) {
+						/* Une UE : le département d'abord (il filtre la liste des filières), puis la filière. */
+						var depUE = pere && pere.prof === 1 ? pere : (pere && pere.prof === 2 ? arbre.par[pere.parent] : null);
+						if (pere && pere.prof !== 2) v = '';
+						h = '<input type="hidden" data-genre value="3"><div class="g-paire">' +
+							'<div class="g-champ"><label for="f-dep-ue">Département *</label><select id="f-dep-ue" data-dep-ue>' + optionsDepartementsUE(depUE ? depUE.id : '') + '</select></div>' +
+							'<div class="g-champ"><label for="' + id + '" data-libelle-parent>Filière *</label>' +
+							'<select id="' + id + '"' + nom + req + ' data-courant="' + (p.id || '') + '">' + optionsFilieresUE(depUE ? depUE.id : 0, v) + '</select></div></div>';
+						break;
+					}
 					/* Depuis « Départements » ou « Filières », on sait ce qu'on ajoute : seul le rattachement se choisit. */
 					h = (genreFixe ? '<input type="hidden" data-genre value="' + genre + '">' : '<label for="f-genre">' + (p.id ? 'Il s’agit de' : 'Vous ajoutez') + '</label><select id="f-genre" data-genre>' + [1, 2, 3].map(function (g) {
 						return '<option value="' + g + '"' + (g === genre ? ' selected' : '') + '>' + esc(GENRES[g][0]) + '</option>';
@@ -1570,6 +1752,10 @@
 			case 'etablissement':
 			case 'departement':
 				h = libelle + '<select id="' + id + '"' + nom + req + decrit + '>' + optionsStructures(f, v, p.id) + '</select>';
+				break;
+			case 'volume':
+				h = champVolume(f, v, id, nom);
+				aide = '';
 				break;
 			case 'niveau_ue':
 				h = libelle + '<select id="' + id + '"' + nom + decrit + ' data-enregistre="' + esc(v || '') + '"></select>';
@@ -1633,7 +1819,7 @@
 				break;
 		}
 		var niveaux = f.niveaux ? ' data-niveaux="' + f.niveaux.join(',') + '"' : '';
-		return '<div class="g-champ g-champ--' + f.type + '"' + niveaux + '>' + h + aide + '</div>';
+		return '<div class="g-champ g-champ--' + f.type + '"' + (f.cle ? ' data-cle="' + esc(f.cle) + '"' : '') + niveaux + '>' + h + aide + '</div>';
 	}
 
 	/* Champs « image » et « fichier » : envoi dans la médiathèque, aperçu, retrait. */
@@ -1699,6 +1885,7 @@
 		var retourDe = function (parent) {
 			if (r.id === 'formations') return '#formations/liste';
 			if (r.genre === 1) return '#departements';
+			if (r.id === 'ues') return parent ? '#ues/dans/' + parent : '#ues';
 			return r.genre ? (parent ? '#filieres/dans/' + parent : '#filieres') : '#' + r.id;
 		};
 		var retourListe = retourDe(p.parent);
@@ -1709,7 +1896,7 @@
 			? '<p class="g-aide g-role">Utilisée par le site : ' + esc(p.sueb_gestion.role) + '. Son adresse ne change pas et elle ne peut pas être supprimée.</p>'
 			: '';
 		contenu.innerHTML = tete + role +
-			'<form class="g-form g-panneau" novalidate>' + r.champs.map(function (f) {
+			'<form class="g-form g-panneau' + (r.champs === CHAMPS_UE ? ' g-form--ue' : '') + '" novalidate>' + r.champs.map(function (f) {
 				return champ(f, p) + (f.type === 'parent' ? '<p class="g-niveau" aria-live="polite"></p>' : '');
 			}).join('') +
 			'<div class="g-form__actions"><button class="g-btn g-btn--primaire" type="submit">Enregistrer</button>' + (r.reglages ? '' : '<a class="g-btn" href="' + retourListe + '">Annuler</a>') + '</div></form>';
@@ -1770,6 +1957,7 @@
 			if (cp) copier(cp.getAttribute('data-copier'));
 		});
 		form.addEventListener('input', function (e) {
+			if (e.target.hasAttribute('data-vol')) return majVolume(e.target);
 			if (!e.target.classList.contains('g-personnes__filtre')) return;
 			var q = e.target.value.trim().toLowerCase();
 			[].forEach.call(e.target.closest('.g-personnes').querySelectorAll('label[data-nom]'), function (l) {
@@ -1791,6 +1979,11 @@
 				majNiveauUE(form);
 				form.querySelector('[data-libelle-parent]').textContent = GENRES[g][1] + ' *';
 				return majNiveau(r, form);
+			}
+			if (e.target.hasAttribute('data-dep-ue')) {
+				/* Une UE change de département : la liste des filières (et donc des niveaux) suit. */
+				form.querySelector('[data-path="parent"]').innerHTML = optionsFilieresUE(e.target.value, '');
+				return majNiveauUE(form);
 			}
 			if (e.target.getAttribute('data-path') === 'meta._sueb_parcours') return majNiveauxOuverts(form, false);
 			if (e.target.getAttribute('data-path') === 'parent') { majNiveauUE(form); return majNiveau(r, form); }

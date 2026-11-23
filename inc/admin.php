@@ -255,7 +255,7 @@ add_action( 'init', function () {
 
 /**
  * Vérifie une UE envoyée par l'API : elle se range dans un niveau ouvert de sa filière
- * et compte de 1 à 60 crédits (mêmes règles que verifierUE() dans assets/js/admin.js).
+ * et compte au moins un crédit (mêmes règles que verifierUE() dans assets/js/admin.js).
  * À la création, les deux champs sont exigés ; à la modification, seuls ceux envoyés sont vérifiés.
  *
  * @return true|WP_Error
@@ -282,8 +282,8 @@ function sueb_verifier_ue( $prepare, $requete ) {
 
 	if ( $nouveau || array_key_exists( '_sueb_credits', $meta ) ) {
 		$credits = trim( (string) ( $meta['_sueb_credits'] ?? '' ) );
-		if ( ! preg_match( '/^\d+$/', $credits ) || (int) $credits < 1 || (int) $credits > 60 ) {
-			return new WP_Error( 'sueb_ue_credits', 'Indiquez le nombre de crédits de l’UE (un nombre entier de 1 à 60).', array( 'status' => 400 ) );
+		if ( ! preg_match( '/^\d+$/', $credits ) || (int) $credits < 1 ) {
+			return new WP_Error( 'sueb_ue_credits', 'Indiquez le nombre de crédits de l’UE (un nombre entier, au moins 1).', array( 'status' => 400 ) );
 		}
 	}
 	return true;

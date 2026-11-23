@@ -140,6 +140,18 @@
 		'ecran-normal': '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>'
 	};
 
+	/* Les icônes des cartes du tableau de bord : dessinées en pleins, en deux tons (la couleur de la carte et sa teinte
+	   claire), plus figuratives que les icônes au trait du menu, à la demande de l'utilisateur. */
+	var PICTOS = {
+		personnel: '<circle cx="32" cy="15" r="6.5" class="clair"/><path class="clair" d="M21 39c0-7.7 4.9-13 11-13s11 5.3 11 13z"/><circle cx="18" cy="17" r="7.5"/><path d="M4 42c0-8.8 6.3-15 14-15s14 6.2 14 15z"/>',
+		filieres: '<path class="fonce" d="M12 23.5v8.2c0 3.3 5.4 6.3 12 6.3s12-3 12-6.3v-8.2L24 29z"/><path d="M24 8 46 18 24 28 2 18z"/><path class="clair" d="M24 15.5c1.7 0 3 .7 3 1.5s-1.3 1.5-3 1.5-3-.7-3-1.5 1.3-1.5 3-1.5z"/><path class="accent" d="M43 19.4v10.1l1.6 4h-4.8l1.6-4V18.9z"/>',
+		etablissements: '<path d="M24 4 45 14H3z"/><rect x="5" y="15" width="38" height="4" rx="1"/><rect class="clair" x="8.5" y="20" width="5" height="15" rx="1"/><rect class="clair" x="17" y="20" width="5" height="15" rx="1"/><rect class="clair" x="26" y="20" width="5" height="15" rx="1"/><rect class="clair" x="34.5" y="20" width="5" height="15" rx="1"/><rect x="5" y="36" width="38" height="4" rx="1"/><rect class="fonce" x="2" y="40.5" width="44" height="3.5" rx="1"/><circle class="clair" cx="24" cy="10.5" r="2"/>',
+		departements: '<rect x="17" y="4" width="14" height="10" rx="2.5"/><path class="trait" d="M24 14v6M10 26v-6h28v6M24 20v6"/><rect class="clair" x="3" y="27" width="14" height="10" rx="2.5"/><rect class="clair" x="17" y="27" width="14" height="10" rx="2.5"/><rect class="clair" x="31" y="27" width="14" height="10" rx="2.5"/><rect class="fonce" x="6" y="40" width="8" height="3" rx="1.5"/><rect class="fonce" x="20" y="40" width="8" height="3" rx="1.5"/><rect class="fonce" x="34" y="40" width="8" height="3" rx="1.5"/>'
+	};
+	function picto(nom) {
+		return '<svg class="g-picto" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' + (PICTOS[nom] || '') + '</svg>';
+	}
+
 	function ico(nom, classe) {
 		return '<svg class="g-ico' + (classe ? ' ' + classe : '') + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + (ICONES[nom] || '') + '</svg>';
 	}
@@ -873,11 +885,15 @@
 			'<h1 class="sr">Gestion du site de l’Université d’Ebolowa</h1>' +
 			'<aside class="g-nav" id="g-nav" aria-label="Rubriques de la gestion">' +
 				'<a class="g-nav__marque" href="#"><img src="' + esc(C.logo) + '" alt="" width="40" height="40"><span><strong>UEb</strong><small>Gestion du site</small></span></a>' +
-				'<nav class="g-nav__liens"><ul><li><a href="#" data-menu="">' + ico('tableau') + '<span>Tableau de bord</span></a></li></ul>' + menu + '</nav>' +
+				'<nav class="g-nav__liens" aria-label="Rubriques"><ul><li><a href="#" data-menu="">' + ico('tableau') + '<span>Tableau de bord</span></a></li></ul>' + menu + '</nav>' +
+				/* Tout en bas du menu, à la demande de l'utilisateur : le compte connecté (initiales, nom, rôle, courriel)
+				   et le bouton pour se déconnecter. */
 				'<div class="g-nav__pied">' +
-					'<div class="g-compte"><span class="g-compte__avatar" aria-hidden="true">' + esc(initiales(C.nom)) + '</span><span class="g-compte__meta"><strong>' + esc(C.nom) + '</strong><small>' + esc(C.role || '') + '</small></span></div>' +
 					'<a class="g-nav__bas" href="' + esc(C.site) + '" target="_blank" rel="noopener">' + ico('externe') + 'Voir le site</a>' +
-					'<a class="g-nav__bas" href="' + esc(C.deconnexion) + '">' + ico('sortie') + 'Se déconnecter</a>' +
+					'<div class="g-profil"><span class="g-profil__avatar" aria-hidden="true">' + esc(initiales(C.nom)) + '</span>' +
+						'<span class="g-profil__texte"><strong class="g-profil__nom">' + esc(C.nom) + '</strong><span class="g-profil__role">' + esc(C.role || '') + '</span>' +
+						(C.courriel ? '<span class="g-profil__courriel" title="' + esc(C.courriel) + '">' + esc(C.courriel) + '</span>' : '') + '</span></div>' +
+					'<a class="g-deconnexion" href="' + esc(C.deconnexion) + '">' + ico('sortie') + 'Se déconnecter</a>' +
 				'</div>' +
 			'</aside>' +
 			'<div class="g-voile" data-fermer-nav></div>' +
@@ -960,58 +976,258 @@
 		liste(r);
 	}
 
-	/* Chiffres clés du tableau de bord : le total de chaque requête (en-tête X-WP-Total). */
-	var CHIFFRES = [
-		{ t: 'Actualités en ligne', i: 'journal', q: 'wp/v2/posts?status=publish', lien: 'actualites', pied: 'articles publiés' },
-		{ t: 'Brouillons', i: 'crayon', q: 'wp/v2/posts?status=draft', lien: 'actualites', pied: 'actualités à terminer', ton: 'or' },
-		{ t: 'Évènements', i: 'agenda', q: 'wp/v2/ueb_evenement?status=publish', lien: 'evenements', pied: 'dans l’agenda' },
-		{ t: 'Personnel', i: 'personnes', q: 'wp/v2/ueb_personnel?status=publish', lien: 'personnel', pied: 'fiches de l’annuaire' },
-		{ t: 'Offre de formation', i: 'diplome', q: 'wp/v2/ueb_structure?status=publish', lien: 'filieres', pied: 'établissements, filières, UE' },
-		{ t: 'Médiathèque', i: 'image', q: 'wp/v2/media?status=inherit' + (a('sueb_mediatheque') ? '' : '&author=' + C.id), lien: 'mediatheque', pied: 'fichiers envoyés', ton: 'ciel' }
-	];
+	/* ---------- Tableau de bord ----------
+	   D'après le modèle fourni par l'utilisateur (2026-11-23) : quatre chiffres clés en haut, puis les filières
+	   par établissement (histogramme) et par type de formation (anneau), puis les visites du site sur 30 jours
+	   (courbe en aires) et la part des contenus déjà renseignés. Données : sueb/v1/tableau-de-bord
+	   (inc/tableau-de-bord.php). Graphiques en SVG, à la largeur réelle de leur cadre ; chacun a un survol
+	   et une vue « Voir les données » en tableau. Couleurs validées avec le skill dataviz (mode clair). */
+	var GRAPHE = {
+		types: { classique: '#18924c', pro: '#2a78d6', 'bts-ingenierie': '#d99a00', medecine: '#dd4146' },
+		vues: '#2a78d6', visiteurs: '#eb6834', barres: '#1d5a38',
+		grille: '#e6ebe7', base: '#c6cfc9', texte: '#14201a', doux: '#4a5750', pale: '#6b7a72', surface: '#ffffff'
+	};
+	var tdb = null; // les dernières données, pour redessiner au redimensionnement
+
+	function nombre(n) { return Number(n || 0).toLocaleString('fr-FR'); }
+	function pluriel(n, un, plusieurs) { return nombre(n) + ' ' + (n > 1 ? plusieurs : un); }
+	function jourCourt(j) { return new Date(j + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); }
+	function jourLong(j) { return new Date(j + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }); }
+	/* Un pas d'axe « rond » (1, 2, 5, 10, 20…) pour environ quatre graduations. */
+	function pasRond(max) {
+		if (max <= 4) return 1;
+		var brut = max / 4, puissance = Math.pow(10, Math.floor(Math.log10(brut))), r = brut / puissance;
+		return (r <= 1 ? 1 : r <= 2 ? 2 : r <= 5 ? 5 : 10) * puissance;
+	}
+	/* La bulle d'un graphique : placée près du pointeur, sans déborder du cadre. */
+	function bulle(cadre, html, x, y) {
+		var b = cadre.querySelector('.g-bulle');
+		if (!html) { b.hidden = true; return; }
+		b.innerHTML = html; b.hidden = false;
+		var l = cadre.clientWidth, w = b.offsetWidth;
+		b.style.left = Math.max(0, Math.min(l - w, x - w / 2)) + 'px';
+		b.style.top = Math.max(0, y - b.offsetHeight - 12) + 'px';
+	}
+	/* La vue en tableau, qui donne toutes les valeurs sans passer par le survol. */
+	function vueDonnees(entetes, lignes) {
+		return '<details class="g-donnees"><summary>Voir les données</summary><div class="g-tableau"><table><thead><tr>' +
+			entetes.map(function (e, i) { return '<th scope="col"' + (i ? ' class="g-num"' : '') + '>' + esc(e) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+			lignes.map(function (l) { return '<tr>' + l.map(function (c, i) { return i ? '<td class="g-num">' + esc(c) + '</td>' : '<th scope="row">' + esc(c) + '</th>'; }).join('') + '</tr>'; }).join('') +
+			'</tbody></table></div></details>';
+	}
+
+	/* L'histogramme : les filières de chaque établissement. Une seule série, une seule couleur, la valeur sur chaque colonne. */
+	function histogramme(cadre, donnees) {
+		var W = cadre.clientWidth, max = Math.max.apply(null, donnees.map(function (d) { return d.filieres; }).concat([1])), r = 4;
+		var aria = esc('Filières par établissement : ' + donnees.map(function (d) { return d.sigle + ' ' + d.filieres; }).join(', '));
+		var colonnes, H;
+		if (W < 560) {
+			/* Petit écran : barres horizontales, le sigle à gauche et la valeur au bout de la barre. */
+			var pas = 32, ep = 16, gauche = 66, longueur = W - gauche - 44;
+			H = donnees.length * pas;
+			colonnes = donnees.map(function (d, i) {
+				var w = Math.max(d.filieres ? 2 : 0, Math.round(d.filieres / max * longueur)), y = i * pas + (pas - ep) / 2, x = gauche;
+				var forme = w > r ? 'M' + x + ',' + y + 'H' + (x + w - r) + 'Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + 'V' + (y + ep - r) + 'Q' + (x + w) + ',' + (y + ep) + ' ' + (x + w - r) + ',' + (y + ep) + 'H' + x + 'Z' : 'M' + x + ',' + y + 'h' + w + 'v' + ep + 'h-' + w + 'Z';
+				return '<g class="g-colonne" data-i="' + i + '"><rect class="g-cible" x="0" y="' + (i * pas) + '" width="' + W + '" height="' + pas + '" fill="transparent"/>' +
+					'<text x="0" y="' + (y + ep / 2 + 4) + '" class="g-graphe__axe">' + esc(d.sigle) + '</text><path d="' + forme + '" fill="' + GRAPHE.barres + '"/>' +
+					'<text x="' + (x + w + 6) + '" y="' + (y + ep / 2 + 4) + '" class="g-graphe__valeur">' + nombre(d.filieres) + '</text></g>';
+			}).join('');
+			cadre.innerHTML = '<svg class="g-graphe__svg" width="' + W + '" height="' + H + '" role="img" aria-label="' + aria + '"><line x1="' + gauche + '" x2="' + gauche + '" y1="0" y2="' + H + '" stroke="' + GRAPHE.base + '"/>' + colonnes + '</svg><div class="g-bulle" hidden></div>';
+			brancherColonnes(cadre, donnees);
+			return;
+		}
+		H = 290;
+		var haut = 26, bas = 34, plot = H - haut - bas;
+		var fente = W / donnees.length, l = Math.min(24, fente * .5);
+		colonnes = donnees.map(function (d, i) {
+			var h = Math.max(d.filieres ? 2 : 0, Math.round(d.filieres / max * plot)), x = i * fente + (fente - l) / 2, y = haut + plot - h;
+			var forme = h > r ? 'M' + x + ',' + (y + h) + 'V' + (y + r) + 'Q' + x + ',' + y + ' ' + (x + r) + ',' + y + 'H' + (x + l - r) + 'Q' + (x + l) + ',' + y + ' ' + (x + l) + ',' + (y + r) + 'V' + (y + h) + 'Z' : 'M' + x + ',' + (y + h) + 'h' + l + 'v-' + h + 'h-' + l + 'Z';
+			return '<g class="g-colonne" data-i="' + i + '"><rect class="g-cible" x="' + (i * fente) + '" y="0" width="' + fente + '" height="' + (H - bas) + '" fill="transparent"/>' +
+				'<path d="' + forme + '" fill="' + GRAPHE.barres + '"/>' +
+				'<text x="' + (x + l / 2) + '" y="' + (y - 7) + '" text-anchor="middle" class="g-graphe__valeur">' + nombre(d.filieres) + '</text>' +
+				'<text x="' + (x + l / 2) + '" y="' + (H - bas + 20) + '" text-anchor="middle" class="g-graphe__axe">' + esc(d.sigle) + '</text></g>';
+		}).join('');
+		cadre.innerHTML = '<svg class="g-graphe__svg" width="' + W + '" height="' + H + '" role="img" aria-label="' + aria + '">' +
+			'<line x1="0" x2="' + W + '" y1="' + (haut + plot) + '" y2="' + (haut + plot) + '" stroke="' + GRAPHE.base + '"/>' + colonnes + '</svg><div class="g-bulle" hidden></div>';
+		brancherColonnes(cadre, donnees);
+	}
+	/* Le survol d'une colonne (ou d'une barre) : son nom complet et sa valeur ; les autres pâlissent. */
+	function brancherColonnes(cadre, donnees) {
+		[].forEach.call(cadre.querySelectorAll('.g-colonne'), function (g) {
+			var d = donnees[+g.getAttribute('data-i')];
+			g.addEventListener('mousemove', function (e) {
+				var b = cadre.getBoundingClientRect();
+				bulle(cadre, '<strong>' + esc(d.nom) + '</strong><span>' + esc(pluriel(d.filieres, 'filière', 'filières')) + '</span>', e.clientX - b.left, e.clientY - b.top);
+				g.classList.add('est-survolee');
+			});
+			g.addEventListener('mouseleave', function () { bulle(cadre, ''); g.classList.remove('est-survolee'); });
+		});
+	}
+
+	/* L'anneau : les filières par type de formation, avec la légende chiffrée à côté (les valeurs ne dépendent pas du survol). */
+	function anneau(cadre, types, total) {
+		var somme = types.reduce(function (s, t) { return s + t.filieres; }, 0) || 1, R = 84, e = 20, c = R + 4, a0 = -Math.PI / 2;
+		var arcs = types.filter(function (t) { return t.filieres; }).map(function (t) {
+			var a1 = a0 + t.filieres / somme * Math.PI * 2, grand = a1 - a0 > Math.PI ? 1 : 0, ri = R - e;
+			var p = function (r, a) { return (c + r * Math.cos(a)).toFixed(2) + ',' + (c + r * Math.sin(a)).toFixed(2); };
+			var d = 'M' + p(R, a0) + 'A' + R + ',' + R + ' 0 ' + grand + ' 1 ' + p(R, a1) + 'L' + p(ri, a1) + 'A' + ri + ',' + ri + ' 0 ' + grand + ' 0 ' + p(ri, a0) + 'Z';
+			a0 = a1;
+			return '<path class="g-part" data-cle="' + esc(t.cle) + '" d="' + d + '" fill="' + (GRAPHE.types[t.cle] || GRAPHE.pale) + '" stroke="' + GRAPHE.surface + '" stroke-width="2"/>';
+		}).join('');
+		cadre.innerHTML = '<div class="g-anneau"><div class="g-anneau__figure"><svg width="' + 2 * c + '" height="' + 2 * c + '" viewBox="0 0 ' + 2 * c + ' ' + 2 * c + '" aria-hidden="true">' + arcs + '</svg>' +
+				'<p class="g-anneau__centre"><strong>' + nombre(total) + '</strong><span>filières</span></p><div class="g-bulle" hidden></div></div>' +
+			'<ul class="g-legende">' + types.map(function (t) {
+				return '<li data-cle="' + esc(t.cle) + '"><span class="g-legende__marque" style="background:' + (GRAPHE.types[t.cle] || GRAPHE.pale) + '"></span><span class="g-legende__nom">' + esc(t.nom) + '</span><strong>' + nombre(t.filieres) + '</strong></li>';
+			}).join('') + '</ul></div>' +
+			'<p class="g-note">Une filière peut relever de deux types, par exemple un BTS prolongé par une licence professionnelle.</p>';
+		var figure = cadre.querySelector('.g-anneau__figure');
+		[].forEach.call(cadre.querySelectorAll('.g-part'), function (part) {
+			var t = types.filter(function (x) { return x.cle === part.getAttribute('data-cle'); })[0];
+			part.addEventListener('mousemove', function (ev) {
+				var b = figure.getBoundingClientRect();
+				bulle(figure, '<strong>' + esc(t.nom) + '</strong><span>' + esc(pluriel(t.filieres, 'filière', 'filières')) + '</span>', ev.clientX - b.left, ev.clientY - b.top);
+				cadre.classList.add('est-survole'); part.classList.add('est-survolee');
+			});
+			part.addEventListener('mouseleave', function () { bulle(figure, ''); cadre.classList.remove('est-survole'); part.classList.remove('est-survolee'); });
+		});
+	}
+
+	/* La courbe des visites : pages vues et visiteurs, jour par jour, sur un seul axe (même unité). */
+	function courbe(cadre, jours) {
+		var W = cadre.clientWidth, H = 250, gauche = 40, droite = 12, haut = 14, bas = 30, plotW = W - gauche - droite, plotH = H - haut - bas;
+		var max = Math.max.apply(null, jours.map(function (j) { return Math.max(j.vues, j.visiteurs); }).concat([0]));
+		var pas = pasRond(max), plafond = Math.max(pas * Math.ceil(max / pas), pas * 4 > max ? pas * 4 : pas);
+		var X = function (i) { return gauche + (jours.length > 1 ? i / (jours.length - 1) * plotW : plotW / 2); };
+		var Y = function (v) { return haut + plotH - v / plafond * plotH; };
+		var grille = '', g;
+		for (g = 0; g <= plafond; g += pas) {
+			grille += '<line x1="' + gauche + '" x2="' + (W - droite) + '" y1="' + Y(g) + '" y2="' + Y(g) + '" stroke="' + (g ? GRAPHE.grille : GRAPHE.base) + '"/>' +
+				'<text x="' + (gauche - 8) + '" y="' + (Y(g) + 4) + '" text-anchor="end" class="g-graphe__axe g-num">' + nombre(g) + '</text>';
+		}
+		var axeX = jours.map(function (j, i) {
+			return (i % 7 === (jours.length - 1) % 7) ? '<text x="' + X(i) + '" y="' + (H - 8) + '" text-anchor="middle" class="g-graphe__axe">' + esc(jourCourt(j.jour)) + '</text>' : '';
+		}).join('');
+		var serie = function (cle, couleur) {
+			var ligne = jours.map(function (j, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(j[cle]).toFixed(1); }).join('');
+			return '<path d="' + ligne + 'L' + X(jours.length - 1).toFixed(1) + ',' + Y(0) + 'L' + X(0).toFixed(1) + ',' + Y(0) + 'Z" fill="' + couleur + '" fill-opacity=".1"/>' +
+				'<path d="' + ligne + '" fill="none" stroke="' + couleur + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+		};
+		var vide = !max;
+		cadre.innerHTML = '<svg class="g-graphe__svg" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(vide ? 'Aucune visite enregistrée sur la période' : 'Visites des 30 derniers jours') + '">' + grille + axeX +
+				(vide ? '' : serie('vues', GRAPHE.vues) + serie('visiteurs', GRAPHE.visiteurs)) +
+				'<g class="g-curseur" style="display:none"><line y1="' + haut + '" y2="' + (haut + plotH) + '" stroke="' + GRAPHE.base + '"/>' +
+				'<circle r="4" fill="' + GRAPHE.vues + '" stroke="' + GRAPHE.surface + '" stroke-width="2"/><circle r="4" fill="' + GRAPHE.visiteurs + '" stroke="' + GRAPHE.surface + '" stroke-width="2"/></g>' +
+				'<rect class="g-graphe__zone" x="' + gauche + '" y="' + haut + '" width="' + plotW + '" height="' + plotH + '" fill="transparent" tabindex="' + (vide ? -1 : 0) + '" aria-label="Parcourir les jours avec les flèches"/></svg>' +
+			(vide ? '<p class="g-graphe__vide">Aucune visite enregistrée pour l’instant. Le compteur tourne depuis la mise en place de la mesure : la courbe se dessinera au fil des jours.</p>' : '') +
+			'<div class="g-bulle" hidden></div>';
+		if (vide) return;
+		var zone = cadre.querySelector('.g-graphe__zone'), curseur = cadre.querySelector('.g-curseur'), points = curseur.querySelectorAll('circle'), courant = jours.length - 1;
+		function montrer(i) {
+			courant = Math.max(0, Math.min(jours.length - 1, i));
+			var j = jours[courant], x = X(courant);
+			curseur.style.display = '';
+			curseur.querySelector('line').setAttribute('x1', x); curseur.querySelector('line').setAttribute('x2', x);
+			points[0].setAttribute('cx', x); points[0].setAttribute('cy', Y(j.vues));
+			points[1].setAttribute('cx', x); points[1].setAttribute('cy', Y(j.visiteurs));
+			bulle(cadre, '<strong>' + esc(jourLong(j.jour)) + '</strong><span><i style="background:' + GRAPHE.vues + '"></i>' + esc(pluriel(j.vues, 'page vue', 'pages vues')) + '</span><span><i style="background:' + GRAPHE.visiteurs + '"></i>' + esc(pluriel(j.visiteurs, 'visiteur', 'visiteurs')) + '</span>', x, Y(Math.max(j.vues, j.visiteurs)));
+		}
+		function cacher() { curseur.style.display = 'none'; bulle(cadre, ''); }
+		zone.addEventListener('mousemove', function (e) {
+			var b = zone.getBoundingClientRect();
+			montrer(Math.round((e.clientX - b.left) / b.width * (jours.length - 1)));
+		});
+		zone.addEventListener('mouseleave', cacher);
+		zone.addEventListener('focus', function () { montrer(courant); });
+		zone.addEventListener('blur', cacher);
+		zone.addEventListener('keydown', function (e) {
+			if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); montrer(courant + (e.key === 'ArrowRight' ? 1 : -1)); }
+			else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); montrer(e.key === 'Home' ? 0 : jours.length - 1); }
+		});
+	}
+
+	function dessinerGraphes() {
+		if (!tdb) return;
+		var h = document.getElementById('g-histogramme'), a = document.getElementById('g-anneau'), c = document.getElementById('g-courbe');
+		if (h) histogramme(h, tdb.filieres_par_etablissement);
+		if (a) anneau(a, tdb.par_type, tdb.chiffres.filieres);
+		if (c) courbe(c, tdb.visites);
+	}
+	var redimension = null;
+	window.addEventListener('resize', function () {
+		clearTimeout(redimension);
+		redimension = setTimeout(function () { if (document.getElementById('g-courbe')) dessinerGraphes(); }, 150);
+	});
 
 	function tableauDeBord() {
 		var heure = new Date().getHours();
 		var prenom = String(C.nom || '').trim().split(/\s+/)[0];
 		var aujourdhui = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-		CHIFFRES = CHIFFRES.filter(function (k) { return trouver(k.lien); });
 		var actus = !!trouver('actualites');
-		var chiffres = CHIFFRES.map(function (k, n) {
-			return '<li class="g-kpi' + (k.ton ? ' g-kpi--' + k.ton : '') + '" style="--n:' + n + '"><a href="#' + k.lien + '">' +
-				'<span class="g-kpi__tete"><span class="g-kpi__libelle">' + esc(k.t) + '</span><span class="g-kpi__ico">' + ico(k.i) + '</span></span>' +
-				'<strong class="g-kpi__valeur" data-kpi="' + n + '"><span class="g-squelette"></span></strong><span class="g-kpi__pied">' + esc(k.pied) + '</span></a></li>';
-		}).join('');
-		var raccourcis = RUBRIQUES.filter(function (r) { return !r.cache; }).map(function (r) {
-			return '<li><a href="#' + r.id + '"><span class="g-raccourci__ico">' + ico(icone(r)) + '</span><span><strong>' + esc(r.titre) + '</strong><small>' + esc(description(r)) + '</small></span></a></li>';
-		}).join('');
-		contenu.innerHTML = entete((heure < 18 ? 'Bonjour' : 'Bonsoir') + (prenom ? ', ' + prenom : ''), aujourdhui.charAt(0).toUpperCase() + aujourdhui.slice(1) + ' · vue d’ensemble du site',
+		/* Les quatre chiffres clés, comme les cartes du modèle. */
+		var CARTES = [
+			{ cle: 'personnel', t: 'Personnel', i: 'personnes', lien: 'personnel' },
+			{ cle: 'filieres', t: 'Filières', i: 'diplome', lien: 'filieres' },
+			{ cle: 'etablissements', t: 'Établissements', i: 'batiment', lien: 'etablissements' },
+			{ cle: 'departements', t: 'Départements', i: 'puces', lien: 'departements' }
+		];
+		var panneau = function (id, titre, sousTitre, corps, classe) {
+			return '<section class="g-panneau g-tdb__panneau' + (classe ? ' ' + classe : '') + '" aria-labelledby="' + id + '-titre"><div class="g-panneau__tete"><div><h3 id="' + id + '-titre">' + esc(titre) + '</h3>' +
+				'<p class="g-panneau__sous" id="' + id + '-sous">' + esc(sousTitre) + '</p></div></div><div class="g-tdb__corps">' + corps + '</div></section>';
+		};
+		var attente = '<p class="g-chargement"><span class="g-roue"></span>Chargement…</p>';
+		contenu.innerHTML = entete((heure < 18 ? 'Bonjour' : 'Bonsoir') + (prenom ? ', ' + prenom : ''), aujourdhui.charAt(0).toUpperCase() + aujourdhui.slice(1) + ', vue d’ensemble du site',
 				'<a class="g-btn" href="' + esc(C.site) + '" target="_blank" rel="noopener">' + ico('externe') + 'Voir le site</a>' + (actus ? '<a class="g-btn g-btn--primaire" href="#actualites/new">' + ico('plus') + 'Nouvelle actualité</a>' : '')) +
-			'<ul class="g-kpis">' + chiffres + '</ul>' +
-			'<div class="g-deux">' +
-				(actus ? '<section class="g-panneau" aria-labelledby="g-recents-titre"><div class="g-panneau__tete"><h3 id="g-recents-titre">Dernières actualités modifiées</h3><a class="g-lien-fleche" href="#actualites">Tout voir' + ico('droite') + '</a></div><div id="g-recents"><p class="g-chargement"><span class="g-roue"></span>Chargement…</p></div></section>' : '') +
-				'<section class="g-panneau" aria-labelledby="g-acces-titre"><div class="g-panneau__tete"><h3 id="g-acces-titre">Toutes les rubriques</h3></div><ul class="g-raccourcis">' + raccourcis + '</ul></section>' +
+			'<ul class="g-kpis g-tdb__chiffres">' + CARTES.map(function (k, n) {
+				var cible = trouver(k.lien) ? '#' + k.lien : '';
+				return '<li class="g-kpi g-chiffre g-chiffre--' + k.cle + '" style="--n:' + n + '">' + (cible ? '<a href="' + cible + '">' : '<div>') +
+					'<span class="g-chiffre__ico">' + picto(k.cle) + '</span><span class="g-chiffre__texte"><span class="g-chiffre__libelle">' + esc(k.t) + '</span>' +
+					'<strong class="g-chiffre__valeur" data-chiffre="' + k.cle + '"><span class="g-squelette"></span></strong><span class="g-chiffre__pied" data-pied="' + k.cle + '"></span></span>' + (cible ? '</a>' : '</div>') + '</li>';
+			}).join('') + '</ul>' +
+			'<div class="g-tdb__ligne g-tdb__ligne--offre">' +
+				panneau('g-hist', 'Filières par établissement', 'Nombre de filières ouvertes dans chaque faculté, école ou institut', '<div class="g-graphe" id="g-histogramme">' + attente + '</div><div id="g-hist-donnees"></div>') +
+				panneau('g-types', 'Types de formation', 'Filières par parcours', '<div id="g-anneau">' + attente + '</div>') +
+			'</div>' +
+			'<div class="g-tdb__ligne g-tdb__ligne--suivi">' +
+				panneau('g-visites', 'Visites du site', '30 derniers jours', '<ul class="g-legende g-legende--ligne" id="g-visites-legende"></ul><div class="g-graphe" id="g-courbe">' + attente + '</div><div id="g-visites-donnees"></div>') +
+				panneau('g-completude', 'Contenus renseignés', 'Sans les données de test', '<ul class="g-jauges" id="g-jauges">' + attente + '</ul>') +
 			'</div>';
 
-		CHIFFRES.forEach(function (k, n) {
-			api(k.q + '&per_page=1&_fields=id&context=edit').then(function (res) {
-				var el = contenu.querySelector('[data-kpi="' + n + '"]');
-				if (el) el.textContent = res.total.toLocaleString('fr-FR');
-			}).catch(function () {
-				var el = contenu.querySelector('[data-kpi="' + n + '"]');
-				if (el) el.textContent = '—';
+		api('sueb/v1/tableau-de-bord').then(function (res) {
+			tdb = res.data;
+			var ch = tdb.chiffres;
+			var pieds = {
+				personnel: 'fiches dans l’annuaire',
+				filieres: 'dans ' + pluriel(ch.etablissements, 'établissement', 'établissements'),
+				etablissements: 'facultés, écoles et institut',
+				departements: 'où se rangent les filières'
+			};
+			Object.keys(pieds).forEach(function (k) {
+				var v = contenu.querySelector('[data-chiffre="' + k + '"]'), p = contenu.querySelector('[data-pied="' + k + '"]');
+				if (v) v.textContent = nombre(ch[k]);
+				if (p) p.textContent = pieds[k];
 			});
-		});
+			document.getElementById('g-hist-sous').textContent = pluriel(ch.filieres, 'filière', 'filières') + ' dans ' + pluriel(ch.etablissements, 'établissement', 'établissements');
+			document.getElementById('g-hist-donnees').innerHTML = vueDonnees(['Établissement', 'Filières'], tdb.filieres_par_etablissement.map(function (d) { return [d.nom + ' (' + d.sigle + ')', nombre(d.filieres)]; }));
 
-		if (actus) api('wp/v2/posts?context=edit&status=publish,draft,future,pending,private&per_page=6&orderby=modified&order=desc&_fields=id,title,status,modified').then(function (res) {
-			var zone = document.getElementById('g-recents');
-			if (!zone) return;
-			zone.innerHTML = res.data.length ? '<ul class="g-recents">' + res.data.map(function (p) {
-				return '<li><a href="#actualites/' + p.id + '"><span class="g-recents__titre">' + esc(titreDe(p)) + '</span><small>Modifiée le ' + esc(dateFr(p.modified, true)) + '</small></a>' +
-					'<span class="g-etat g-etat--' + esc(p.status) + '">' + esc(STATUTS[p.status] || p.status) + '</span></li>';
-			}).join('') + '</ul>' : '<p class="g-vide">Aucune actualité pour l’instant. <a href="#actualites/new">Rédiger la première</a></p>';
+			var vues = tdb.visites.reduce(function (s, j) { return s + j.vues; }, 0), visiteurs = tdb.visites.reduce(function (s, j) { return s + j.visiteurs; }, 0);
+			document.getElementById('g-visites-legende').innerHTML =
+				'<li><span class="g-legende__trait" style="background:' + GRAPHE.vues + '"></span><span class="g-legende__nom">Pages vues</span><strong>' + nombre(vues) + '</strong></li>' +
+				'<li><span class="g-legende__trait" style="background:' + GRAPHE.visiteurs + '"></span><span class="g-legende__nom">Visiteurs</span><strong>' + nombre(visiteurs) + '</strong></li>';
+			if (tdb.visites_depuis) document.getElementById('g-visites-sous').textContent = '30 derniers jours, mesure depuis le ' + new Date(tdb.visites_depuis + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+			document.getElementById('g-visites-donnees').innerHTML = vueDonnees(['Jour', 'Pages vues', 'Visiteurs'], tdb.visites.slice().reverse().map(function (j) { return [jourLong(j.jour), nombre(j.vues), nombre(j.visiteurs)]; }));
+
+			document.getElementById('g-jauges').innerHTML = tdb.completude.map(function (c) {
+				var part = c.total ? Math.round(c.valeur / c.total * 100) : 0;
+				var cible = trouver(c.lien) ? '#' + c.lien : '';
+				return '<li class="g-jauge">' + (cible ? '<a href="' + cible + '">' : '<div>') +
+					'<span class="g-jauge__tete"><span class="g-jauge__libelle">' + esc(c.libelle) + '</span><strong>' + part + '\u00a0%</strong></span>' +
+					'<span class="g-jauge__barre" role="meter" aria-valuemin="0" aria-valuemax="' + c.total + '" aria-valuenow="' + c.valeur + '" aria-label="' + esc(c.libelle) + '"><span style="width:' + part + '%"></span></span>' +
+					'<span class="g-jauge__pied">' + esc(nombre(c.valeur) + ' sur ' + nombre(c.total) + ', ' + c.aide) + '</span>' + (cible ? '</a>' : '</div>') + '</li>';
+			}).join('');
+			dessinerGraphes();
 		}).catch(function (e) {
-			var zone = document.getElementById('g-recents');
-			if (zone) zone.innerHTML = '<p class="g-erreur" role="alert">' + esc(e.message) + '</p>';
+			[].forEach.call(contenu.querySelectorAll('.g-chargement'), function (z) { z.outerHTML = '<p class="g-erreur" role="alert">' + esc(e.message) + '</p>'; });
+			[].forEach.call(contenu.querySelectorAll('.g-squelette'), function (z) { z.outerHTML = '—'; });
 		});
 	}
 

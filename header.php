@@ -25,8 +25,9 @@ $menu    = array(
 	array( 'Personnel', '#personnel', array() ),
 	array( 'Vie étudiante', '#vie-etudiante', array() ),
 );
+/* Académie : chaque établissement mène à ses formations (classique, professionnelle…), puis à leurs départements et filières. */
 foreach ( sueb_etablissements() as $sigle => $e ) {
-	$menu[1][2][] = array( $sigle, sueb_lien_etablissement( $sigle ), $e['fr'] );
+	$menu[1][2][] = array( $sigle, sueb_url_formation( $sigle ), $e['fr'] );
 }
 /* Icône de chaque entrée des sous-menus simples. */
 $icones = array(

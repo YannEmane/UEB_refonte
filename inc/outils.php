@@ -139,6 +139,25 @@ function sueb_icone( $nom, $taille = 20 ) {
 		'partager'  => '<circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4M8.2 13.2l7.6 4"/>',
 		'whatsapp'  => '<path d="M4 20l1.2-4.1A8 8 0 1 1 8.3 19z"/><path d="M9.2 8.6c.2-.5.5-.5.8-.5h.5c.2 0 .4 0 .5.4l.7 1.6c.1.2 0 .4-.1.6l-.5.6c-.1.1-.2.3 0 .5.3.6.8 1.2 1.3 1.6.6.5 1.1.7 1.5.9.2.1.4 0 .5-.1l.7-.8c.2-.2.3-.2.5-.1l1.6.8c.2.1.3.2.3.4 0 .5-.2 1.2-.8 1.5-.6.4-1.6.5-3.2-.2-1.9-.8-3.3-2.6-3.6-3.1-.4-.6-.9-1.6-.5-2.6z" fill="currentColor" stroke="none"/>',
 		'linkedin'  => '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10.5v6M8 7.5v.01M12 16.5v-3.5a2 2 0 0 1 4 0v3.5M12 10.5v6"/>',
+		/* Disciplines : une icône par département (voir sueb_icone_discipline()). */
+		'fiole'     => '<path d="M9 3h6M10 3v6.5l-5.4 8.9A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.4-2.6L14 9.5V3"/><path d="M7.4 15h9.2"/>',
+		'feuille'   => '<path d="M5 19C5 11 10 5 20 4c-1 10-7 15-15 15z"/><path d="M5 19c3-4 6-6.5 9-8"/>',
+		'atome'     => '<circle cx="12" cy="12" r="1.4"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(120 12 12)"/>',
+		'ecran'     => '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+		'courbe'    => '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>',
+		'eclair'    => '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+		'montagne'  => '<path d="M2 20 9 7l4 7 3-4 6 10z"/>',
+		'pousse'    => '<path d="M12 21v-9M7 21h10"/><path d="M12 12c0-4 3-7 8-7 0 4-3 7-8 7zM12 14c0-3-2.5-5.5-7-5.5 0 3 2.5 5.5 7 5.5z"/>',
+		'batiment'  => '<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M11 21v-3h2v3"/>',
+		'cle'       => '<path d="M15 4a5 5 0 0 0-4.6 6.9l-6.7 6.7a1.9 1.9 0 0 0 2.7 2.7l6.7-6.7A5 5 0 0 0 20 9l-3 3-3-1-1-3z"/>',
+		'arbre'     => '<path d="M12 3 6 11h3l-4 6h14l-4-6h3z"/><path d="M12 17v4"/>',
+		'carte'     => '<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
+		'camion'    => '<path d="M3 6h11v10H3zM14 9h4l3 3.5V16h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
+		'panier'    => '<path d="M3 4h2l2.4 11h11l2-8H6.2"/><circle cx="9" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/>',
+		'goutte'    => '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+		'nuage'     => '<path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1 0 9z"/>',
+		'globe'     => '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>',
+		'ancre'     => '<circle cx="12" cy="5" r="2"/><path d="M12 7v14M8 11h8M4 14a8 8 0 0 0 16 0"/>',
 	);
 	if ( empty( $traces[ $nom ] ) ) {
 		return '';
@@ -147,6 +166,40 @@ function sueb_icone( $nom, $taille = 20 ) {
 		'<svg class="icone icone--%1$s" width="%2$d" height="%2$d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">%3$s</svg>',
 		esc_attr( $nom ), (int) $taille, $traces[ $nom ]
 	);
+}
+
+/** L'icône d'un département d'après son intitulé : « Chimie appliquée » donne la fiole, « Génie civil » le bâtiment. */
+function sueb_icone_discipline( $nom ) {
+	$motifs = array( // dans l'ordre : le premier qui convient l'emporte
+		'/biom[ée]dical|sant[ée]|m[ée]decine|pharmacie/iu'                       => 'sante',
+		'/agricult|[ée]levage|rural|halieut/iu'                                  => 'pousse',
+		'/biolog|pharmacognosie|biotech/iu'                                      => 'feuille',
+		'/chimie/iu'                                                             => 'fiole',
+		'/physique|sciences? (?:fondamentales|de base)|scientifiques de base/iu' => 'atome',
+		'/informati|information|num[ée]rique/iu'                                 => 'ecran',
+		'/commerc|marketing/iu'                                                  => 'panier',
+		'/[ée]nergie|[ée]lectri/iu'                                              => 'eclair',
+		'/g[ée]oscience|g[ée]olog|mine/iu'                                       => 'montagne',
+		'/recherche op[ée]rationnelle|[ée]conom|statisti|math[ée]mati|gestion/iu' => 'courbe',
+		'/bois|for[êe]t|foresterie/iu'                                           => 'arbre',
+		'/civil|habitat|b[âa]timent|construction/iu'                             => 'batiment',
+		'/m[ée]cani|m[ée]catroni|industri|ing[ée]nieur/iu'                       => 'engrenage',
+		'/maintenance/iu'                                                        => 'cle',
+		'/g[ée]omati|topograph|g[ée]ograph/iu'                                   => 'carte',
+		'/tourisme|h[ôo]tel|professionnel/iu'                                    => 'mallette',
+		'/transport|logisti/iu'                                                  => 'camion',
+		'/\beaux?\b|hydraul/iu'                                                  => 'goutte',
+		'/m[ée]t[ée]orolog|climat/iu'                                            => 'nuage',
+		'/environnement/iu'                                                      => 'globe',
+		'/maritime|oc[ée]an|naval|portuaire/iu'                                  => 'ancre',
+		'/doctora/iu'                                                            => 'toque',
+	);
+	foreach ( $motifs as $motif => $icone ) {
+		if ( preg_match( $motif, $nom ) ) {
+			return $icone;
+		}
+	}
+	return 'livre';
 }
 
 /** Date courte en français : « 18 nov. 2024 ». */

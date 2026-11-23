@@ -1691,28 +1691,13 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 .programme-intro__chapo { margin: .35rem 0 0; font-size: 1.0625rem; line-height: 1.75; color: var(--gris); }
 .programme-intro__chapo:only-child { grid-column: 1 / -1; max-width: 72ch; }
 
-.programme-corps { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: clamp(2rem, 1rem + 3vw, 4rem); align-items: start; padding-block: clamp(2.5rem, 2rem + 2vw, 3.5rem) clamp(3.5rem, 2.5rem + 3vw, 5.5rem); }
+.programme-corps { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 1rem + 3vw, 4rem); align-items: start; padding-block: clamp(2.5rem, 2rem + 2vw, 3.5rem) clamp(3.5rem, 2.5rem + 3vw, 5.5rem); }
 .programme-section { scroll-margin-top: calc(var(--entete-h) + 1.5rem); }
 .programme-section + .programme-section { margin-top: 3rem; }
 .programme-section h2 { margin: 0 0 1rem; font-size: clamp(1.6rem, 1.25rem + 1.1vw, 2.2rem); color: var(--foret-900); }
 .programme-section__aide { margin: -.25rem 0 1.5rem; color: var(--gris); }
-.programme-prose { max-width: none; font-size: 1.0625rem; color: var(--gris); }
+.programme-prose { max-width: 72ch; font-size: 1.0625rem; color: var(--gris); } /* une ligne lisible : la page est sur toute la largeur */
 
-.annees { display: grid; gap: .9rem; }
-.annee { border: 1px solid color-mix(in srgb, var(--etab) 55%, transparent); background: var(--blanc); }
-.annee > summary { display: flex; align-items: center; gap: .5rem 1rem; padding: 1.05rem 1.35rem; list-style: none; cursor: pointer; color: var(--etab); transition: background .25s var(--ease), color .25s var(--ease); }
-.annee > summary::-webkit-details-marker { display: none; }
-.annee__titre { font-family: var(--f-titre); font-size: clamp(1.2rem, 1.05rem + .4vw, 1.4rem); font-weight: 500; }
-.annee__resume { margin-left: auto; font-size: .875rem; font-weight: 600; opacity: .85; }
-.annee__signe { position: relative; flex: none; width: 30px; height: 30px; border: 1.5px solid currentColor; border-radius: 50%; }
-.annee__signe::before, .annee__signe::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 1.5px; background: currentColor; translate: -50% -50%; transition: rotate .3s var(--ease); }
-.annee__signe::after { rotate: 90deg; }
-.annee[open] > summary { background: var(--etab); color: var(--sur-etab, var(--blanc)); }
-.annee[open] .annee__signe::after { rotate: 0deg; }
-.annee > summary:hover { background: color-mix(in srgb, var(--etab) 8%, var(--blanc)); }
-.annee[open] > summary:hover { background: color-mix(in srgb, var(--etab) 92%, var(--foret-950)); }
-.annee > summary:focus-visible { outline-offset: -3px; }
-.annee__corps { padding: 1.5rem 1.35rem .25rem; }
 
 .semestre { width: 100%; margin: 0 0 1.75rem; border-collapse: collapse; font-size: .9375rem; }
 .semestre thead th { padding: .75rem 1rem; background: var(--etab); color: var(--sur-etab, var(--blanc)); font-weight: 700; text-align: left; }
@@ -1726,35 +1711,10 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 .semestre td { color: var(--gris); white-space: nowrap; }
 .semestre tbody tr:hover > * { background: color-mix(in srgb, var(--etab) 4%, var(--blanc)); }
 
-.programme-cote { position: sticky; top: calc(var(--entete-h) + 1.5rem); display: grid; gap: 1.75rem; }
-.programme-liens { border: 1px solid var(--filet); background: var(--blanc); }
-.programme-liens h2 { margin: 0; padding: 1.05rem 1.25rem; background: var(--foret-900); color: var(--blanc); font-size: 1.2rem; text-align: center; }
-.programme-liens ul, .programme-freres ul { list-style: none; margin: 0; padding: 0; }
-.programme-liens li + li { border-top: 1px solid var(--filet); }
-.programme-liens a { display: flex; align-items: center; gap: .8rem; padding: .95rem 1.35rem; color: var(--encre); text-decoration: none; transition: background .2s, color .2s, padding .3s var(--ease); }
-.programme-liens a .icone { flex: none; color: var(--etab); }
-.programme-liens a:hover { padding-left: 1.6rem; background: var(--papier); color: var(--foret-900); }
-.programme-contact { padding: 2rem 2.1rem; background: var(--etab); color: var(--sur-etab, var(--blanc)); }
-.programme-contact h2 { margin: 0; font-size: 1.45rem; color: inherit; }
-.programme-contact__etab { margin: .35rem 0 1.5rem; font-family: var(--f-serif); font-size: 1.0625rem; opacity: .9; }
-.programme-contact dl { display: grid; gap: 1.05rem; margin: 0; }
-.programme-contact dt { font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; opacity: .72; }
-.programme-contact dd { margin: .2rem 0 0; font-weight: 600; overflow-wrap: anywhere; }
-.programme-contact a { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: .2em; }
-.programme-freres { padding: 1.5rem 1.6rem; border: 1px solid var(--filet); background: var(--blanc); }
-.programme-freres h2 { margin: 0 0 .75rem; font-size: 1.15rem; color: var(--foret-900); }
-.programme-freres li + li { border-top: 1px dashed var(--filet); }
-.programme-freres a { display: block; padding: .6rem 0; font-size: .9375rem; color: var(--gris); text-decoration: none; }
-.programme-freres a:hover { color: var(--etab); }
-
 @media (max-width: 980px) {
 	.programme-intro, .programme-corps { grid-template-columns: minmax(0, 1fr); }
-	.programme-cote { position: static; }
 }
 @media (max-width: 640px) {
-	.annee > summary { padding: .9rem 1rem; }
-	.annee__resume { display: none; }
-	.annee__corps { padding: 1.1rem .75rem 0; }
 	.semestre thead th + th, .semestre td { width: 6rem; }
 	.semestre tbody th, .semestre td, .semestre thead th { padding: .7rem .7rem; }
 	.semestre__code { display: block; min-width: 0; margin: 0 0 .15rem; font-size: .8125rem; }
@@ -2181,10 +2141,7 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 .dep-autres a { display: inline-block; padding: .5rem 1rem; border: 1px solid var(--filet); border-radius: 999px; font-size: .9375rem; font-weight: 600; color: var(--foret-900); text-decoration: none; transition: border-color .2s, background .2s; }
 .dep-autres a:hover { border-color: var(--etab); background: color-mix(in srgb, var(--etab) 8%, var(--blanc)); }
 
-/* ---------- Filière : les UE d'un niveau, semestre par semestre ---------- */
-.semestre-bloc + .semestre-bloc { margin-top: 1.75rem; }
-.semestre-bloc__titre { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .25rem 1rem; margin: 0 0 .5rem; font-size: 1.05rem; color: var(--foret-900); }
-.semestre-bloc__titre span { font-family: var(--f-texte); font-size: .8125rem; font-weight: 600; color: var(--gris); }
+/* ---------- Les UE en liste (fiche d'un enseignant : ses enseignements) ---------- */
 .ues-liste { list-style: none; margin: 0; padding: 0; border: 1px solid var(--filet); border-radius: var(--r-carte); background: var(--blanc); }
 .ue { display: grid; grid-template-columns: 6.25rem minmax(0, 1fr) 5.5rem 8rem minmax(0, 13rem) 7.5rem; align-items: center; gap: 1rem; padding: .9rem 1.1rem; }
 .ue + .ue { border-top: 1px solid var(--filet); }
@@ -2193,10 +2150,8 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 .ue__code { font-family: var(--f-titre); font-size: .9375rem; font-weight: 500; letter-spacing: .02em; color: var(--etab, var(--foret-700)); }
 .ue__titre { font-weight: 600; line-height: 1.35; color: var(--foret-950); text-decoration: none; }
 .ue__titre:hover { color: var(--etab, var(--foret-700)); text-decoration: underline; text-underline-offset: .2em; }
-.ue__credits, .ue__heures, .ue__niveau { font-size: .875rem; color: var(--gris); }
-.ue__credits strong, .ue__heures strong { font-size: 1rem; color: var(--foret-950); }
-.ue__heures small { display: block; font-size: .75rem; line-height: 1.35; color: var(--gris-clair); }
-.ue__profs { display: flex; flex-direction: column; gap: .35rem; min-width: 0; }
+.ue__credits, .ue__niveau { font-size: .875rem; color: var(--gris); }
+.ue__credits strong { font-size: 1rem; color: var(--foret-950); }
 .prof { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; color: var(--foret-900); text-decoration: none; }
 .prof__nom { overflow: hidden; font-size: .875rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .prof:hover .prof__nom { color: var(--etab, var(--foret-700)); text-decoration: underline; text-underline-offset: .2em; }
@@ -2205,14 +2160,129 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 .ue__syllabus .attente { font-size: .8125rem; }
 .ue__filiere { font-size: .875rem; color: var(--foret-800); text-decoration: underline; text-decoration-color: var(--filet-fort); text-underline-offset: .2em; }
 .ues-liste--prof .ue { grid-template-columns: 6.25rem minmax(0, 1.4fr) minmax(0, 1fr) 8rem 5.5rem 7.5rem; }
-.annee__corps { padding-bottom: 1.35rem; }
 
-.programme-profs { padding: 1.75rem; border: 1px solid var(--filet); background: var(--blanc); }
-.programme-profs h2 { margin: 0 0 1rem; font-size: 1.25rem; color: var(--foret-900); }
-.programme-profs ul { display: grid; gap: .85rem; list-style: none; margin: 0; padding: 0; }
+.programme-profs ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(24rem, 100%), 1fr)); gap: .85rem 1.5rem; list-style: none; margin: 0; padding: 0; }
 .programme-profs .prof { gap: .75rem; }
 .programme-profs .prof > span:last-child { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
 .programme-profs small { font-size: .8125rem; color: var(--gris); }
+
+/* ---------- Programme des cours d'une filière (templates/filiere.php) ----------
+   Il se lit comme une maquette pédagogique : un niveau par onglet (le nom, le nombre d'UE et de crédits),
+   puis un tableau par semestre : code, unité d'enseignement, enseignants, crédits, heures de CM, TD
+   et TP, total, et la ligne des totaux du semestre. Les chiffres sont alignés à droite. Sous 900 px
+   (téléphone, tablette), le semestre reste un bloc et chaque unité s'y lit sur des lignes. */
+.maquette__onglets { display: flex; flex-wrap: wrap; gap: .35rem; width: fit-content; max-width: 100%; margin: 0 0 1.75rem; padding: .35rem; border: 1px solid var(--filet); border-radius: var(--r-carte); background: var(--blanc); }
+.maquette__onglets [role="tab"] { display: grid; gap: .15rem; min-height: 3.25rem; padding: .55rem 1.15rem; border: 0; border-radius: calc(var(--r-carte) - .35rem); background: transparent; font: inherit; text-align: left; color: var(--foret-900); cursor: pointer; transition: background .25s, color .25s; }
+.maquette__onglets [role="tab"]:hover { background: color-mix(in srgb, var(--etab) 8%, var(--blanc)); }
+.maquette__onglets [role="tab"][aria-selected="true"] { background: var(--etab); color: var(--sur-etab); }
+.maquette__onglets [role="tab"]:focus-visible { outline: 3px solid var(--etab); outline-offset: 2px; }
+.maquette__annee { font-family: var(--f-titre); font-size: 1.2rem; font-weight: 500; line-height: 1.1; }
+.maquette__resume { font-size: .8125rem; font-weight: 600; color: var(--gris); }
+[aria-selected="true"] .maquette__resume { color: inherit; }
+.maquette__panneau:focus-visible { outline: 3px solid var(--etab); outline-offset: 6px; border-radius: 4px; }
+.maquette__panneau.est-montre { animation: maquette-montre .35s var(--ease); }
+@keyframes maquette-montre { from { opacity: 0; transform: translateY(6px); } }
+
+/* Chaque semestre se déroule et s'enroule (<details>) ; le premier de chaque niveau est ouvert. */
+/* La barre de chaque semestre, d'après le modèle fourni par l'utilisateur (2026-11-23) : un trait de couleur en haut,
+   arrondi au bout, et à gauche un onglet de la même couleur qui s'élargit en quart de cercle vers le bas et porte
+   le numéro du semestre. Une couleur par numéro de semestre (cinq, en cycle), assez foncée pour un chiffre blanc. */
+.maquette {
+	--sem-1: #1f8fa3;
+	--sem-2: #17506b;
+	--sem-3: #c9680f;
+	--sem-4: #d6364e;
+	--sem-5: #e8a913;
+	--onglet-sem: 5.25rem;
+}
+.maquette__semestre--t1 { --sem: var(--sem-1); --sur-sem: var(--blanc); }
+.maquette__semestre--t2 { --sem: var(--sem-2); --sur-sem: var(--blanc); }
+.maquette__semestre--t3 { --sem: var(--sem-3); --sur-sem: var(--blanc); }
+.maquette__semestre--t4 { --sem: var(--sem-4); --sur-sem: var(--blanc); }
+.maquette__semestre--t5 { --sem: var(--sem-5); --sur-sem: var(--foret-950); }
+.maquette__semestre { border: 1px solid var(--filet); border-top: 0; border-radius: 14px 14px var(--r-carte) var(--r-carte); background: var(--blanc); }
+.maquette__semestre + .maquette__semestre { margin-top: 1rem; }
+.maquette__bascule { position: relative; display: flex; align-items: center; gap: 1rem; min-height: 4.75rem; padding: 1.1rem 1.1rem .9rem calc(var(--onglet-sem) + 1rem); list-style: none; cursor: pointer; border-radius: 14px 14px 0 0; transition: background .25s; }
+.maquette__bascule::-webkit-details-marker { display: none; }
+/* le trait du haut, arrondi au bout */
+.maquette__bascule::before { content: ""; position: absolute; top: 0; left: 0; right: -1px; height: 6px; border-radius: 14px 99px 99px 0; background: var(--sem); }
+/* l'onglet : un quart de cercle ouvert vers le bas, plus un montant à gauche */
+.maquette__num { position: absolute; top: 0; bottom: 0; left: -1px; display: flex; align-items: flex-end; width: var(--onglet-sem); padding: 0 0 .55rem .75rem; border-radius: 14px 100% 0 14px; background: var(--sem); font-family: var(--f-titre); font-size: 1.7rem; font-weight: 600; line-height: 1; letter-spacing: .02em; color: var(--sur-sem); font-variant-numeric: tabular-nums; }
+.maquette__num::before { content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; left: 0; width: 1.6rem; border-radius: 14px 0 0 14px; background: var(--sem); }
+.maquette__num { isolation: isolate; }
+.maquette__semestre[open] .maquette__num { border-bottom-left-radius: 0; }
+.maquette__semestre[open] .maquette__num::before { border-bottom-left-radius: 0; }
+.maquette__bascule:hover { background: color-mix(in srgb, var(--sem) 6%, var(--blanc)); }
+.maquette__bascule:focus-visible { outline: 3px solid var(--sem); outline-offset: 3px; }
+.maquette__semestre[open] > .maquette__bascule { border-bottom: 1px solid var(--filet); }
+.maquette__titre { display: flex; flex: 1; flex-wrap: wrap; align-items: baseline; gap: .25rem .9rem; margin: 0; font-size: 1.3rem; color: var(--foret-900); }
+.maquette__signe { position: relative; flex: none; width: 2rem; height: 2rem; border: 1.5px solid var(--sem); border-radius: 50%; color: var(--sem); transition: background .25s, color .25s; }
+.maquette__signe::before, .maquette__signe::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 2px; margin: -1px 0 0 -6px; border-radius: 1px; background: currentColor; transition: transform .3s var(--ease); }
+.maquette__signe::after { transform: rotate(90deg); }
+.maquette__semestre[open] .maquette__signe { background: var(--sem); color: var(--sur-sem); }
+.maquette__semestre[open] .maquette__signe::after { transform: rotate(0deg); }
+.maquette__semestre[open] > .maquette__contenu { animation: maquette-montre .35s var(--ease); }
+.maquette__titre span { font-family: var(--f-texte); font-size: .875rem; font-weight: 600; color: var(--gris); }
+
+.maquette__table { width: 100%; border: 0; border-collapse: separate; border-spacing: 0; border-radius: 0 0 var(--r-carte) var(--r-carte); overflow: hidden; background: var(--blanc); font-size: .9375rem; }
+.maquette__table th, .maquette__table td { padding: .8rem 1rem; text-align: left; vertical-align: top; }
+.maquette__table thead th { padding-block: .5rem; background: var(--papier); font-size: .8125rem; font-weight: 700; color: var(--gris); white-space: nowrap; vertical-align: bottom; }
+.maquette__table thead tr:first-child .maquette__groupe { padding-bottom: .35rem; text-align: center; border-bottom: 1px solid var(--filet); }
+.maquette__table abbr { text-decoration: none; cursor: help; }
+.maquette__table tbody > tr > * { border-top: 1px solid var(--filet); transition: background .2s; }
+.maquette__table tbody > tr:hover > * { background: color-mix(in srgb, var(--etab) 4%, var(--blanc)); }
+.maquette__table .maquette__nombre { width: 4.75rem; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.maquette__table .maquette__code { width: 6.5rem; white-space: nowrap; }
+.maquette__table td.maquette__code { font-family: var(--f-titre); font-weight: 500; letter-spacing: .02em; color: color-mix(in srgb, var(--etab) 85%, var(--encre)); }
+.maquette__ue { font-weight: 400; }
+.maquette__ue > a { font-weight: 600; line-height: 1.35; color: var(--foret-950); text-decoration: none; }
+.maquette__ue > a:hover { color: color-mix(in srgb, var(--etab) 80%, var(--foret-950)); text-decoration: underline; text-underline-offset: .2em; }
+.maquette__table .maquette__enseignants { width: 15rem; }
+.maquette__profs { display: flex; flex-direction: column; gap: .4rem; }
+.maquette__profs .prof__nom { font-size: .875rem; font-weight: 500; white-space: normal; }
+.maquette__vide { font-size: .875rem; color: var(--gris); }
+.maquette__table .maquette__credits { font-weight: 700; color: var(--foret-950); }
+.maquette__table .maquette__total { font-weight: 600; color: var(--foret-900); }
+.maquette__table .maquette__duree { color: var(--gris); text-align: center; }
+.maquette__syllabus a { display: inline-flex; align-items: center; gap: .35rem; font-size: .875rem; font-weight: 700; color: var(--foret-900); white-space: nowrap; }
+.maquette__table tfoot > tr > * { border-top: 2px solid color-mix(in srgb, var(--etab) 55%, var(--filet)); background: color-mix(in srgb, var(--etab) 5%, var(--blanc)); font-weight: 700; color: var(--foret-950); }
+
+/* Tablette et téléphone : un semestre reste un seul bloc (la barre, puis ses UE séparées par un filet, puis le
+   total). Chaque UE sur des lignes : le code, l'intitulé, les crédits, les enseignants, puis la répartition des heures. */
+@media (max-width: 900px) {
+	.maquette__table, .maquette__table tbody, .maquette__table tfoot { display: block; border: 0; overflow: visible; background: none; }
+	.maquette__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+	.maquette__table tr { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: start; gap: .35rem .75rem; padding: 1rem 1.1rem; }
+	.maquette__table tbody tr + tr { border-top: 1px solid var(--filet); }
+	.maquette__table tr > * { padding: 0; border: 0 !important; background: none !important; }
+	.maquette__table .maquette__nombre, .maquette__table .maquette__code, .maquette__table .maquette__enseignants { width: auto; text-align: left; }
+	.maquette__table td.maquette__code { grid-column: 1 / -1; grid-row: 1; }
+	.maquette__ue { grid-column: 1 / -1; grid-row: 2; }
+	.maquette__table .maquette__credits { grid-column: 1 / -1; grid-row: 3; }
+	.maquette__table .maquette__credits::after { content: " crédits"; font-weight: 500; color: var(--gris); }
+	.maquette__table .maquette__enseignants { grid-column: 1 / -1; grid-row: 4; margin-top: .25rem; }
+	.maquette__profs { flex-direction: row; flex-wrap: wrap; gap: .35rem 1rem; }
+	.maquette__table .maquette__duree, .maquette__syllabus { grid-column: 1 / -1; }
+	.maquette__table .maquette__duree { text-align: left; }
+	.maquette__table td[data-libelle]::before { content: attr(data-libelle); display: block; font-size: .75rem; font-weight: 600; color: var(--gris); }
+	.maquette__table td.maquette__nombre[data-libelle], .maquette__table .maquette__duree { margin-top: .35rem; } /* les quatre colonnes d'heures, alignées */
+	.maquette__table tfoot tr { border-top: 2px solid color-mix(in srgb, var(--etab) 55%, var(--filet)); border-radius: 0 0 var(--r-carte) var(--r-carte); background: color-mix(in srgb, var(--etab) 5%, var(--blanc)); }
+	.maquette__table tfoot th { grid-column: 1 / -1; grid-row: 1; }
+	.maquette__table tfoot .maquette__credits { grid-row: 2; }
+}
+@media (max-width: 640px) {
+	.maquette { --onglet-sem: 4.25rem; }
+	.maquette__num { font-size: 1.4rem; padding: 0 0 .5rem .6rem; }
+	.maquette__bascule { gap: .75rem; padding-right: .9rem; }
+	.maquette__titre { font-size: 1.15rem; }
+	/* Les niveaux en grille régulière de deux colonnes, même quand il y en a sept (BTS, licences et masters pro). */
+	.maquette__onglets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+	.maquette__onglets [role="tab"] { align-content: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.maquette__panneau.est-montre, .maquette__semestre[open] > .maquette__contenu { animation: none; }
+	.maquette__signe::before, .maquette__signe::after { transition: none; }
+}
 
 /* ---------- Page d'une UE ---------- */
 .ue-profs { margin-top: 2.5rem; }
@@ -2235,8 +2305,7 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 @media (max-width: 1100px) {
 	.ue, .ues-liste--prof .ue { grid-template-columns: 5.5rem minmax(0, 1fr) 5rem 7rem; }
 	.ue--tete span:nth-child(n+5) { display: none; }
-	.ue__profs, .ue__syllabus, .ues-liste--prof .ue__credits, .ues-liste--prof .ue__syllabus { grid-column: 2 / -1; }
-	.ue__profs { flex-direction: row; flex-wrap: wrap; gap: .4rem 1rem; }
+	.ue__syllabus, .ues-liste--prof .ue__credits, .ues-liste--prof .ue__syllabus { grid-column: 2 / -1; }
 }
 @media (max-width: 980px) {
 	.chef__grille, .apropos__grille, .dep-intro__grille { grid-template-columns: minmax(0, 1fr); }
@@ -2248,9 +2317,8 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 	.ue__code { grid-column: 1; }
 	.ue__titre { grid-column: 1 / -1; grid-row: 2; font-size: 1rem; }
 	.ue__credits { grid-column: 2; grid-row: 1; text-align: right; }
-	.ue__heures, .ue__profs, .ue__syllabus, .ue__filiere, .ue__niveau, .ues-liste--prof .ue__credits, .ues-liste--prof .ue__syllabus { grid-column: 1 / -1; }
+	.ue__syllabus, .ue__filiere, .ue__niveau, .ues-liste--prof .ue__credits, .ues-liste--prof .ue__syllabus { grid-column: 1 / -1; }
 	.ues-liste--prof .ue__credits { grid-row: auto; text-align: left; }
-	.ue__heures small { display: inline; margin-left: .35rem; }
 	.carte-dep, .carte-filiere { padding: 1.25rem; }
 	.carte-filiere__photo { width: calc(100% + 2.5rem); margin: -1.25rem -1.25rem .25rem; }
 	.compteurs { gap: 1rem 1.75rem; }
@@ -2399,11 +2467,119 @@ a.parcours__lien:focus-visible { outline: 3px solid var(--blanc); outline-offset
 	text-shadow: 0 0 8px rgba(255, 255, 255, .5);
 }
 
-.acad-autre { margin: 2rem 0 0; text-align: center; }
 .acad-autres { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: clamp(2rem, 1.5rem + 2vw, 3rem); padding-top: 1.5rem; border-top: 1px solid var(--filet-fort); }
 .acad-autres > span { margin-right: .5rem; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--gris); }
 .acad-autres a { padding: .45rem 1rem; border: 1px solid var(--filet-fort); border-radius: 999px; background: var(--blanc); font-size: .875rem; font-weight: 600; color: var(--foret-900); text-decoration: none; transition: background .3s, border-color .3s, color .3s, transform .4s var(--ease); }
 .acad-autres a:hover, .acad-autres a:focus-visible { background: var(--foret-900); border-color: var(--foret-900); color: var(--blanc); transform: translateY(-2px); }
+/* Entrée par établissement : les établissements sous les parcours (page Académie), chacun mène à ses formations (/academie/<sigle>/). */
+.acad-autres--etabs a { display: inline-flex; align-items: center; gap: .5rem; min-height: 2.75rem; padding-left: .4rem; }
+.acad-autres--etabs img { flex: none; width: 26px; height: 26px; padding: 1px; border-radius: 50%; background: var(--blanc); object-fit: contain; }
+/* Les formations d'un établissement : une formation seule (ou la dernière d'un nombre impair) prend toute la largeur,
+   en deux colonnes sur grand écran (présentation à gauche, diplômes et lien à droite). */
+.parcours__carte--large { grid-column: 1 / -1; }
+@media (min-width: 1041px) {
+	.parcours__carte--large .parcours__lien { display: grid; grid-template-columns: minmax(0, 1fr) minmax(16rem, 24rem); grid-template-rows: auto auto 1fr; gap: .9rem clamp(2rem, 4vw, 4rem); min-height: 0; }
+	.parcours__carte--large .parcours__haut { margin-bottom: .5rem; }
+	.parcours__carte--large .parcours__diplomes { grid-column: 2; grid-row: 1 / 3; align-self: end; justify-content: flex-end; }
+	.parcours__carte--large .parcours__pied { grid-column: 2; grid-row: 3; align-self: end; }
+}
+
+/* ---------- Départements d'une formation (archive-ueb_structure.php) ----------
+   D'après le modèle fourni par l'utilisateur le 2026-11-23 : des bandeaux blancs décalés tour à tour, un onglet
+   de couleur arrondi au bout (à droite, puis à gauche), le numéro et le sigle, l'icône de la discipline, le nom et
+   les filières. Un clic sur le bandeau ouvre les filières du département juste dessous. */
+
+.deps-onglets {
+	--onglet-1: #e3a822;
+	--onglet-2: #7d8fbf;
+	--onglet-3: #7cb342;
+	--onglet-4: #4fb8c9;
+	--onglet-5: #2f6fb5;
+	--onglet-6: #d46a9c;
+	--onglet-7: #a89584;
+	--onglet-8: #2e7d32;
+	--onglet-9: #e8742c;
+	--decalage: clamp(1rem, 4vw, 3.5rem);
+	--tab: clamp(1.1rem, 2.4vw, 2.25rem);
+	display: grid;
+	gap: .55rem;
+	max-width: 66rem;
+	margin: 0 auto;
+	padding: 0 var(--tab);
+	list-style: none;
+}
+.deps-onglet:nth-child(9n+1) { --onglet: var(--onglet-1); }
+.deps-onglet:nth-child(9n+2) { --onglet: var(--onglet-2); }
+.deps-onglet:nth-child(9n+3) { --onglet: var(--onglet-3); }
+.deps-onglet:nth-child(9n+4) { --onglet: var(--onglet-4); }
+.deps-onglet:nth-child(9n+5) { --onglet: var(--onglet-5); }
+.deps-onglet:nth-child(9n+6) { --onglet: var(--onglet-6); }
+.deps-onglet:nth-child(9n+7) { --onglet: var(--onglet-7); }
+.deps-onglet:nth-child(9n+8) { --onglet: var(--onglet-8); }
+.deps-onglet:nth-child(9n) { --onglet: var(--onglet-9); }
+.deps-onglet:nth-child(odd) { margin-left: var(--decalage); }
+.deps-onglet:nth-child(even) { margin-right: var(--decalage); }
+
+.deps-onglet__bande { position: relative; display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 0 1.5rem; min-height: 6.25rem; padding: 1rem 1.75rem; list-style: none; cursor: pointer; background: var(--blanc); box-shadow: 0 12px 24px -16px rgba(15, 44, 31, .4), 0 1px 2px rgba(15, 44, 31, .06); transition: transform .5s var(--ease), box-shadow .5s var(--ease); }
+.deps-onglet__bande::-webkit-details-marker { display: none; }
+.deps-onglet:nth-child(odd) .deps-onglet__bande { border-radius: 4px 0 0 4px; }
+.deps-onglet:nth-child(even) .deps-onglet__bande { border-radius: 0 4px 4px 0; }
+.deps-onglet__bande:hover, .deps-onglet__pli[open] .deps-onglet__bande { box-shadow: 0 18px 32px -16px rgba(15, 44, 31, .45), 0 1px 2px rgba(15, 44, 31, .06); }
+.deps-onglet:nth-child(odd) .deps-onglet__bande:hover { transform: translateX(4px); }
+.deps-onglet:nth-child(even) .deps-onglet__bande:hover { transform: translateX(-4px); }
+.deps-onglet__bande:focus-visible { outline: 3px solid var(--foret-900); outline-offset: 3px; }
+
+.deps-onglet__tab { position: absolute; top: 0; bottom: 0; display: grid; place-items: center; width: var(--tab); background: var(--onglet); }
+.deps-onglet:nth-child(odd) .deps-onglet__tab { left: 100%; border-radius: 0 1.25rem 1.25rem 0; }
+.deps-onglet:nth-child(even) .deps-onglet__tab { right: 100%; border-radius: 1.25rem 0 0 1.25rem; }
+.deps-onglet__signe { position: relative; width: 14px; height: 14px; }
+.deps-onglet__signe::before, .deps-onglet__signe::after { content: ""; position: absolute; left: 0; top: 50%; width: 100%; height: 2px; margin-top: -1px; border-radius: 1px; background: var(--foret-950); transition: transform .35s var(--ease); }
+.deps-onglet__signe::after { transform: rotate(90deg); }
+.deps-onglet__pli[open] .deps-onglet__signe::after { transform: rotate(0deg); }
+
+.deps-onglet__num { display: grid; align-content: center; justify-items: center; align-self: stretch; min-width: 3.5rem; padding-right: 1.5rem; border-right: 1px solid var(--filet-fort); }
+.deps-onglet__num > span { font-family: var(--f-titre); font-size: 2.25rem; font-weight: 400; line-height: 1; color: var(--gris); font-variant-numeric: tabular-nums; }
+.deps-onglet__num small { margin-top: .35rem; font-size: .75rem; font-weight: 700; letter-spacing: .04em; color: var(--gris); }
+.deps-onglet__icone { display: grid; place-items: center; color: var(--gris); transition: color .3s; }
+.deps-onglet__bande:hover .deps-onglet__icone, .deps-onglet__pli[open] .deps-onglet__icone { color: var(--foret-900); }
+.deps-onglet__texte { display: grid; gap: .3rem; min-width: 0; }
+.deps-onglet__nom { font-family: var(--f-titre); font-size: clamp(1.15rem, 1rem + .5vw, 1.45rem); font-weight: 500; line-height: 1.2; color: var(--foret-900); text-wrap: balance; }
+.deps-onglet__resume { font-size: .875rem; line-height: 1.5; color: var(--gris); text-wrap: pretty; }
+
+.deps-onglet__corps { margin-top: .4rem; padding: .5rem; border-radius: 4px; background: var(--blanc); box-shadow: var(--ombre-1); animation: deps-ouvre .45s var(--ease); }
+@keyframes deps-ouvre { from { opacity: 0; transform: translateY(-8px); } }
+.deps-onglet__lien { margin: .75rem .75rem .4rem; font-size: .9375rem; }
+
+/* Une filière du département ouvert : toute la ligne mène à sa page (intitulé, diplôme, niveaux). */
+.deps-fils { list-style: none; margin: 0; padding: 0; }
+.deps-fil { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .5rem 1.25rem; min-height: 3.25rem; padding: .6rem .75rem; border-radius: 4px; transition: background .25s; }
+.deps-fil + .deps-fil { box-shadow: 0 -1px 0 var(--filet); }
+.deps-fil:hover, .deps-fil:focus-within { background: color-mix(in srgb, var(--etab) 7%, var(--blanc)); box-shadow: none; }
+.deps-fil:hover + .deps-fil, .deps-fil:focus-within + .deps-fil { box-shadow: none; }
+.deps-fil__nom { font-weight: 600; line-height: 1.35; color: var(--foret-900); text-decoration: none; }
+.deps-fil__nom::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.deps-fil__nom:focus-visible { outline: none; }
+.deps-fil:has(.deps-fil__nom:focus-visible) { outline: 3px solid var(--etab); outline-offset: 1px; }
+.deps-fil:hover .deps-fil__nom { color: color-mix(in srgb, var(--etab) 75%, var(--foret-900)); }
+.deps-fil__diplome { font-size: .875rem; color: var(--gris); white-space: nowrap; }
+.deps-fil__niveaux > span { min-width: 2.35rem; padding: .3rem .45rem; font-size: .75rem; }
+
+@media (max-width: 760px) {
+	.deps-onglets { --decalage: .6rem; --tab: .95rem; }
+	.deps-onglet__bande { grid-template-columns: auto minmax(0, 1fr); gap: 0 1rem; min-height: 0; padding: .9rem 1rem; }
+	.deps-onglet__icone { display: none; }
+	.deps-onglet__liste { display: none; } /* les noms des filières s'affichent à l'ouverture */
+	.deps-onglet__num { min-width: 2.5rem; padding-right: 1rem; }
+	.deps-onglet__num > span { font-size: 1.6rem; }
+	.deps-onglet__signe { width: 10px; height: 10px; }
+	.deps-fil { grid-template-columns: minmax(0, 1fr) auto; }
+	.deps-fil__niveaux { grid-column: 1 / -1; justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.deps-onglet__bande, .deps-onglet__signe::after, .deps-fil { transition: none; }
+	.deps-onglet:nth-child(n) .deps-onglet__bande:hover { transform: none; }
+	.deps-onglet__corps { animation: none; }
+}
 .acad-corps .cursus__liste { background: transparent; }
 .cursus__compte { font-size: .875rem; font-weight: 600; color: var(--foret-800); white-space: nowrap; }
 

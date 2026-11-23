@@ -177,29 +177,81 @@ function sueb_url_parcours( $parcours, $sigle = '', $departement = '' ) {
 	return user_trailingslashit( trailingslashit( sueb_url_academie() ) . 'parcours/' . $parcours . ( $sigle ? '/' . strtolower( $sigle ) . ( $departement ? '/' . $departement : '' ) : '' ) );
 }
 
+/**
+ * Adresse de l'entrée par établissement (menu Académie de l'en-tête) : ses formations (/academie/fs/),
+ * les départements d'une formation (/academie/fs/classique/), les filières d'un département
+ * (/academie/fs/classique/<departement>/). Mêmes pages que l'entrée par parcours, dans l'autre ordre.
+ */
+function sueb_url_formation( $sigle, $parcours = '', $departement = '' ) {
+	return user_trailingslashit( trailingslashit( sueb_url_academie() ) . strtolower( $sigle ) . ( $parcours ? '/' . $parcours . ( $departement ? '/' . $departement : '' ) : '' ) );
+}
+
 /** Le parcours, l'établissement et le département demandés par l'adresse : array( parcours, sigle, département ), vides sur la page Académie elle-même. */
 function sueb_parcours_demande() {
 	return array( (string) get_query_var( 'sueb_parcours' ), strtoupper( (string) get_query_var( 'sueb_etab' ) ), sanitize_title( (string) get_query_var( 'sueb_dep' ) ) );
 }
 
-/* Les adresses /academie/parcours/<parcours>/, …/<sigle>/ et …/<sigle>/<département>/ (règles vidées dans inc/etablissement.php). */
+/** La page a-t-elle été ouverte par l'établissement (/academie/fs/…) plutôt que par le parcours (/academie/parcours/…) ? */
+function sueb_academie_par_etab() {
+	return 'etab' === get_query_var( 'sueb_ordre' );
+}
+
+/** L'établissement d'un sigle, tel que l'arbre des formations le présente (titre, logo, couleur, ville…), ou null. */
+function sueb_etab_par_sigle( $sigle ) {
+	foreach ( sueb_arbre_formation() as $e ) {
+		if ( strtoupper( $e['sigle'] ) === strtoupper( $sigle ) ) {
+			return array_diff_key( $e, array( 'enfants' => 1 ) );
+		}
+	}
+	return null;
+}
+
+/** « la FS », « l’ENSET » : le sigle précédé de son article (nom complet : les instituts sont au masculin). */
+function sueb_le_sigle( $sigle, $nom = '' ) {
+	if ( preg_match( '/^[AEIOUY]/i', $sigle ) ) {
+		return 'l’' . $sigle;
+	}
+	return ( preg_match( '/^institut/i', $nom ) ? 'le ' : 'la ' ) . $sigle;
+}
+
+/** « de la FS », « de l’ENSET », « du … ». */
+function sueb_de_sigle( $sigle, $nom = '' ) {
+	$le = sueb_le_sigle( $sigle, $nom );
+	return 0 === strpos( $le, 'le ' ) ? 'du ' . substr( $le, 3 ) : 'de ' . $le;
+}
+
+/*
+ * Les adresses /academie/parcours/<parcours>/, …/<sigle>/ et …/<sigle>/<département>/, puis celles de
+ * l'entrée par établissement, /academie/<sigle>/, …/<parcours>/ et …/<parcours>/<département>/ (règles
+ * vidées dans inc/etablissement.php). Celles-ci écartent « parcours » et les adresses d'archive de WordPress.
+ */
 add_action( 'init', function () {
 	add_rewrite_rule( '^academie/parcours/([^/]+)/?$', 'index.php?post_type=ueb_structure&sueb_parcours=$matches[1]', 'top' );
 	add_rewrite_rule( '^academie/parcours/([^/]+)/([^/]+)/?$', 'index.php?post_type=ueb_structure&sueb_parcours=$matches[1]&sueb_etab=$matches[2]', 'top' );
 	add_rewrite_rule( '^academie/parcours/([^/]+)/([^/]+)/([^/]+)/?$', 'index.php?post_type=ueb_structure&sueb_parcours=$matches[1]&sueb_etab=$matches[2]&sueb_dep=$matches[3]', 'top' );
+	$sigle = '(?!(?:parcours|page|feed|rdf|rss|rss2|atom)(?:/|$))([^/]+)';
+	add_rewrite_rule( '^academie/' . $sigle . '/?$', 'index.php?post_type=ueb_structure&sueb_ordre=etab&sueb_etab=$matches[1]', 'top' );
+	add_rewrite_rule( '^academie/' . $sigle . '/([^/]+)/?$', 'index.php?post_type=ueb_structure&sueb_ordre=etab&sueb_etab=$matches[1]&sueb_parcours=$matches[2]', 'top' );
+	add_rewrite_rule( '^academie/' . $sigle . '/([^/]+)/([^/]+)/?$', 'index.php?post_type=ueb_structure&sueb_ordre=etab&sueb_etab=$matches[1]&sueb_parcours=$matches[2]&sueb_dep=$matches[3]', 'top' );
 } );
 add_filter( 'query_vars', function ( $vars ) {
-	return array_merge( $vars, array( 'sueb_parcours', 'sueb_etab', 'sueb_dep' ) );
+	return array_merge( $vars, array( 'sueb_parcours', 'sueb_etab', 'sueb_dep', 'sueb_ordre' ) );
 } );
 
-/* Un parcours inconnu, un établissement qui ne le propose pas ou un département sans filière de ce parcours : page introuvable. */
+/* Un parcours inconnu, un établissement inconnu ou qui ne propose pas le parcours, un département sans filière de ce parcours : page introuvable. */
 add_action( 'wp', function () {
 	list( $parcours, $sigle, $dep ) = sueb_parcours_demande();
-	if ( '' === $parcours || ! is_post_type_archive( 'ueb_structure' ) ) {
+	$par_etab = sueb_academie_par_etab();
+	if ( ( '' === $parcours && ! $par_etab ) || ! is_post_type_archive( 'ueb_structure' ) ) {
 		return;
 	}
 	$offre = sueb_offre_par_parcours();
-	if ( ! isset( $offre[ $parcours ] ) || ( '' !== $sigle && ! isset( $offre[ $parcours ][ $sigle ] ) ) || ( '' !== $dep && ! isset( $offre[ $parcours ][ $sigle ]['departements'][ $dep ] ) ) ) {
+	if ( $par_etab && '' === $parcours ) {
+		$introuvable = '' === $sigle || ! sueb_etab_par_sigle( $sigle );
+	} else {
+		$introuvable = ! isset( $offre[ $parcours ] ) || ( '' !== $sigle && ! isset( $offre[ $parcours ][ $sigle ] ) ) || ( '' !== $dep && ! isset( $offre[ $parcours ][ $sigle ]['departements'][ $dep ] ) );
+	}
+	if ( $introuvable ) {
 		global $wp_query;
 		$wp_query->set_404();
 		status_header( 404 );
@@ -207,13 +259,19 @@ add_action( 'wp', function () {
 	}
 } );
 
-/* Le titre de l'onglet : « Parcours classique », « FS en parcours classique », « Département de … (FS) en parcours classique ». */
+/* Le titre de l'onglet : « Parcours classique », « FS en parcours classique », « Département de … (FS) en parcours classique » ;
+   par l'établissement, d'abord « Formations de la FS ». */
 add_filter( 'document_title_parts', function ( $parties ) {
 	list( $parcours, $sigle, $dep ) = sueb_parcours_demande();
+	if ( ! is_post_type_archive( 'ueb_structure' ) ) {
+		return $parties;
+	}
 	$p = sueb_parcours()[ $parcours ] ?? null;
-	if ( $p && is_post_type_archive( 'ueb_structure' ) ) {
+	if ( $p ) {
 		$d                = $dep ? ( sueb_offre_par_parcours()[ $parcours ][ $sigle ]['departements'][ $dep ] ?? null ) : null;
 		$parties['title'] = $d ? $d['titre'] . ' (' . $sigle . ') ' . $p['dans'] : ( $sigle ? $sigle . ' ' . $p['dans'] : $p['nom'] );
+	} elseif ( sueb_academie_par_etab() && ( $e = sueb_etab_par_sigle( $sigle ) ) ) {
+		$parties['title'] = 'Formations ' . sueb_de_sigle( $sigle, $e['titre'] );
 	}
 	return $parties;
 }, 20 );

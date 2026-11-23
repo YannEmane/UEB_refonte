@@ -440,7 +440,7 @@
 		}
 	}
 
-	/* ---------- Page d'un établissement : niveaux d'une filière en onglets, rubrique lue dans le sommaire ---------- */
+	/* ---------- Onglets [data-onglets] : les années d'une filière (programme des cours), rubrique lue dans le sommaire ---------- */
 	$$('[data-onglets]').forEach(function (bloc) {
 		var onglets = $$('[role="tab"]', bloc), panneaux = $$('[data-panneau]', bloc);
 		if (onglets.length < 2) return;
@@ -766,13 +766,10 @@
 		parties.forEach(function (h) { obsSommaire.observe(h); });
 	}
 
-	/* Page d'une filière : un seul niveau ouvert à la fois. L'attribut name des <details> le fait déjà
-	   dans les navigateurs récents ; ce relais couvre les autres. */
-	document.addEventListener('toggle', function (e) {
-		var d = e.target;
-		if (!d.matches || !d.matches('details.annee') || !d.open) return;
-		[].forEach.call(document.querySelectorAll('details.annee[open]'), function (autre) {
-			if (autre !== d) autre.open = false;
-		});
-	}, true);
+	/* ---------- Mesure d'audience (inc/visites.php) ----------
+	   Un signal par page vue, sans cookie. L'équipe connectée, les navigateurs qui demandent à ne pas
+	   être suivis et les robots ne sont pas comptés. */
+	if (window.SUEB_VISITE && navigator.sendBeacon && !doc.body.classList.contains('logged-in') && navigator.doNotTrack !== '1' && !/bot|crawl|spider|headless/i.test(navigator.userAgent)) {
+		navigator.sendBeacon(window.SUEB_VISITE);
+	}
 })();

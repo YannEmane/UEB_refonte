@@ -58,7 +58,7 @@ function sueb_domaine_filiere( $filiere_id ) {
  * Un domaine absent prend la photo « general ».
  */
 function sueb_photos_domaines() {
-	/* Choisies le 2026-11-23 sur Wikimedia Commons, Flickr et rawpixel (via Openverse) ; converties en WebP, 1920 px au plus. */
+	/* Choisies le 2026-11-23 sur Wikimedia Commons, Flickr et rawpixel (via Openverse) ; converties en WebP, 1440 px de large au plus, qualité 55 (le bandeau les couvre d'un voile sombre). */
 	return array(
 		'agriculture'        => array( 'fichier' => 'agriculture.webp', 'titre' => 'Cultivateur de cacao 01', 'auteur' => 'KokoDZ', 'licence' => 'CC BY-SA 4.0', 'source' => 'https://commons.wikimedia.org/wiki/File:Cultivateur_de_cacao_01.jpg' ),
 		'architecture'       => array( 'fichier' => 'architecture.webp', 'titre' => 'Nigerian Institute of Architecture 06', 'auteur' => 'Anasskoko', 'licence' => 'CC BY-SA 4.0', 'source' => 'https://commons.wikimedia.org/wiki/File:Nigerian_Institute_of_Architecture_06.jpg' ),

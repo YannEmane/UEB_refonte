@@ -24,8 +24,15 @@ $sigle   = (string) sueb_meta( $racine, 'sigle' );
 $fixe    = sueb_etablissements()[ strtoupper( $sigle ) ] ?? array();
 $couleur = (string) sueb_meta( $racine, 'couleur' ) ?: ( $fixe['couleur'] ?? '#163d2b' );
 
-/* Photo : celle de la filière, sinon celle de l'établissement, sinon une photo de son campus. */
-$photo = (string) get_the_post_thumbnail_url( $id, 'full' ) ?: (string) get_the_post_thumbnail_url( $racine, 'full' );
+/* Photo : celle de la filière (gestion), sinon celle de son domaine avec son crédit (inc/photos-filieres.php),
+   sinon celle de l'établissement, sinon une photo de son campus. */
+$credit = null;
+$photo  = (string) get_the_post_thumbnail_url( $id, 'full' );
+if ( ! $photo && ( $du_domaine = sueb_photo_filiere( $id ) ) ) {
+	$photo  = $du_domaine['url'];
+	$credit = $du_domaine;
+}
+$photo = $photo ?: (string) get_the_post_thumbnail_url( $racine, 'full' );
 if ( ! $photo && ! empty( $fixe['photos'][0] ) ) {
 	$photo = sueb_photo( $fixe['photos'][0] );
 }
@@ -78,6 +85,9 @@ $nom_semestre = function ( $s ) {
 				<li aria-current="page"><?php echo esc_html( $f['titre'] ); ?></li>
 			</ol>
 		</div>
+		<?php if ( $credit ) : ?>
+			<p class="programme-tete__credit"><a href="<?php echo esc_url( $credit['source'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $credit['credit'] ); ?></a></p>
+		<?php endif; ?>
 	</header>
 
 	<div class="conteneur">

@@ -24,6 +24,7 @@ require SUEB_DIR . '/inc/accueil.php';
 require SUEB_DIR . '/inc/carte.php';
 require SUEB_DIR . '/inc/etablissement.php';
 require SUEB_DIR . '/inc/parcours.php';
+require SUEB_DIR . '/inc/photos-filieres.php';
 require SUEB_DIR . '/inc/roles.php';
 require SUEB_DIR . '/inc/admin.php';
 require SUEB_DIR . '/inc/visites.php';

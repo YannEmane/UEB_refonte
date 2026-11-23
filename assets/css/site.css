@@ -1685,6 +1685,9 @@ html:has(.annuaire__barre) { scroll-padding-top: calc(70px + 6rem); }
 .programme-tete h1 { max-width: 24ch; margin: .75rem 0 1rem; font-size: clamp(2.1rem, 1.4rem + 3vw, 3.9rem); line-height: 1.08; text-shadow: 0 2px 24px rgba(0, 0, 0, .25); }
 .programme-tete__fil { justify-content: center; margin: 0; }
 .programme-tete__fil li[aria-current] { color: rgba(255, 255, 255, .85); }
+.programme-tete__credit { position: absolute; right: 1rem; bottom: .9rem; z-index: 1; max-width: calc(100% - 2rem); margin: 0; font-size: .75rem; text-align: right; }
+.programme-tete__credit a { color: rgba(255, 255, 255, .78); text-decoration: none; }
+.programme-tete__credit a:hover, .programme-tete__credit a:focus-visible { color: var(--blanc); text-decoration: underline; }
 
 .programme-intro { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 1.5rem clamp(2rem, 1rem + 4vw, 5rem); align-items: start; padding-block: clamp(3rem, 2rem + 3vw, 4.5rem) clamp(2.25rem, 1.5rem + 2vw, 3rem); border-bottom: 1px solid var(--filet); }
 .programme-intro__accroche { margin: 0; font-family: var(--f-serif); font-size: clamp(1.7rem, 1.2rem + 1.6vw, 2.6rem); font-weight: 500; line-height: 1.2; color: var(--foret-900); text-wrap: balance; }
@@ -2546,23 +2549,20 @@ a.parcours__lien:focus-visible { outline: 3px solid var(--blanc); outline-offset
 .deps-onglet__nom { font-family: var(--f-titre); font-size: clamp(1.15rem, 1rem + .5vw, 1.45rem); font-weight: 500; line-height: 1.2; color: var(--foret-900); text-wrap: balance; }
 .deps-onglet__resume { font-size: .875rem; line-height: 1.5; color: var(--gris); text-wrap: pretty; }
 
-.deps-onglet__corps { margin-top: .4rem; padding: .5rem; border-radius: 4px; background: var(--blanc); box-shadow: var(--ombre-1); animation: deps-ouvre .45s var(--ease); }
+.deps-onglet__corps { --retrait: clamp(1rem, 4vw, 3.5rem); margin-top: .6rem; }
 @keyframes deps-ouvre { from { opacity: 0; transform: translateY(-8px); } }
-.deps-onglet__lien { margin: .75rem .75rem .4rem; font-size: .9375rem; }
+.deps-onglet__lien { margin: .9rem 0 .5rem var(--retrait); font-size: .9375rem; }
+/* Les filières d'un département déplié : la même ligne que pour un établissement sans département (ol.rangs),
+   mais chaque filière dans son propre cadre, détaché des autres et un peu en retrait sous le département
+   (demande de l'utilisateur, 2026-11-23 : dans un seul cadre, on ne les distinguait pas). Elles arrivent
+   l'une après l'autre à l'ouverture. */
+.deps-onglet__corps .rangs { gap: .7rem; padding-left: var(--retrait); }
+.deps-onglet__corps .rang {
+	padding: 0 1.1rem 1.15rem; border-radius: 4px; background: var(--blanc); box-shadow: var(--ombre-1);
+	animation: deps-ouvre .45s var(--ease) both; animation-delay: var(--d, 0s);
+}
 
 /* Une filière du département ouvert : toute la ligne mène à sa page (intitulé, diplôme, niveaux). */
-.deps-fils { list-style: none; margin: 0; padding: 0; }
-.deps-fil { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .5rem 1.25rem; min-height: 3.25rem; padding: .6rem .75rem; border-radius: 4px; transition: background .25s; }
-.deps-fil + .deps-fil { box-shadow: 0 -1px 0 var(--filet); }
-.deps-fil:hover, .deps-fil:focus-within { background: color-mix(in srgb, var(--etab) 7%, var(--blanc)); box-shadow: none; }
-.deps-fil:hover + .deps-fil, .deps-fil:focus-within + .deps-fil { box-shadow: none; }
-.deps-fil__nom { font-weight: 600; line-height: 1.35; color: var(--foret-900); text-decoration: none; }
-.deps-fil__nom::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
-.deps-fil__nom:focus-visible { outline: none; }
-.deps-fil:has(.deps-fil__nom:focus-visible) { outline: 3px solid var(--etab); outline-offset: 1px; }
-.deps-fil:hover .deps-fil__nom { color: color-mix(in srgb, var(--etab) 75%, var(--foret-900)); }
-.deps-fil__diplome { font-size: .875rem; color: var(--gris); white-space: nowrap; }
-.deps-fil__niveaux > span { min-width: 2.35rem; padding: .3rem .45rem; font-size: .75rem; }
 
 @media (max-width: 760px) {
 	.deps-onglets { --decalage: .6rem; --tab: .95rem; }
@@ -2572,13 +2572,20 @@ a.parcours__lien:focus-visible { outline: 3px solid var(--blanc); outline-offset
 	.deps-onglet__num { min-width: 2.5rem; padding-right: 1rem; }
 	.deps-onglet__num > span { font-size: 1.6rem; }
 	.deps-onglet__signe { width: 10px; height: 10px; }
-	.deps-fil { grid-template-columns: minmax(0, 1fr) auto; }
-	.deps-fil__niveaux { grid-column: 1 / -1; justify-self: start; }
+	.deps-onglet__corps { --retrait: .5rem; }
+	.deps-onglet__corps .rangs { gap: .5rem; }
+	.deps-onglet__corps .rang { padding: 0 .7rem .75rem; }
+	/* Filières d'un département déplié, sur mobile : le nom seul (demande de l'utilisateur, 2026-11-23) ;
+	   diplôme, UE et niveaux restent sur la page de la filière. */
+	.deps-onglet__corps .rang__meta, .deps-onglet__corps .rang__niveaux { display: none; }
+	.deps-onglet__corps .rang__lien { align-items: center; }
+	.deps-onglet__corps .rang__num { align-self: end; }
+	.deps-onglet__corps .rang__corps { padding-bottom: .55rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-	.deps-onglet__bande, .deps-onglet__signe::after, .deps-fil { transition: none; }
+	.deps-onglet__bande, .deps-onglet__signe::after { transition: none; }
 	.deps-onglet:nth-child(n) .deps-onglet__bande:hover { transform: none; }
-	.deps-onglet__corps { animation: none; }
+	.deps-onglet__corps, .deps-onglet__corps .rang { animation: none; }
 }
 .acad-corps .cursus__liste { background: transparent; }
 .cursus__compte { font-size: .875rem; font-weight: 600; color: var(--foret-800); white-space: nowrap; }
@@ -2591,4 +2598,67 @@ a.parcours__lien:focus-visible { outline: 3px solid var(--blanc); outline-offset
 	.acad-etapes { gap: .6rem 1.25rem; }
 	.acad-etapes li + li::before { display: none; }
 	.cursus__compte { grid-column: 2; grid-row: 2; justify-self: start; }
+}
+/* ---------- Filières d'un établissement sans département (archive-ueb_structure.php, ol.rangs) ----------
+   D'après le modèle fourni par l'utilisateur (2026-11-23) : un carré numéroté posé sur un trait, qui file
+   jusqu'à un fanion plié en deux tons. Toutes les lignes au vert de la charte (demande de l'utilisateur :
+   les dix couleurs du modèle étaient trop différentes). --c : la couleur ; --c-sur : le numéro dans le carré ;
+   --c-encre : le texte en couleur (4,5:1 au moins). */
+.rangs { --rang-carre: 4rem; display: grid; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.rang { --c: var(--vert); --c-sur: var(--blanc); --c-encre: var(--foret-700); }
+/* Formation professionnelle : le bleu ciel de la charte (demande de l'utilisateur, 2026-11-23). */
+.rangs--pro .rang { --c: var(--ciel); --c-encre: var(--ciel-fonce); }
+.rang__lien {
+	position: relative; display: grid; grid-template-columns: var(--rang-carre) minmax(0, 1fr) auto 3.1rem;
+	align-items: end; column-gap: 1.5rem; padding-top: 1.1rem; color: var(--encre); text-decoration: none;
+}
+/* Le trait part du carré et s'arrête sous le fanion. */
+.rang__lien::after {
+	content: ""; position: absolute; left: var(--rang-carre); right: 1.5rem; bottom: 0; height: 2px;
+	background: var(--c); transform-origin: bottom; transition: transform .35s var(--ease);
+}
+.rang__num {
+	display: grid; place-items: center; width: var(--rang-carre); height: var(--rang-carre);
+	background: var(--c); color: var(--c-sur);
+	font-family: var(--f-texte); font-size: 1.55rem; font-style: italic; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums;
+}
+.rang__corps { display: grid; gap: .3rem; min-width: 0; padding-bottom: .85rem; }
+.rang__titre {
+	font-family: var(--f-titre); font-size: clamp(1.15rem, 1rem + .45vw, 1.4rem); font-weight: 500; line-height: 1.25;
+	color: var(--foret-900); text-wrap: balance;
+	text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 2px; text-underline-offset: .22em;
+	transition: text-decoration-color .25s var(--ease);
+}
+.rang__meta { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .6rem; font-size: .875rem; color: var(--gris); }
+.rang__code { padding: .1rem .45rem; border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); border-radius: 5px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; color: var(--c-encre); }
+.rang__niveaux { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .3rem; padding-bottom: .9rem; }
+.rang__niveaux > span {
+	min-width: 2.4rem; padding: .3rem .5rem; border: 1px solid color-mix(in srgb, var(--c) 50%, transparent); border-radius: 6px;
+	background: color-mix(in srgb, var(--c) 12%, var(--blanc)); color: var(--c-encre); font-size: .8125rem; font-weight: 700; text-align: center;
+}
+/* Le fanion plié : un triangle plein et deux carrés transparents, à la couleur du rang ; il dépasse un peu sous le trait. */
+.rang__fanion { width: 3.1rem; height: 4.4rem; margin-bottom: -1.05rem; color: var(--c); transition: transform .35s var(--ease); }
+.rang__fanion svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+.rang__lien:hover::after, .rang__lien:focus-visible::after { transform: scaleY(2); }
+.rang__lien:hover .rang__titre, .rang__lien:focus-visible .rang__titre { text-decoration-color: var(--c); }
+.rang__lien:hover .rang__fanion, .rang__lien:focus-visible .rang__fanion { transform: translateX(5px); }
+.rang__lien:focus-visible { outline: 2px solid var(--foret-900); outline-offset: 4px; }
+.rang__court { display: none; }
+/* Mobile : une carte compacte (demande de l'utilisateur, 2026-11-23 : les cartes étaient trop grandes). */
+@media (max-width: 640px) {
+	.rangs { --rang-carre: 2.25rem; gap: .25rem; }
+	.rang__lien { grid-template-columns: var(--rang-carre) minmax(0, 1fr) 1.75rem; column-gap: .75rem; padding-top: .7rem; }
+	.rang__num { grid-row: 1 / span 2; font-size: 1rem; }
+	.rang__corps { grid-column: 2; grid-row: 1; gap: .15rem; padding-bottom: .4rem; }
+	.rang__titre { font-size: 1.05rem; line-height: 1.2; }
+	.rang__meta { font-size: .8125rem; }
+	.rang__long { display: none; }
+	.rang__court { display: inline; }
+	.rang__niveaux { grid-column: 2; grid-row: 2; justify-content: flex-start; gap: .25rem; padding-bottom: .55rem; }
+	.rang__niveaux > span { min-width: 2rem; padding: .15rem .35rem; border-radius: 5px; font-size: .75rem; }
+	.rang__fanion { grid-column: 3; grid-row: 1 / span 2; width: 1.75rem; height: 2.5rem; margin-bottom: -.6rem; }
+	.rang__lien::after { right: .9rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.rang__lien::after, .rang__fanion, .rang__titre { transition: none; }
 }

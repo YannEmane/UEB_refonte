@@ -81,9 +81,6 @@ function sueb_donnees_tableau_de_bord() {
 	$articles_image = (int) $wpdb->get_var( "SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->posts} p JOIN {$wpdb->postmeta} t ON t.post_id = p.ID AND t.meta_key = '_thumbnail_id' AND t.meta_value > 0
 		WHERE p.post_type = 'post' AND p.post_status = 'publish'" ); // phpcs:ignore WordPress.DB
 
-	$visites = sueb_visites();
-	ksort( $visites );
-
 	return array(
 		'chiffres'                   => array(
 			'personnel'      => $personnel,
@@ -100,6 +97,6 @@ function sueb_donnees_tableau_de_bord() {
 			array( 'libelle' => 'Actualités illustrées', 'aide' => 'articles avec une image', 'valeur' => $articles_image, 'total' => $articles, 'lien' => 'actualites' ),
 		),
 		'visites'                    => sueb_visites_recentes( 30 ),
-		'visites_depuis'             => $visites ? array_key_first( $visites ) : '',
+		'visites_depuis'             => sueb_visites_depuis(),
 	);
 }

@@ -94,9 +94,9 @@ $diplomes = function ( array $filieres, array $par_defaut ) {
 	return $liste ? array_keys( $liste ) : $par_defaut;
 };
 
-/* Le nombre d'unités d'enseignement de chaque filière affichée, en une requête. */
+/* Le nombre d'unités d'enseignement de chaque filière affichée (aussi celles des départements dépliables), en une requête. */
 $nb_ue = array();
-if ( $filieres && ! $liste_dep ) {
+if ( $filieres ) {
 	global $wpdb;
 	$ids = implode( ',', array_map( 'intval', array_column( $filieres, 'id' ) ) );
 	foreach ( $wpdb->get_results( "SELECT post_parent, COUNT(*) AS n FROM {$wpdb->posts} WHERE post_type = 'ueb_structure' AND post_status = 'publish' AND post_parent IN ($ids) GROUP BY post_parent" ) as $l ) { // phpcs:ignore WordPress.DB -- identifiants entiers
@@ -119,6 +119,45 @@ $compter = function ( array $par_sigle ) {
 };
 $pluriel = function ( $n, $un, $plusieurs ) {
 	return $n . ' ' . ( $n > 1 ? $plusieurs : $un );
+};
+
+/*
+ * Une liste de filières au modèle fourni par l'utilisateur (2026-11-23) : un carré numéroté posé sur un trait, qui file
+ * jusqu'à un fanion plié (assets/css/site.css, « Filières d'un établissement sans département »). Vert de la charte,
+ * bleu ciel pour la formation professionnelle. Sert aux établissements sans département et, à leur demande, aux
+ * filières d'un département déplié (`$revele` : false dans un panneau qui a déjà son animation d'ouverture).
+ */
+$rangs = function ( array $filieres, $revele = true ) use ( $slug, $nb_ue, $pluriel ) {
+	?>
+	<ol class="rangs rangs--<?php echo esc_attr( $slug ); ?>">
+		<?php foreach ( array_values( $filieres ) as $i => $f ) :
+			$n_ue    = $nb_ue[ $f['id'] ] ?? 0;
+			$diplome = $f['diplome'] ? $f['diplome'] . ', ' : '';
+			$ue      = $n_ue ? $pluriel( $n_ue, 'unité d’enseignement', 'unités d’enseignement' ) : 'unités d’enseignement à venir';
+			$ue      = $diplome ? $ue : mb_strtoupper( mb_substr( $ue, 0, 1 ) ) . mb_substr( $ue, 1 );
+			?>
+			<li class="rang<?php echo $revele ? ' revele' : ''; ?>" style="--d:<?php echo esc_attr( min( $i, 8 ) * .05 ); ?>s">
+				<a class="rang__lien" href="<?php echo esc_url( $f['url'] ); ?>">
+					<span class="rang__num" aria-hidden="true"><?php echo esc_html( (string) ( $i + 1 ) ); ?></span>
+					<span class="rang__corps">
+						<span class="rang__titre"><?php echo esc_html( $f['titre'] ); ?></span>
+						<span class="rang__meta">
+							<?php if ( $f['code'] ) : ?><span class="rang__code"><?php echo esc_html( $f['code'] ); ?></span><?php endif; ?>
+							<?php /* Sur mobile, « 18 UE » au lieu de « 18 unités d'enseignement » : la carte reste compacte. */ ?>
+							<span><?php echo esc_html( $diplome ); ?><span<?php echo $n_ue ? ' class="rang__long"' : ''; ?>><?php echo esc_html( $ue ); ?></span><?php if ( $n_ue ) : ?><span class="rang__court"><?php echo esc_html( $n_ue . ' UE' ); ?></span><?php endif; ?></span>
+						</span>
+					</span>
+					<?php if ( $f['niveaux'] ) : ?>
+						<span class="rang__niveaux" aria-label="<?php echo esc_attr( 'Niveaux : ' . implode( ', ', array_map( 'sueb_nom_niveau', $f['niveaux'] ) ) ); ?>">
+							<?php foreach ( $f['niveaux'] as $n ) : ?><span title="<?php echo esc_attr( sueb_nom_niveau( $n ) ); ?>"><?php echo esc_html( preg_replace( '/^Niveau (\d+)$/', 'N$1', $n ) ); ?></span><?php endforeach; ?>
+						</span>
+					<?php endif; ?>
+					<span class="rang__fanion" aria-hidden="true"><svg viewBox="0 0 48 68" focusable="false"><rect x="7" y="22" width="30" height="30" transform="rotate(-28 22 37)" opacity=".42"/><rect x="14" y="28" width="28" height="28" transform="rotate(18 28 42)" opacity=".3"/><path d="M15 3 46 26 15 48Z"/></svg></span>
+				</a>
+			</li>
+		<?php endforeach; ?>
+	</ol>
+	<?php
 };
 
 get_header();
@@ -383,20 +422,6 @@ get_header();
 		$nom = preg_replace( '/^d[ée]partement\s+(?:de\s+la\s+|de\s+l[’\']|des\s+|du\s+|de\s+|d[’\'])/iu', '', $titre );
 		return $nom === $titre ? $titre : mb_strtoupper( mb_substr( $nom, 0, 1 ) ) . mb_substr( $nom, 1 );
 	};
-	/* Une filière : intitulé (lien vers sa page et ses UE), diplôme, niveaux. */
-	$ligne_filiere = function ( array $f ) {
-		?>
-		<li class="deps-fil">
-			<a class="deps-fil__nom" href="<?php echo esc_url( $f['url'] ); ?>"><?php echo esc_html( $f['titre'] ); ?></a>
-			<?php if ( $f['diplome'] ) : ?><span class="deps-fil__diplome"><?php echo esc_html( $f['diplome'] ); ?></span><?php endif; ?>
-			<?php if ( $f['niveaux'] ) : ?>
-				<span class="cursus__niveaux deps-fil__niveaux" aria-label="<?php echo esc_attr( 'Niveaux : ' . implode( ', ', array_map( 'sueb_nom_niveau', $f['niveaux'] ) ) ); ?>">
-					<?php foreach ( $f['niveaux'] as $n ) : ?><span class="est-plein" title="<?php echo esc_attr( sueb_nom_niveau( $n ) ); ?>"><?php echo esc_html( preg_replace( '/^Niveau (\d+)$/', 'N$1', $n ) ); ?></span><?php endforeach; ?>
-				</span>
-			<?php endif; ?>
-		</li>
-		<?php
-	};
 	?>
 	<section class="acad-corps" aria-labelledby="titre-deps" style="--etab:<?php echo esc_attr( $etab['couleur'] ); ?>">
 		<div class="conteneur">
@@ -421,7 +446,7 @@ get_header();
 								<span class="deps-onglet__tab" aria-hidden="true"><span class="deps-onglet__signe"></span></span>
 							</summary>
 							<div class="deps-onglet__corps">
-								<ul class="deps-fils"><?php array_map( $ligne_filiere, $d['filieres'] ); ?></ul>
+								<?php $rangs( $d['filieres'], false ); ?>
 								<?php if ( ! $d['groupe'] ) : ?><p class="deps-onglet__lien"><a class="lien-texte" href="<?php echo esc_url( get_permalink( $d['id'] ) ); ?>">Page du département</a></p><?php endif; ?>
 							</div>
 						</details>
@@ -445,8 +470,11 @@ get_header();
 		<div class="conteneur">
 			<header class="acad-famille__tete">
 				<h2 id="titre-filieres">Filières <span><?php echo count( $filieres ); ?></span></h2>
-				<p><?php echo esc_html( $parcours['nom'] . ' · ' . $sigle . ( $dep && $par_dep && $dep['sigle'] ? ' · ' . $dep['sigle'] : '' ) ); ?></p>
+				<p><?php echo esc_html( $parcours['nom'] . ', ' . $sigle . ( $dep && $par_dep && $dep['sigle'] ? ', ' . $dep['sigle'] : '' ) ); ?></p>
 			</header>
+			<?php if ( ! $par_dep ) : ?>
+				<?php $rangs( $filieres ); ?>
+			<?php else : ?>
 			<ol class="cursus__liste">
 				<?php foreach ( $filieres as $i => $f ) : ?>
 					<li class="cursus__item revele" style="--d:<?php echo esc_attr( min( $i, 8 ) * .05 ); ?>s">
@@ -471,6 +499,7 @@ get_header();
 					</li>
 				<?php endforeach; ?>
 			</ol>
+			<?php endif; ?>
 
 			<nav class="acad-autres" aria-label="<?php echo esc_attr( 'Les autres parcours ' . $sigle ); ?>">
 				<span><?php echo esc_html( $sigle ); ?></span>

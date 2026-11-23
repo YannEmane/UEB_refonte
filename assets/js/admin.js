@@ -30,11 +30,20 @@
 	/* Niveaux (0 établissement … 3 UE) où chaque champ d'une structure a un sens. */
 	var NIVEAUX_CHAMPS = { sigle: [0, 1], ville: [0], couleur: [0], logo: [0], photo_etudiant: [0], intro_formations: [0], intro_tutelle: [0], intro_equipe: [0], intro_campus: [0], campus_1: [0], legende_1: [0], campus_2: [0], legende_2: [0], campus_3: [0], legende_3: [0], campus_4: [0], legende_4: [0], responsable: [0, 1, 2], diplome: [2], niveaux: [2], parcours: [2], accroche: [2], contact_courriel: [0, 2], contact_telephone: [0, 2], adresse: [0], coordonnees: [0], mission: [0], ecole_doctorale: [0], enseignants: [3], code: [3], niveau_ue: [3], credits: [3], semestre: [3], volume: [3], elements: [3], syllabus: [3] };
 
+	/* Fiche du personnel : la fonction et le rattachement rejoignent le nom dans le premier bloc. */
+	var PERSONNEL_FONCTION = ['fonction', 'grade', 'etablissement', 'departement', 'pole', 'specialite', 'cours', 'courriel'];
+	/** Les clés des champs complémentaires d'un type, sauf celles de `cles`. */
+	function autresCles(type, cles) {
+		return (((C.champs || {})[type] || {}).champs || []).map(function (c) { return c.cle; }).filter(function (k) { return cles.indexOf(k) === -1; });
+	}
+
 	/** Les champs complémentaires d'un type, précédés d'un intertitre (`section` : un autre intertitre, ou false pour aucun). `cles` limite la sélection. */
 	function metas(type, cles, section) {
 		var d = (C.champs || {})[type];
 		if (!d) return [];
 		var liste = d.champs.filter(function (c) { return !cles || cles.indexOf(c.cle) > -1; });
+		/* Dans l'ordre de `cles` : les champs vont par paires dans les formulaires en blocs. */
+		if (cles) liste.sort(function (x, y) { return cles.indexOf(x.cle) - cles.indexOf(y.cle); });
 		var tete = section === false ? [] : [section || { type: 'section', label: d.titre, aide: d.aide }];
 		return tete.concat(liste.map(function (c) {
 			var f = { path: 'meta._sueb_' + c.cle, cle: c.cle, label: c.label, type: c.type, aide: c.aide, options: c.options };
@@ -88,6 +97,7 @@
 	/* ---------- Icônes (traits, 24 × 24) ---------- */
 
 	var ICONES = {
+		bas: '<path d="m6 9 6 6 6-6"/>',
 		tableau: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
 		journal: '<path d="M4 5a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v14a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v10a2 2 0 0 1-2 2M8 8h5M8 12h5M8 16h3"/>',
 		agenda: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
@@ -190,32 +200,34 @@
 
 	var RUBRIQUES = [
 		{
-			id: 'actualites', groupe: 0, titre: 'Actualités', endpoint: 'posts', singulier: 'l’actualité',
+			id: 'actualites', groupe: 0, titre: 'Actualités', endpoint: 'posts', singulier: 'l’actualité', premierBloc: 'Contenu',
 			colonnes: [COL.date, COL.une, COL.format],
 			champs: [
 				F.titre(),
-				{ path: 'date', label: 'Date de publication', type: 'datetime' },
-				F.statut,
-				{ path: 'sticky', label: 'À la une', type: 'case', texte: 'Mettre cet article à la une', aide: 'Les articles à la une défilent dans la bannière de la page d’accueil (les plus récents d’abord).' },
-				{ path: 'format', label: 'Format', type: 'select', options: [['standard', 'Article'], ['video', 'Vidéo'], ['audio', 'Audio']], aide: 'Choisir Vidéo ou Audio si l’actualité comporte un fichier ou un lien ci-dessous.' },
-				{ path: 'categories', label: 'Rubrique', type: 'taxo', endpoint: 'categories' },
 				F.resume('Affiché à la une et sur l’accueil.'),
-				F.image(),
-				F.texte()
-			].concat(metas('post'))
+				F.texte(),
+				F.statut,
+				{ path: 'date', label: 'Date de publication', type: 'datetime' },
+				{ path: 'sticky', label: 'À la une', type: 'case', texte: 'Mettre cet article à la une', aide: 'Les articles à la une défilent dans la bannière de la page d’accueil (les plus récents d’abord).' },
+				{ path: 'categories', label: 'Rubrique', type: 'taxo', endpoint: 'categories' },
+				F.image()
+			].concat(metas('post', null, { type: 'section', label: 'Média de l’actualité', aide: 'Pour une vidéo ou un audio : choisir le format, puis envoyer le fichier ou coller le lien.' }).map(function (f, i, l) {
+				/* Le format se choisit en tête du bloc Média, juste au-dessus du fichier et du lien. */
+				return i === 0 ? [f, { path: 'format', label: 'Format', type: 'select', options: [['standard', 'Article'], ['video', 'Vidéo'], ['audio', 'Audio']] }] : [f];
+			}).reduce(function (a, b) { return a.concat(b); }, []))
 		},
 		{
 			id: 'evenements', groupe: 0, titre: 'Évènements et agenda', endpoint: 'ueb_evenement', singulier: 'l’évènement',
 			colonnes: [{ t: 'Début', court: true, v: function (p) { return dateFr(m(p, 'debut'), true); } }, COL.meta('Lieu', 'lieu')],
-			champs: [F.titre(), F.statut].concat(metas('ueb_evenement'), [F.resume('Affiché dans l’agenda de l’accueil.'), F.image(), F.texte('Description')])
+			champs: [F.titre(), F.statut, F.image()].concat(metas('ueb_evenement', null, false), [{ type: 'section', label: 'Présentation' }, F.resume('Affiché dans l’agenda de l’accueil.'), F.texte('Description')])
 		},
 		{
-			id: 'pages', groupe: 0, titre: 'Pages fixes', endpoint: 'pages', singulier: 'la page', ordre: 'menu_order', pages: true,
+			id: 'pages', groupe: 0, titre: 'Pages fixes', endpoint: 'pages', singulier: 'la page', ordre: 'menu_order', pages: true, premierBloc: 'Contenu',
 			colonnes: [{ t: 'Rôle sur le site', v: function (p) { return (p.sueb_gestion && p.sueb_gestion.role) || ''; } }, COL.ordre],
 			champs: [F.titre(), F.statut, F.ordre, F.image(), F.texte('Contenu')]
 		},
 		{
-			id: 'mediatheque', groupe: 0, titre: 'Médiathèque', endpoint: 'media', singulier: 'le fichier', mediatheque: true,
+			id: 'mediatheque', groupe: 0, titre: 'Médiathèque', endpoint: 'media', singulier: 'le fichier', mediatheque: true, premierBloc: 'Fichier',
 			champs: [
 				{ path: 'apercu', label: 'Aperçu', type: 'apercu' },
 				F.titre(),
@@ -229,7 +241,7 @@
 			filtre: '&parent=0', ordre: 'menu_order', arbre: true, niveauFixe: 0, defauts: { parent: 0 },
 			colonnes: [COL.meta('Sigle', 'sigle'), COL.meta('Ville', 'ville'), COL.ordre],
 			champs: [F.titre('Intitulé'), F.statut, F.ordre].concat(
-				metas('ueb_structure', ['sigle', 'ville', 'couleur', 'logo', 'responsable']),
+				metas('ueb_structure', ['sigle', 'ville', 'couleur', 'logo', 'responsable'], false),
 				[{ type: 'section', label: 'Présentation', aide: 'Le texte de la section « Présentation » de sa page ; le résumé s’affiche dans les listes.' }, F.resume('Courte présentation affichée dans les listes.'), F.texte('Présentation')],
 				[{ type: 'section', label: 'Photos', aide: 'La photo principale et la seconde photo habillent sa carte sur l’accueil ; la photo du bandeau et celles du campus, sa page.' }, F.image('Photo principale')],
 				metas('ueb_structure', ['photo_droite', 'photo_etudiant', 'campus_1', 'legende_1', 'campus_2', 'legende_2', 'campus_3', 'legende_3', 'campus_4', 'legende_4'], false),
@@ -249,10 +261,11 @@
 			champs: [
 				F.titre('Intitulé'),
 				{ path: 'parent', label: 'Rattaché à', type: 'parent', required: true, genre: true },
-				F.statut, F.ordre
+				F.statut, F.ordre,
+				Object.assign(F.image('Photo principale'), { aide: 'Pour une filière : le bandeau et la photo de sa page.' })
 			].concat(
-				metas('ueb_structure', ['sigle', 'responsable', 'parcours', 'niveaux', 'diplome', 'accroche', 'contact_courriel', 'contact_telephone', 'code', 'credits', 'niveau_ue', 'semestre', 'volume', 'elements', 'syllabus', 'enseignants', 'photo_droite'], { type: 'section', label: 'Détails', aide: 'Seuls les champs utiles à ce que vous ajoutez (département, filière ou unité d’enseignement) sont affichés.' }),
-				[F.resume('Pour une filière : le texte à côté de l’accroche, en haut de sa page.'), F.image('Photo principale (pour une filière : le bandeau et la photo de sa page)'), F.texte('Présentation (pour une filière : la section « À propos de la filière »)')]
+				metas('ueb_structure', ['sigle', 'responsable', 'diplome', 'parcours', 'niveaux', 'accroche', 'contact_courriel', 'contact_telephone', 'code', 'credits', 'niveau_ue', 'semestre', 'volume', 'elements', 'syllabus', 'enseignants', 'photo_droite'], { type: 'section', label: 'Détails', aide: 'Seuls les champs utiles à ce que vous ajoutez (département, filière ou unité d’enseignement) sont affichés.' }),
+				[{ type: 'section', label: 'Présentation' }, F.resume('Pour une filière : le texte à côté de l’accroche, en haut de sa page.'), F.texte('Présentation (pour une filière : la section « À propos de la filière »)')]
 			)
 		},
 		{
@@ -263,19 +276,23 @@
 				F.titre('Nom complet'), F.statut,
 				{ path: 'ueb_corps', label: 'Catégories du personnel', type: 'taxo', endpoint: 'ueb_corps', multiple: true },
 				F.ordre, F.image('Photo')
-			].concat(metas('ueb_personnel'), [F.texte('Présentation')])
+			].concat(
+				metas('ueb_personnel', PERSONNEL_FONCTION, false),
+				metas('ueb_personnel', autresCles('ueb_personnel', PERSONNEL_FONCTION), { type: 'section', label: 'Parcours et travaux', aide: 'Affichés sur la fiche de la personne dans l’annuaire.' }),
+				[{ type: 'section', label: 'Présentation' }, F.texte('Présentation')]
+			)
 		},
 		{
 			id: 'dirigeants', groupe: 2, titre: 'Dirigeants du rectorat', endpoint: 'ueb_dirigeant', singulier: 'le dirigeant',
 			ordre: 'menu_order',
 			colonnes: [COL.meta('Fonction', 'sigle'), COL.ordre],
-			champs: [F.titre('Nom complet (ex. Pr Jean Dupont)'), F.statut, F.ordre, F.image('Photo')].concat(metas('ueb_dirigeant'), [F.texte('Mot ou présentation')])
+			champs: [F.titre('Nom complet (ex. Pr Jean Dupont)'), F.statut, F.ordre, F.image('Photo')].concat(metas('ueb_dirigeant', null, false), [{ type: 'section', label: 'Présentation' }, F.texte('Mot ou présentation')])
 		},
 		{
 			id: 'partenaires', groupe: 3, titre: 'Partenaires et conventions', endpoint: 'ueb_partenaire', singulier: 'le partenaire',
 			ordre: 'menu_order',
 			colonnes: [COL.meta('Type', 'type'), COL.meta('Ville', 'ville'), COL.ordre],
-			champs: [F.titre('Nom du partenaire'), F.statut, F.ordre].concat(metas('ueb_partenaire'), [F.resume(), F.image(), F.texte('Présentation de la convention')])
+			champs: [F.titre('Nom du partenaire'), F.statut, F.ordre, F.image()].concat(metas('ueb_partenaire', null, false), [{ type: 'section', label: 'Présentation' }, F.resume(), F.texte('Présentation de la convention')])
 		},
 		{ id: 'institutions', groupe: 3, titre: 'Universités et villes de la carte', carte: true },
 		{ id: 'accueil-reglages', groupe: 4, titre: 'Accueil (bannière, vidéo, frise)', reglages: 'accueil' },
@@ -297,8 +314,8 @@
 		metas('ueb_structure', ['semestre'], false),
 		metas('ueb_structure', ['credits'], false),
 		metas('ueb_structure', ['volume', 'elements', 'syllabus', 'enseignants'], { type: 'section', label: 'Contenu de l’UE', aide: 'Volume horaire, éléments constitutifs, syllabus et enseignants, affichés sur la page de la filière.' }),
-		/* En dernier : la publication. */
-		[{ type: 'section', label: 'Publication' }, F.statut, F.ordre]
+		/* La publication : dans la colonne de droite (blocs()). */
+		[F.statut, F.ordre]
 	).map(function (f) {
 		/* Aides courtes : ces champs partagent une ligne. */
 		var aides = { niveau_ue: 'Parmi les niveaux ouverts de la filière.', semestre: 'Dans l’année du niveau.', credits: 'Un nombre entier, au moins 1.', code: 'Ex. MAT 111.' };
@@ -879,7 +896,9 @@
 			var items = RUBRIQUES.filter(function (r) { return r.groupe === i && !r.cache; }).map(function (r) {
 				return '<li><a href="#' + r.id + '" data-menu="' + r.id + '">' + ico(icone(r)) + '<span>' + esc(r.titre) + '</span></a></li>';
 			}).join('');
-			return items ? '<p class="g-nav__groupe">' + esc(g) + '</p><ul>' + items + '</ul>' : '';
+			/* Chaque groupe se replie (demande de l'utilisateur, 2026-11-23) : voir plier(). */
+			return items ? '<div class="g-nav__bloc" data-groupe="' + i + '"><button type="button" class="g-nav__groupe" aria-expanded="true" aria-controls="g-nav-groupe-' + i + '">' +
+				'<span>' + esc(g) + '</span>' + ico('bas', 'g-nav__fleche') + '</button><div class="g-nav__repli" id="g-nav-groupe-' + i + '"><ul>' + items + '</ul></div></div>' : '';
 		}).join('');
 		app.innerHTML =
 			'<h1 class="sr">Gestion du site de l’Université d’Ebolowa</h1>' +
@@ -918,6 +937,16 @@
 			if (ouvrir) app.querySelector('.g-nav__liens a').focus();
 		}
 		bouton.addEventListener('click', function () { navigation(true); });
+
+		/* Groupes du menu : repliés au départ, sauf celui de la rubrique ouverte ; le choix est retenu sur ce navigateur. */
+		var ouverts = groupesOuverts();
+		[].forEach.call(app.querySelectorAll('.g-nav__bloc'), function (b) {
+			plier(b, ouverts.indexOf(b.getAttribute('data-groupe')) > -1, false);
+		});
+		app.querySelector('.g-nav__liens').addEventListener('click', function (e) {
+			var t = e.target.closest('.g-nav__groupe');
+			if (t) plier(t.parentNode, t.getAttribute('aria-expanded') !== 'true', true);
+		});
 		app.addEventListener('click', function (e) {
 			if (e.target.closest('[data-fermer-nav]') || (app.classList.contains('nav-ouverte') && e.target.closest('.g-nav a[href^="#"]'))) navigation(false);
 		});
@@ -926,10 +955,27 @@
 		});
 	}
 
+	var CLE_GROUPES = 'sueb-gestion-groupes';
+	function groupesOuverts() {
+		try { return JSON.parse(localStorage.getItem(CLE_GROUPES)) || []; } catch (e) { return []; }
+	}
+	function plier(bloc, ouvert, retenir) {
+		bloc.classList.toggle('est-replie', !ouvert);
+		bloc.querySelector('.g-nav__groupe').setAttribute('aria-expanded', ouvert ? 'true' : 'false');
+		if (!retenir) return;
+		var liste = [].filter.call(app.querySelectorAll('.g-nav__bloc'), function (b) { return !b.classList.contains('est-replie'); })
+			.map(function (b) { return b.getAttribute('data-groupe'); });
+		try { localStorage.setItem(CLE_GROUPES, JSON.stringify(liste)); } catch (e) { /* navigation privée */ }
+	}
+
 	function majMenu(id) {
 		[].forEach.call(app.querySelectorAll('[data-menu]'), function (a) {
-			if (a.getAttribute('data-menu') === id) a.setAttribute('aria-current', 'page');
-			else a.removeAttribute('aria-current');
+			if (a.getAttribute('data-menu') === id) {
+				a.setAttribute('aria-current', 'page');
+				/* La rubrique ouverte reste visible : son groupe se déplie. */
+				var b = a.closest('.g-nav__bloc');
+				if (b && b.classList.contains('est-replie')) plier(b, true, true);
+			} else a.removeAttribute('aria-current');
 		});
 		/* La barre du haut : « Groupe › Rubrique », ou le tableau de bord. */
 		var lieu = document.getElementById('g-lieu');
@@ -1877,9 +1923,14 @@
 		if (pre && pre.parent) vide.parent = pre.parent;
 		if (pre && pre.niveau) vide.meta = { _sueb_niveau_ue: pre.niveau };
 		var lecture = id ? api('wp/v2/' + r.endpoint + '/' + id + '?context=edit') : Promise.resolve({ data: vide });
+		/* Si l'on a changé d'écran pendant le chargement (l'arborescence peut prendre quelques secondes),
+		   le formulaire arrivé en retard ne remplace pas le nouvel écran. */
+		var adresse = location.hash;
 		Promise.all([lecture, chargerListes(r)]).then(function (res) {
+			if (location.hash !== adresse) return;
 			dessiner(r, id, res[0].data);
 		}).catch(function (e) {
+			if (location.hash !== adresse) return;
 			contenu.innerHTML = '<p class="g-erreur" role="alert">' + esc(e.message) + '</p><p><a href="#' + r.id + '">Retour à la liste</a></p>';
 		});
 	}
@@ -2035,7 +2086,8 @@
 				break;
 		}
 		var niveaux = f.niveaux ? ' data-niveaux="' + f.niveaux.join(',') + '"' : '';
-		return '<div class="g-champ g-champ--' + f.type + '"' + (f.cle ? ' data-cle="' + esc(f.cle) + '"' : '') + niveaux + '>' + h + aide + '</div>';
+		var court = (COURTS.indexOf(f.type) > -1 || (f.type === 'taxo' && !f.multiple)) && f.path !== 'title';
+		return '<div class="g-champ g-champ--' + f.type + (court ? ' g-champ--court' : '') + '"' + (f.cle ? ' data-cle="' + esc(f.cle) + '"' : '') + niveaux + '>' + h + aide + '</div>';
 	}
 
 	/* Champs « image » et « fichier » : envoi dans la médiathèque, aperçu, retrait. */
@@ -2093,6 +2145,64 @@
 		});
 		var info = form.querySelector('.g-niveau');
 		if (info) info.textContent = niveau > -1 && !form.querySelector('[data-genre]') ? 'Niveau : ' + NIVEAUX[niveau] : '';
+		equilibrer(form);
+	}
+
+	/* ---------- Formulaires en blocs ----------
+	   À la demande de l'utilisateur (2026-11-23), pour une meilleure lisibilité : le contenu à gauche, en blocs titrés
+	   (chaque intertitre « section » ouvre un bloc) ; à droite, la publication (statut, date, ordre, à la une), le
+	   classement (rubrique, catégories) et l'image à la une, s'ils viennent avant le premier intertitre. Les champs
+	   courts vont deux par deux ; un champ court resté seul prend la ligne (equilibrer). */
+	var COURTS = ['text', 'url', 'email', 'number', 'date', 'datetime', 'select', 'color', 'parent', 'etablissement', 'departement', 'case', 'niveau_ue'];
+	var PUBLICATION = ['status', 'date', 'sticky', 'menu_order'];
+
+	function blocs(r, p) {
+		var principal = [{ titre: r.reglages ? '' : (r.premierBloc || 'Informations générales'), aide: '', champs: [] }];
+		var publication = [], cote = [];
+		r.champs.forEach(function (f) {
+			if (f.type === 'section') {
+				principal.push({ titre: f.label, aide: f.aide || '', champs: [] });
+				return;
+			}
+			var html = champ(f, p) + (f.type === 'parent' ? '<p class="g-niveau" aria-live="polite"></p>' : '');
+			var avantSection = principal.length === 1;
+			if (PUBLICATION.indexOf(f.path) > -1) publication.push(html);
+			else if (avantSection && (f.type === 'taxo' || f.path === 'featured_media')) cote.push({ titre: f.label.replace(/ \(.*\)$/, ''), champs: [html], un: true });
+			else principal[principal.length - 1].champs.push(html);
+		});
+		if (publication.length) cote.unshift({ titre: 'Publication', champs: publication });
+		var n = 0;
+		var bloc = function (b, classe) {
+			if (!b.champs.length) return '';
+			var id = 'g-bloc-' + (++n);
+			return '<section class="g-panneau g-bloc g-bloc--' + n + (classe || '') + (b.un ? ' g-bloc--un' : '') + '"' + (b.titre ? ' aria-labelledby="' + id + '"' : '') + '>' +
+				(b.titre ? '<header class="g-bloc__tete"><h3 id="' + id + '">' + esc(b.titre) + '</h3>' + (b.aide ? '<p class="g-aide">' + esc(b.aide) + '</p>' : '') + '</header>' : '') +
+				'<div class="g-bloc__champs">' + b.champs.join('') + '</div></section>';
+		};
+		var gauche = principal.map(function (b) { return bloc(b); }).join('');
+		var droite = cote.map(function (b) { return bloc(b, ' g-bloc--cote'); }).join('');
+		return '<div class="g-edition' + (droite ? '' : ' g-edition--seule') + '"><div class="g-edition__principal">' + gauche + '</div>' +
+			(droite ? '<div class="g-edition__cote">' + droite + '</div>' : '') + '</div>';
+	}
+
+	/* Deux champs courts par ligne : dans chaque suite de champs courts visibles, le dernier d'une suite impaire prend
+	   toute la ligne. À refaire quand des champs apparaissent ou disparaissent (majNiveau). */
+	function equilibrer(form) {
+		[].forEach.call(form.querySelectorAll('.g-edition__principal .g-bloc__champs'), function (zone) {
+			if (zone.closest('.g-form--ue') && zone.closest('.g-bloc--1')) return; // grille propre au formulaire d'une UE
+			var suite = [];
+			var clore = function () {
+				if (suite.length % 2) suite[suite.length - 1].classList.add('g-champ--seul');
+				suite = [];
+			};
+			[].forEach.call(zone.children, function (el) {
+				el.classList.remove('g-champ--seul');
+				if (el.hidden || getComputedStyle(el).display === 'none') return;
+				if (el.classList.contains('g-champ--court')) suite.push(el);
+				else clore();
+			});
+			clore();
+		});
 	}
 
 	function dessiner(r, id, p) {
@@ -2112,9 +2222,7 @@
 			? '<p class="g-aide g-role">Utilisée par le site : ' + esc(p.sueb_gestion.role) + '. Son adresse ne change pas et elle ne peut pas être supprimée.</p>'
 			: '';
 		contenu.innerHTML = tete + role +
-			'<form class="g-form g-panneau' + (r.champs === CHAMPS_UE ? ' g-form--ue' : '') + '" novalidate>' + r.champs.map(function (f) {
-				return champ(f, p) + (f.type === 'parent' ? '<p class="g-niveau" aria-live="polite"></p>' : '');
-			}).join('') +
+			'<form class="g-form g-form--blocs' + (r.champs === CHAMPS_UE ? ' g-form--ue' : '') + '" novalidate>' + blocs(r, p) +
 			'<div class="g-form__actions"><button class="g-btn g-btn--primaire" type="submit">Enregistrer</button>' + (r.reglages ? '' : '<a class="g-btn" href="' + retourListe + '">Annuler</a>') + '</div></form>';
 		var form = contenu.querySelector('form');
 
@@ -2123,6 +2231,7 @@
 		if (form.querySelector('[data-niveaux]')) majNiveau(r, form);
 		majNiveauxOuverts(form, true);
 		majNiveauUE(form);
+		equilibrer(form);
 
 		apercusMedias(form); // aperçu des médias déjà choisis
 

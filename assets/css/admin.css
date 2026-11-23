@@ -153,7 +153,22 @@
 .g-nav__marque small { font-size: .78rem; color: var(--g-nav-texte); }
 .g-nav__liens { flex: 1; min-height: 0; padding: 0 .8rem; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .2) transparent; } /* seules les rubriques défilent : le compte reste en bas */
 .g-nav__liens ul { display: grid; gap: .15rem; margin: 0; padding: 0; list-style: none; }
-.g-nav__groupe { margin: 1rem 0 .3rem; padding: 0 .85rem; font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--g-nav-texte); opacity: .7; }
+/* Chaque groupe du menu se replie (admin.js, plier()) : le titre est un bouton, la flèche tourne. */
+.g-nav__groupe {
+	display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; min-height: 40px;
+	margin: .55rem 0 .1rem; padding: .35rem .85rem; border: 0; border-radius: 10px; background: none;
+	color: var(--g-nav-texte); font: inherit; font-size: .8rem; font-weight: 700; text-align: left; cursor: pointer;
+	transition: background var(--g-vite) var(--g-ease), color var(--g-vite) var(--g-ease);
+}
+.g-nav__groupe:hover { background: var(--g-nav-survol); color: #fff; }
+.g-nav__groupe:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+.g-nav__fleche { flex: none; width: 16px; height: 16px; transition: transform var(--g-normal) var(--g-ease); }
+.est-replie .g-nav__fleche { transform: rotate(-90deg); }
+.g-nav__repli { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--g-normal) var(--g-ease); }
+/* La marge négative garde visibles les contours de focus malgré overflow: hidden. */
+.g-nav__repli > ul { min-height: 0; margin: -4px; padding: 4px; overflow: hidden; }
+.est-replie .g-nav__repli { grid-template-rows: 0fr; }
+.est-replie .g-nav__repli > ul { visibility: hidden; transition: visibility 0s linear var(--g-normal); }
 .g-nav__liens a {
 	position: relative; display: flex; align-items: center; gap: .7rem;
 	padding: .6rem .85rem; border-radius: var(--g-r-s);
@@ -552,7 +567,7 @@ td.g-actions > * + * { margin-left: .2rem; }
 /* Barre latérale : onglets de 44 px, titres de groupe sobres (sans capitales). */
 .g-nav { padding-top: 1.4rem; }
 .g-nav__liens { padding: 0 .75rem; }
-.g-nav__groupe { margin: .9rem 0 .25rem; padding: .3rem .55rem .35rem; font-size: .78rem; letter-spacing: 0; text-transform: none; opacity: 1; }
+/* (titres de groupe : voir « Chaque groupe du menu se replie », plus haut) */
 .g-nav__liens a { min-height: 44px; padding: 0 .85rem; border-radius: 10px; font-size: .92rem; }
 .g-nav__liens a[aria-current="page"]::before { left: -.75rem; }
 
@@ -714,16 +729,55 @@ td.g-actions > * + * { margin-left: .2rem; }
 .g-form--ue .g-suffixe { max-width: none; }
 @media (min-width: 700px) {
 	.g-paire { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	/* Grille de 6 : code (1) + département et filière (5) ; niveau, semestre, crédits (2 chacun) ; statut, ordre (3 chacun). */
-	.g-form.g-form--ue { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1.15rem 1.75rem; align-items: start; }
-	.g-form.g-form--ue > * { grid-column: 1 / -1; }
-	.g-form.g-form--ue > [data-cle="code"] { grid-column: span 1; }
-	.g-form.g-form--ue > .g-champ--parent { grid-column: span 5; }
-	.g-form.g-form--ue > [data-cle="niveau_ue"], .g-form.g-form--ue > [data-cle="semestre"], .g-form.g-form--ue > [data-cle="credits"] { grid-column: span 2; }
-	.g-form.g-form--ue > .g-champ--select:not([data-cle]), .g-form.g-form--ue > .g-champ--number:not([data-cle]) { grid-column: span 3; }
+	/* Grille de 6 dans le premier bloc : code (1) + département et filière (5) ; niveau, semestre, crédits (2 chacun). */
+	.g-form--ue .g-bloc--1 .g-bloc__champs { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+	.g-form--ue .g-bloc--1 .g-bloc__champs > [data-cle="code"] { grid-column: span 1; }
+	.g-form--ue .g-bloc--1 .g-bloc__champs > .g-champ--parent { grid-column: span 5; }
+	.g-form--ue .g-bloc--1 .g-bloc__champs > [data-cle="niveau_ue"], .g-form--ue .g-bloc--1 .g-bloc__champs > [data-cle="semestre"], .g-form--ue .g-bloc--1 .g-bloc__champs > [data-cle="credits"] { grid-column: span 2; }
 }
 @media (min-width: 700px) and (max-width: 1099px) {
 	/* Écran moyen : le code prend un peu plus de place pour rester lisible. */
-	.g-form.g-form--ue > [data-cle="code"] { grid-column: span 2; }
-	.g-form.g-form--ue > .g-champ--parent { grid-column: span 4; }
+	.g-form--ue .g-bloc--1 .g-bloc__champs > [data-cle="code"] { grid-column: span 2; }
+	.g-form--ue .g-bloc--1 .g-bloc__champs > .g-champ--parent { grid-column: span 4; }
+}
+
+/* 19. FORMULAIRES EN BLOCS (admin.js : blocs(), equilibrer()) ---------------
+   Demande de l'utilisateur (2026-11-23) : des formulaires plus lisibles. Le contenu
+   à gauche en blocs titrés, la publication, le classement et l'image à droite ;
+   une seule colonne sous 1100 px (la colonne de droite passe dessous). */
+.g-form.g-form--blocs { gap: 1.25rem; max-width: none; }
+.g-edition { display: grid; gap: 1.25rem; align-items: start; }
+.g-edition__principal, .g-edition__cote { display: grid; gap: 1.25rem; min-width: 0; }
+.g-bloc { padding: 1.2rem clamp(1rem, 2.2vw, 1.6rem) 1.4rem; }
+.g-bloc__tete { margin: 0 0 1.1rem; padding-bottom: .8rem; border-bottom: 1px solid var(--g-filet); }
+.g-bloc__tete h3 { margin: 0; font-family: var(--f-texte); font-size: 1.02rem; font-weight: 700; color: var(--g-texte); }
+.g-bloc__tete .g-aide { margin: .3rem 0 0; }
+.g-bloc__champs { display: grid; gap: 1.1rem; }
+.g-bloc__champs > .g-niveau { margin: -.5rem 0 0; }
+.g-bloc__champs > .g-niveau:empty { display: none; }
+/* Un bloc dont tous les champs sont masqués (selon le niveau d'une structure) disparaît. */
+.g-bloc:not(:has(.g-champ:not([hidden]))) { display: none; }
+/* Bloc d'un seul champ (rubrique, catégories, image) : son titre suffit, l'étiquette reste pour les lecteurs d'écran. */
+.g-bloc--un .g-champ > label:first-child, .g-bloc--un .g-champ > .g-label:first-child, .g-bloc--un .g-cases > legend {
+	position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+.g-bloc--un .g-cases { flex-direction: column; gap: .55rem; padding: 0; border: 0; background: none; }
+.g-bloc--cote .g-champ input[type="number"] { max-width: none; }
+.g-bloc--cote .g-media__choisir { justify-content: center; }
+.g-form--blocs .g-riche__zone { min-height: 360px; }
+.g-form--blocs .g-form__actions { margin: 0; border: 1px solid var(--g-filet); border-radius: var(--g-r); box-shadow: var(--g-ombre-s); }
+@media (min-width: 700px) {
+	.g-edition__principal .g-bloc__champs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem 1.5rem; align-items: start; }
+	.g-edition__principal .g-bloc__champs > * { grid-column: 1 / -1; }
+	.g-edition__principal .g-bloc__champs > .g-champ--court { grid-column: auto; }
+	.g-edition__principal .g-bloc__champs > .g-champ--court.g-champ--seul { grid-column: 1 / -1; }
+}
+@media (min-width: 1100px) {
+	.g-edition { grid-template-columns: minmax(0, 1fr) clamp(280px, 24vw, 340px); }
+	.g-edition--seule { grid-template-columns: minmax(0, 980px); }
+	/* La colonne de droite suit la saisie, sous la barre du haut. */
+	.g-edition__cote { position: sticky; top: calc(var(--g-barre-wp) + 76px); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.g-nav__repli, .g-nav__fleche, .est-replie .g-nav__repli > ul { transition: none; }
 }

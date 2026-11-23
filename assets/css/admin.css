@@ -151,7 +151,7 @@
 .g-nav__marque span { display: flex; flex-direction: column; line-height: 1.2; }
 .g-nav__marque strong { font-family: var(--f-titre); font-size: 1.25rem; font-weight: 500; letter-spacing: .03em; }
 .g-nav__marque small { font-size: .78rem; color: var(--g-nav-texte); }
-.g-nav__liens { flex: 1; padding: 0 .8rem; }
+.g-nav__liens { flex: 1; min-height: 0; padding: 0 .8rem; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .2) transparent; } /* seules les rubriques défilent : le compte reste en bas */
 .g-nav__liens ul { display: grid; gap: .15rem; margin: 0; padding: 0; list-style: none; }
 .g-nav__groupe { margin: 1rem 0 .3rem; padding: 0 .85rem; font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--g-nav-texte); opacity: .7; }
 .g-nav__liens a {
@@ -162,8 +162,8 @@
 }
 .g-nav__liens a:hover { background: var(--g-nav-survol); color: #fff !important; }
 .g-nav__liens a[aria-current="page"] { background: var(--g-or-vif); color: var(--g-nav-fond) !important; }
-/* Marqueur latéral de la rubrique active : l'état ne repose pas que sur la couleur. */
-.g-nav__liens a[aria-current="page"]::before { content: ""; position: absolute; left: -.8rem; top: 50%; translate: 0 -50%; width: 3px; height: 22px; border-radius: 0 3px 3px 0; background: var(--g-or-vif); }
+/* La rubrique active : l'aplat or et le texte en gras (l'état ne repose pas que sur la couleur). */
+.g-nav__liens a[aria-current="page"] { font-weight: 700; }
 .g-nav__liens .g-ico { width: 18px; height: 18px; opacity: .9; }
 .g-nav__pied { margin-top: 1rem; padding: 1rem 1.35rem 0; border-top: 1px solid var(--g-nav-filet); }
 .g-compte { display: flex; align-items: center; gap: .65rem; margin-bottom: .6rem; min-width: 0; }
@@ -228,6 +228,104 @@
 .g-raccourcis strong { display: block; font-size: .875rem; }
 .g-raccourcis small { display: block; font-size: .78rem; line-height: 1.35; color: var(--g-texte-pale); }
 .g-raccourci__ico { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 9px; background: var(--g-primaire-voile); color: var(--g-primaire); }
+
+/* Le tableau de bord (assets/js/admin.js, tableauDeBord()), d'après le modèle fourni par l'utilisateur :
+   quatre chiffres clés, puis l'offre de formation (histogramme, anneau), puis le suivi (visites du site,
+   contenus renseignés). Graphiques en SVG ; chiffres en Libre Franklin, axes et tableaux en chiffres alignés. */
+.g-kpis.g-tdb__chiffres { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.1rem; }
+.g-chiffre a, .g-chiffre > div { display: flex; align-items: center; gap: 1rem; height: 100%; padding: 1.15rem 1.25rem; border: 1px solid var(--g-filet); border-radius: var(--g-r); background: var(--g-surface); box-shadow: var(--g-ombre-s); color: inherit !important; text-decoration: none; }
+/* Une couleur par carte : la teinte pleine de l'icône, sa version foncée, sa version claire et le fond de la tuile. */
+.g-chiffre--personnel { --p: #2a78d6; --p-fonce: #1c5cab; --p-clair: #9ec5f4; --p-fond: #eaf2fc; }
+.g-chiffre--filieres { --p: #18924c; --p-fonce: #0f6b36; --p-clair: #9fd9b5; --p-fond: #e7f5ec; }
+.g-chiffre--etablissements { --p: #b97f00; --p-fonce: #8a5f00; --p-clair: #f1cf7f; --p-fond: #fcf3df; }
+.g-chiffre--departements { --p: #c9364b; --p-fonce: #962335; --p-clair: #f3aab5; --p-fond: #fcebee; }
+.g-chiffre__ico { display: grid; place-items: center; flex: none; width: 62px; height: 62px; border-radius: 16px; background: var(--p-fond, var(--g-primaire-voile)); transition: transform var(--g-normal) var(--g-ressort); }
+.g-picto { width: 40px; height: 40px; fill: var(--p, var(--g-primaire)); }
+.g-picto .clair { fill: var(--p-clair); }
+.g-picto .fonce { fill: var(--p-fonce); }
+.g-picto .accent { fill: var(--g-or-vif); }
+.g-picto .trait { fill: none; stroke: var(--p-fonce); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.g-chiffre a:hover .g-chiffre__ico { transform: scale(1.08); }
+.g-chiffre__texte { display: flex; flex-direction: column; min-width: 0; }
+.g-chiffre__libelle { font-size: .85rem; font-weight: 600; color: var(--g-texte-doux); }
+.g-chiffre__valeur { font-family: var(--f-texte); font-size: 1.95rem; font-weight: 700; line-height: 1.15; color: var(--g-texte); }
+.g-chiffre__pied { font-size: .78rem; color: var(--g-texte-pale); }
+
+.g-tdb__ligne { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); gap: 1.1rem; margin-bottom: 1.1rem; align-items: stretch; }
+.g-panneau__sous { margin: .15rem 0 0; font-size: .8rem; color: var(--g-texte-pale); }
+.g-tdb__corps { padding: 1.1rem 1.2rem 1.15rem; }
+.g-graphe { position: relative; min-height: 220px; }
+.g-graphe__svg { display: block; overflow: visible; font-family: var(--f-texte); }
+.g-graphe__axe { font-size: 12px; fill: var(--g-texte-pale); }
+.g-graphe__valeur { font-size: 12px; font-weight: 700; fill: var(--g-texte); }
+.g-num { font-variant-numeric: tabular-nums; }
+.g-colonne path, .g-part { transition: opacity var(--g-normal) var(--g-ease); }
+.g-graphe:has(.est-survolee) .g-colonne:not(.est-survolee) path, .est-survole .g-part:not(.est-survolee) { opacity: .4; }
+.g-graphe__zone { cursor: crosshair; outline: none; }
+.g-graphe__zone:focus-visible { stroke: var(--g-primaire); stroke-width: 2; }
+.g-graphe__vide { position: absolute; top: 34%; left: 50%; width: min(26rem, 86%); margin: 0; translate: -50% 0; padding: .75rem 1rem; border-radius: var(--g-r-s); background: var(--g-surface); text-align: center; font-size: .875rem; line-height: 1.5; color: var(--g-texte-doux); }
+.g-bulle { position: absolute; z-index: 5; display: grid; gap: .2rem; min-width: 9.5rem; max-width: 16rem; padding: .55rem .75rem; border: 1px solid var(--g-filet); border-radius: var(--g-r-s); background: var(--g-surface); box-shadow: var(--g-ombre); font-size: .8rem; color: var(--g-texte); pointer-events: none; }
+.g-bulle[hidden] { display: none; }
+.g-bulle strong { font-size: .82rem; }
+.g-bulle span { display: flex; align-items: center; gap: .45rem; color: var(--g-texte-doux); }
+.g-bulle i { flex: none; width: 12px; height: 3px; border-radius: 2px; }
+
+.g-anneau { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.25rem 1.75rem; }
+.g-anneau__figure { position: relative; flex: none; }
+.g-anneau__figure svg { display: block; }
+.g-anneau__centre { position: absolute; inset: 0; display: grid; place-content: center; margin: 0; text-align: center; pointer-events: none; }
+.g-anneau__centre strong { font-size: 1.65rem; font-weight: 700; line-height: 1.1; color: var(--g-texte); }
+.g-anneau__centre span { font-size: .8rem; color: var(--g-texte-pale); }
+.g-legende { display: grid; flex: 1 1 11rem; gap: .6rem; margin: 0; padding: 0; list-style: none; }
+.g-legende li { display: flex; align-items: center; gap: .6rem; font-size: .875rem; }
+.g-legende__marque { flex: none; width: 12px; height: 12px; border-radius: 3px; }
+.g-legende__trait { flex: none; width: 18px; height: 3px; border-radius: 2px; }
+.g-legende__nom { flex: 1; color: var(--g-texte-doux); }
+.g-legende strong { color: var(--g-texte); font-variant-numeric: tabular-nums; }
+.g-legende--ligne { display: flex; flex-wrap: wrap; gap: .5rem 1.75rem; margin-bottom: .8rem; }
+.g-legende--ligne .g-legende__nom { flex: none; }
+.g-note { margin: 1.1rem 0 0; font-size: .78rem; line-height: 1.45; color: var(--g-texte-pale); }
+
+.g-jauges { display: grid; gap: .25rem; margin: 0; padding: 0; list-style: none; }
+.g-jauge a, .g-jauge > div { display: grid; gap: .4rem; padding: .7rem .65rem; border-radius: var(--g-r-s); color: inherit !important; text-decoration: none; transition: background var(--g-vite) var(--g-ease); }
+.g-jauge a:hover { background: var(--g-survol); }
+.g-jauge__tete { display: flex; justify-content: space-between; gap: 1rem; font-size: .875rem; font-weight: 600; }
+.g-jauge__tete strong { flex: none; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.g-jauge__barre { display: block; height: 8px; overflow: hidden; border-radius: 99px; background: color-mix(in srgb, var(--g-primaire) 13%, var(--g-surface)); }
+.g-jauge__barre span { display: block; height: 100%; border-radius: 99px; background: var(--g-primaire-doux); }
+.g-jauge__pied { font-size: .78rem; color: var(--g-texte-pale); }
+
+.g-donnees { margin-top: .8rem; font-size: .85rem; }
+.g-donnees summary { width: fit-content; cursor: pointer; font-weight: 600; color: var(--g-primaire); }
+.g-donnees .g-tableau { max-height: 18rem; margin-top: .6rem; overflow: auto; box-shadow: none; }
+.g-donnees td.g-num, .g-donnees th.g-num { text-align: right; }
+
+/* Le compte connecté, tout en bas du menu latéral, avec le bouton pour se déconnecter. */
+.g-profil { display: flex; align-items: center; gap: .75rem; margin: .9rem 0 .75rem; padding: .75rem; border-radius: var(--g-r); background: rgba(255, 255, 255, .07); }
+.g-profil__avatar { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--g-or-vif); color: var(--g-nav-fond); font-size: 1rem; font-weight: 700; }
+.g-profil__texte { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.g-profil__nom { overflow: hidden; font-size: .92rem; color: #fff; text-overflow: ellipsis; white-space: nowrap; }
+.g-profil__role { font-size: .78rem; color: var(--g-nav-texte); }
+.g-profil__courriel { overflow: hidden; font-size: .75rem; color: var(--g-nav-texte); text-overflow: ellipsis; white-space: nowrap; }
+.g-deconnexion { display: flex; align-items: center; justify-content: center; gap: .55rem; min-height: 44px; padding: .6rem 1rem; border: 1px solid rgba(255, 255, 255, .28); border-radius: var(--g-r-s); font-size: .875rem; font-weight: 600; color: #fff !important; text-decoration: none; transition: background var(--g-vite) var(--g-ease), border-color var(--g-vite) var(--g-ease); }
+.g-deconnexion:hover { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .5); }
+.g-deconnexion:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.g-deconnexion .g-ico { width: 17px; height: 17px; }
+
+@media (max-width: 1200px) {
+	.g-kpis.g-tdb__chiffres { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1000px) {
+	.g-tdb__ligne { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+	.g-kpis.g-tdb__chiffres { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+	.g-chiffre a, .g-chiffre > div { flex-direction: column; align-items: flex-start; gap: .6rem; padding: .95rem 1rem; }
+	.g-chiffre__ico { width: 50px; height: 50px; border-radius: 13px; }
+	.g-picto { width: 32px; height: 32px; }
+	.g-chiffre__valeur { font-size: 1.6rem; }
+	.g-tdb__corps { padding: 1rem .9rem; }
+}
 
 /* 8. LISTES ---------------------------------------------------------------- */
 .g-outils { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-bottom: 1rem; }

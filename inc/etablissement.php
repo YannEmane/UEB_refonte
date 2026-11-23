@@ -63,6 +63,48 @@ function sueb_niveau_ue( $semestre, $diplome, $choisi = '' ) {
 	return 'Niveau ' . $annee;
 }
 
+/**
+ * Le volume horaire d'une UE, tel que saisi dans la gestion (« 60 h : 30 CM, 15 TD, 15 TP »), en nombres :
+ * array( 'total' => 60, 'CM' => 30, 'TD' => 15, 'TP' => 15, 'texte' => '' ). Sans total écrit, c'est la
+ * somme des heures ; une part absente vaut 0 dès qu'une autre est donnée. Une durée qui ne se décompose
+ * pas (« 6 semaines », « 6 mois ») reste dans 'texte', les heures à null.
+ */
+function sueb_volume_ue( $volume ) {
+	$volume = trim( (string) $volume );
+	$v      = array( 'total' => null, 'CM' => null, 'TD' => null, 'TP' => null, 'texte' => '' );
+	if ( '' === $volume ) {
+		return $v;
+	}
+	$nombre = function ( $s ) {
+		return (float) str_replace( ',', '.', $s );
+	};
+	if ( preg_match_all( '/(\d+(?:[.,]\d+)?)\s*h?\s*(CM|TD|TP)\b|\b(CM|TD|TP)\s*:?\s*(\d+(?:[.,]\d+)?)/iu', $volume, $m, PREG_SET_ORDER ) ) {
+		foreach ( $m as $x ) {
+			$type       = strtoupper( '' !== ( $x[2] ?? '' ) ? $x[2] : $x[3] );
+			$v[ $type ] = ( $v[ $type ] ?? 0 ) + $nombre( '' !== ( $x[1] ?? '' ) ? $x[1] : $x[4] );
+		}
+	}
+	if ( preg_match( '/^(\d+(?:[.,]\d+)?)\s*h\b/iu', $volume, $t ) ) {
+		$v['total'] = $nombre( $t[1] );
+	}
+	$parties = array_filter( array( $v['CM'], $v['TD'], $v['TP'] ), 'is_numeric' );
+	if ( $parties ) {
+		foreach ( array( 'CM', 'TD', 'TP' ) as $k ) {
+			$v[ $k ] = $v[ $k ] ?? 0;
+		}
+		$v['total'] = $v['total'] ?? array_sum( $parties );
+	}
+	if ( null === $v['total'] ) {
+		$v['texte'] = $volume;
+	}
+	return $v;
+}
+
+/** Un nombre d'heures ou de crédits à la française : 30, 7,5. */
+function sueb_nombre( $n ) {
+	return null === $n ? '' : ( floor( $n ) == $n ? (string) (int) $n : str_replace( '.', ',', (string) round( $n, 1 ) ) ); // phpcs:ignore Universal.Operators.StrictComparisons -- 30.0 == 30
+}
+
 /** Nom complet d'un niveau : L1 donne « Licence 1 », M1 pro « Master 1 professionnel », A2 « 2e année » ; les autres restent tels quels. */
 function sueb_nom_niveau( $niveau ) {
 	if ( preg_match( '/^A\s?(\d)$/i', trim( $niveau ), $m ) ) {
@@ -364,9 +406,9 @@ add_action( 'pre_get_posts', function ( $q ) {
 
 /* Une fois : l'adresse /academie/ entre dans les règles de réécriture. */
 add_action( 'init', function () {
-	if ( 'a3' !== get_option( 'sueb_regles_academie' ) ) { // a2, a3 : les adresses des parcours et de leurs départements (inc/parcours.php)
+	if ( 'a4' !== get_option( 'sueb_regles_academie' ) ) { // a2, a3 : les adresses des parcours et de leurs départements ; a4 : l'entrée par établissement (inc/parcours.php)
 		flush_rewrite_rules( false );
-		update_option( 'sueb_regles_academie', 'a3' );
+		update_option( 'sueb_regles_academie', 'a4' );
 	}
 }, 99 );
 

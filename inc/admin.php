@@ -122,6 +122,7 @@ add_action( 'wp_enqueue_scripts', function () {
 				'root'        => esc_url_raw( rest_url() ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
 				'nom'         => $u->display_name,
+				'courriel'    => $u->user_email,
 				'role'        => $role,
 				'logo'        => sueb_logo(),
 				'site'        => home_url( '/' ),

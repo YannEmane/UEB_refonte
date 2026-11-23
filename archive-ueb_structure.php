@@ -12,6 +12,13 @@
  * Un établissement dont les filières ne sont pas rangées par département (un seul
  * groupe « Filières ») passe directement de l'étape 2 aux filières.
  *
+ * L'entrée par établissement (menu Académie de l'en-tête) prend les mêmes étapes
+ * dans l'autre ordre :
+ *
+ *  1. /academie/fs/ : les formations de l'établissement (classique, professionnelle…) ;
+ *  2. /academie/fs/classique/ : les départements de cette formation ;
+ *  3. /academie/fs/classique/<departement>/ : les filières du département.
+ *
  * Les parcours et leur rangement : inc/parcours.php.
  *
  * @package Site_UEB
@@ -22,13 +29,70 @@ defined( 'ABSPATH' ) || exit;
 $tous  = sueb_parcours();
 $offre = sueb_offre_par_parcours();
 list( $slug, $sigle, $dep_slug ) = sueb_parcours_demande();
+$par_etab = sueb_academie_par_etab();                          // entrée par l'établissement plutôt que par le parcours
 $parcours = $tous[ $slug ] ?? null;
 $choix    = $parcours && $sigle ? ( $offre[ $slug ][ $sigle ] ?? null ) : null;
-$etab     = $choix ? $choix['etab'] : null;
+$etab     = $choix ? $choix['etab'] : ( $par_etab && $sigle ? sueb_etab_par_sigle( $sigle ) : null );
 $par_dep  = $choix && sueb_parcours_par_departement( $choix ); // l'étape « département » a-t-elle lieu d'être ?
 $dep      = $choix && $dep_slug ? ( $choix['departements'][ $dep_slug ] ?? null ) : null;
 $liste_dep = $par_dep && ! $dep;                               // on en est au choix du département
 $filieres = $dep ? $dep['filieres'] : ( $choix ? $choix['filieres'] : array() );
+
+/* Entrée par l'établissement, première étape : ses formations, dans l'ordre des parcours (parcours => choix). */
+$accueil_etab = $par_etab && $etab && ! $parcours;
+$formations   = array();
+if ( $accueil_etab ) {
+	foreach ( $offre as $cle => $par_sigle ) {
+		if ( isset( $par_sigle[ $sigle ] ) ) {
+			$formations[ $cle ] = $par_sigle[ $sigle ];
+		}
+	}
+}
+
+/* L'adresse d'une étape suivante, dans l'ordre par lequel le visiteur est entré. */
+$url = function ( $p, $s, $d = '' ) use ( $par_etab ) {
+	return $par_etab ? sueb_url_formation( $s, $p, $d ) : sueb_url_parcours( $p, $s, $d );
+};
+
+/*
+ * Les diplômes réellement préparés dans une formation, déduits des niveaux de ses filières dans ce parcours
+ * (BTS 1 donne « BTS », L2 pro « Licence professionnelle », 2nd cycle « DIPET II », Niveau 4 « Diplôme d’ingénieur »),
+ * à défaut de leur diplôme ; dans l'ordre des études. Sans rien de reconnu : les diplômes du parcours.
+ */
+$diplomes = function ( array $filieres, array $par_defaut ) {
+	$motifs = array( // motif sur le niveau => diplôme, dans l'ordre des études
+		'/^bts/iu'                    => 'BTS',
+		'/^L\s?\d\s*pro$|^LP\s?\d$/iu' => 'Licence professionnelle',
+		'/^L\s?\d$/iu'                => 'Licence',
+		'/^M\s?\d\s*pro$|^MP\s?\d$/iu' => 'Master professionnel',
+		'/^M\s?\d$/iu'                => 'Master',
+		'/^1er cycle/iu'              => 'DIPET I',
+		'/^2nd cycle/iu'              => 'DIPET II',
+		'/^niveau\s*\d/iu'            => 'Diplôme d’ingénieur',
+	);
+	$ordre = array_flip( array_values( $motifs ) );
+	$liste = array();
+	foreach ( $filieres as $f ) {
+		$trouve = false;
+		foreach ( $f['niveaux'] as $n ) {
+			foreach ( $motifs as $motif => $diplome ) {
+				if ( preg_match( $motif, trim( $n ) ) ) {
+					$liste[ $diplome ] = $ordre[ $diplome ];
+					$trouve            = true;
+					break;
+				}
+			}
+		}
+		if ( ! $trouve && preg_match( '/^(doctorat en \S+)/iu', $f['diplome'], $m ) ) { // médecine, pharmacie
+			$liste[ $m[1] ] = 90 + count( $liste );
+		} elseif ( ! $trouve && preg_match( '/^(licence professionnelle|master professionnel|bts|dipet)/iu', $f['diplome'], $m ) ) {
+			$d            = 'bts' === mb_strtolower( $m[1] ) ? 'BTS' : ( 'dipet' === mb_strtolower( $m[1] ) ? 'DIPET I' : ucfirst( mb_strtolower( $m[1] ) ) );
+			$liste[ $d ] = $ordre[ $d ];
+		}
+	}
+	asort( $liste );
+	return $liste ? array_keys( $liste ) : $par_defaut;
+};
 
 /* Le nombre d'unités d'enseignement de chaque filière affichée, en une requête. */
 $nb_ue = array();
@@ -63,7 +127,20 @@ get_header();
 	<div class="conteneur">
 		<ol class="fil-ariane">
 			<li><a href="<?php echo esc_url( home_url( '/' ) ); ?>">Accueil</a></li>
-			<?php if ( ! $parcours ) : ?>
+			<?php if ( $par_etab ) : ?>
+				<li><a href="<?php echo esc_url( sueb_url_academie() ); ?>">Académie</a></li>
+				<?php if ( ! $parcours ) : ?>
+					<li aria-current="page"><?php echo esc_html( $sigle ); ?></li>
+				<?php else : ?>
+					<li><a href="<?php echo esc_url( sueb_url_formation( $sigle ) ); ?>"><?php echo esc_html( $sigle ); ?></a></li>
+					<?php if ( $dep && $par_dep ) : ?>
+						<li><a href="<?php echo esc_url( sueb_url_formation( $sigle, $slug ) ); ?>"><?php echo esc_html( $parcours['nom'] ); ?></a></li>
+						<li aria-current="page"><?php echo esc_html( $dep['sigle'] ?: $dep['titre'] ); ?></li>
+					<?php else : ?>
+						<li aria-current="page"><?php echo esc_html( $parcours['nom'] ); ?></li>
+					<?php endif; ?>
+				<?php endif; ?>
+			<?php elseif ( ! $parcours ) : ?>
 				<li aria-current="page">Académie</li>
 			<?php else : ?>
 				<li><a href="<?php echo esc_url( sueb_url_academie() ); ?>">Académie</a></li>
@@ -81,7 +158,27 @@ get_header();
 			<?php endif; ?>
 		</ol>
 		<div class="acad-tete__ligne">
-			<?php if ( $etab ) : ?>
+			<?php if ( $accueil_etab ) : ?>
+				<div>
+					<?php
+					$le   = sueb_le_sigle( $sigle, $etab['titre'] );
+					$nb_f = $compter( $formations );
+					if ( $formations ) {
+						$dans  = array_map( function ( $cle ) use ( $tous ) {
+							return $tous[ $cle ]['dans'];
+						}, array_keys( $formations ) );
+						$dans  = count( $dans ) > 1 ? implode( ', ', array_slice( $dans, 0, -1 ) ) . ' et ' . end( $dans ) : $dans[0];
+						$suite = array_filter( $formations, 'sueb_parcours_par_departement' ) ? 'ses départements, puis ses filières et leurs unités d’enseignement' : 'ses filières et leurs unités d’enseignement';
+						$chapo = sprintf( '%s propose %s, %s. Choisissez une formation pour voir %s.', ucfirst( $le ), $pluriel( $nb_f, 'filière', 'filières' ), $dans, $suite );
+					} else {
+						$chapo = sprintf( 'Les formations %s seront bientôt publiées.', sueb_de_sigle( $sigle, $etab['titre'] ) );
+					}
+					?>
+					<h1 class="acad-tete__titre acad-tete__titre--etab"><?php echo esc_html( $etab['titre'] ); ?></h1>
+					<p class="acad-tete__chapo"><?php echo esc_html( $chapo ); ?></p>
+				</div>
+				<img class="acad-tete__logo" src="<?php echo esc_url( $etab['logo'] ); ?>" alt="" width="96" height="96">
+			<?php elseif ( $etab ) : ?>
 				<div>
 					<?php
 					$ou = $etab['ville'] ? ', à ' . $etab['ville'] : '';
@@ -120,16 +217,29 @@ get_header();
 		</div>
 
 		<?php
-		/* Les étapes : parcours, établissement, département (s'il y a lieu), filière. Chacune : libellé, lien une fois franchie. */
-		$etapes = array(
-			array( $parcours ? $parcours['court'] : 'Le parcours', $parcours ? sueb_url_academie() : '' ),
-			array( $etab ? $sigle : 'L’établissement', $etab ? sueb_url_parcours( $slug ) : '' ),
-		);
-		if ( ! $etab || $par_dep ) {
-			$etapes[] = array( $dep ? ( $dep['sigle'] ?: 'Le département' ) : 'Le département', $dep ? sueb_url_parcours( $slug, $sigle ) : '' );
+		/* Les étapes : parcours, établissement, département (s'il y a lieu), filière. Chacune : libellé, lien une fois franchie.
+		   Par l'établissement : établissement, formation, département (s'il y a lieu), filière. */
+		if ( $par_etab ) {
+			$etapes = array(
+				array( $sigle, sueb_url_academie() . '#par-etablissement' ),
+				array( $parcours ? $parcours['court'] : 'La formation', $parcours ? sueb_url_formation( $sigle ) : '' ),
+			);
+			if ( ! $parcours || $par_dep ) {
+				$etapes[] = array( $dep ? ( $dep['sigle'] ?: 'Le département' ) : 'Le département', $dep ? sueb_url_formation( $sigle, $slug ) : '' );
+			}
+			$etapes[] = array( 'La filière', '' );
+			$courante = ! $parcours ? 1 : ( $liste_dep ? 2 : count( $etapes ) - 1 );
+		} else {
+			$etapes = array(
+				array( $parcours ? $parcours['court'] : 'Le parcours', $parcours ? sueb_url_academie() : '' ),
+				array( $etab ? $sigle : 'L’établissement', $etab ? sueb_url_parcours( $slug ) : '' ),
+			);
+			if ( ! $etab || $par_dep ) {
+				$etapes[] = array( $dep ? ( $dep['sigle'] ?: 'Le département' ) : 'Le département', $dep ? sueb_url_parcours( $slug, $sigle ) : '' );
+			}
+			$etapes[] = array( 'La filière', '' );
+			$courante = ! $parcours ? 0 : ( ! $etab ? 1 : ( $liste_dep ? 2 : count( $etapes ) - 1 ) );
 		}
-		$etapes[] = array( 'La filière', '' );
-		$courante = ! $parcours ? 0 : ( ! $etab ? 1 : ( $liste_dep ? 2 : count( $etapes ) - 1 ) );
 		?>
 		<ol class="acad-etapes" aria-label="Étapes">
 			<?php foreach ( $etapes as $k => $e ) : ?>
@@ -141,7 +251,51 @@ get_header();
 	</div>
 </header>
 
-<?php if ( ! $parcours ) : ?>
+<?php if ( $accueil_etab ) : ?>
+
+	<section class="acad-corps" aria-labelledby="titre-formations" style="--etab:<?php echo esc_attr( $etab['couleur'] ); ?>">
+		<div class="conteneur">
+			<header class="acad-famille__tete">
+				<h2 id="titre-formations">Formations <span><?php echo count( $formations ); ?></span></h2>
+			</header>
+			<?php if ( $formations ) : ?>
+				<?php /* Les cartes des parcours, comme sur la page Académie (sans flèche, à la demande de l'utilisateur). */ ?>
+				<ol class="parcours">
+					<?php $i = 0; foreach ( $formations as $cle => $c ) :
+						$p      = $tous[ $cle ];
+						$nb_dep = sueb_parcours_par_departement( $c ) ? count( $c['departements'] ) : 0;
+						$compte = ( $nb_dep ? $pluriel( $nb_dep, 'département', 'départements' ) . ', ' : '' ) . $pluriel( count( $c['filieres'] ), 'filière', 'filières' );
+						?>
+						<li class="parcours__carte<?php echo $i === count( $formations ) - 1 && count( $formations ) % 2 ? ' parcours__carte--large' : ''; ?> revele" style="--parcours:<?php echo esc_attr( $p['couleur'] ); ?>;--d:<?php echo esc_attr( round( $i++ * .07, 2 ) ); ?>s">
+							<a class="parcours__lien" href="<?php echo esc_url( sueb_url_formation( $sigle, $cle ) ); ?>">
+								<span class="parcours__haut">
+									<span class="parcours__icone"><?php echo sueb_icone( $p['icone'], 28 ); // phpcs:ignore WordPress.Security.EscapeOutput -- SVG du thème ?></span>
+								</span>
+								<span class="parcours__nom"><?php echo esc_html( $p['nom'] ); ?></span>
+								<span class="parcours__texte"><?php echo esc_html( $p['texte'] ); ?></span>
+								<span class="parcours__diplomes">
+									<?php foreach ( $diplomes( $c['filieres'], $p['diplomes'] ) as $d ) : ?><span><?php echo esc_html( $d ); ?></span><?php endforeach; ?>
+								</span>
+								<span class="parcours__pied">
+									<span class="parcours__compte"><?php echo esc_html( $compte ); ?></span>
+								</span>
+							</a>
+						</li>
+					<?php endforeach; ?>
+				</ol>
+			<?php else : ?>
+				<p class="vide">Aucune filière de cet établissement n’est encore publiée.</p>
+			<?php endif; ?>
+
+			<nav class="acad-autres" aria-label="<?php echo esc_attr( 'Autres pages ' . sueb_de_sigle( $sigle, $etab['titre'] ) ); ?>">
+				<span><?php echo esc_html( $sigle ); ?></span>
+				<?php if ( $etab['id'] > 0 ) : ?><a href="<?php echo esc_url( get_permalink( $etab['id'] ) ); ?>">La page de l’établissement</a><?php endif; ?>
+				<a href="<?php echo esc_url( sueb_url_academie() ); ?>">Tous les parcours de l’université</a>
+			</nav>
+		</div>
+	</section>
+
+<?php elseif ( ! $parcours ) : ?>
 
 	<section class="acad-corps" aria-labelledby="titre-parcours">
 		<div class="conteneur">
@@ -170,7 +324,12 @@ get_header();
 					</li>
 				<?php endforeach; ?>
 			</ol>
-			<p class="acad-autre"><a class="lien-texte" href="<?php echo esc_url( home_url( '/#etablissements' ) ); ?>">Voir plutôt tous les établissements</a></p>
+			<nav class="acad-autres acad-autres--etabs" id="par-etablissement" aria-label="Commencer par l’établissement">
+				<span>Ou par établissement</span>
+				<?php foreach ( sueb_etablissements() as $s => $e ) : ?>
+					<a href="<?php echo esc_url( sueb_url_formation( $s ) ); ?>" title="<?php echo esc_attr( $e['fr'] ); ?>"><img src="<?php echo esc_url( sueb_logo( $s ) ); ?>" alt="" width="24" height="24" loading="lazy"><?php echo esc_html( $s ); ?><span class="sr">, <?php echo esc_html( $e['fr'] ); ?></span></a>
+				<?php endforeach; ?>
+			</nav>
 		</div>
 	</section>
 
@@ -218,29 +377,54 @@ get_header();
 
 <?php elseif ( $liste_dep ) : ?>
 
+	<?php
+	/* « Département de Chimie appliquée » devient « Chimie appliquée » : le titre de la rubrique dit déjà « Départements ». */
+	$nom_dep = function ( $titre ) {
+		$nom = preg_replace( '/^d[ée]partement\s+(?:de\s+la\s+|de\s+l[’\']|des\s+|du\s+|de\s+|d[’\'])/iu', '', $titre );
+		return $nom === $titre ? $titre : mb_strtoupper( mb_substr( $nom, 0, 1 ) ) . mb_substr( $nom, 1 );
+	};
+	/* Une filière : intitulé (lien vers sa page et ses UE), diplôme, niveaux. */
+	$ligne_filiere = function ( array $f ) {
+		?>
+		<li class="deps-fil">
+			<a class="deps-fil__nom" href="<?php echo esc_url( $f['url'] ); ?>"><?php echo esc_html( $f['titre'] ); ?></a>
+			<?php if ( $f['diplome'] ) : ?><span class="deps-fil__diplome"><?php echo esc_html( $f['diplome'] ); ?></span><?php endif; ?>
+			<?php if ( $f['niveaux'] ) : ?>
+				<span class="cursus__niveaux deps-fil__niveaux" aria-label="<?php echo esc_attr( 'Niveaux : ' . implode( ', ', array_map( 'sueb_nom_niveau', $f['niveaux'] ) ) ); ?>">
+					<?php foreach ( $f['niveaux'] as $n ) : ?><span class="est-plein" title="<?php echo esc_attr( sueb_nom_niveau( $n ) ); ?>"><?php echo esc_html( preg_replace( '/^Niveau (\d+)$/', 'N$1', $n ) ); ?></span><?php endforeach; ?>
+				</span>
+			<?php endif; ?>
+		</li>
+		<?php
+	};
+	?>
 	<section class="acad-corps" aria-labelledby="titre-deps" style="--etab:<?php echo esc_attr( $etab['couleur'] ); ?>">
 		<div class="conteneur">
 			<header class="acad-famille__tete">
 				<h2 id="titre-deps">Départements <span><?php echo count( $choix['departements'] ); ?></span></h2>
-				<p><?php echo esc_html( $parcours['nom'] . ' · ' . $sigle ); ?></p>
 			</header>
-			<ol class="cursus__liste">
+
+			<?php /* D'après le modèle fourni par l'utilisateur (2026-11-23) : des bandeaux décalés tour à tour, un onglet de couleur au bout ; un clic ouvre les filières du département. */ ?>
+			<ol class="deps-onglets">
 				<?php $i = 0; foreach ( $choix['departements'] as $adresse => $d ) :
-					$apercu = array_slice( array_column( $d['filieres'], 'titre' ), 0, 3 );
+					$noms = array_column( $d['filieres'], 'titre' );
 					?>
-					<li class="cursus__item revele" style="--d:<?php echo esc_attr( min( $i, 8 ) * .05 ); ?>s">
-						<a class="cursus__lien" href="<?php echo esc_url( sueb_url_parcours( $slug, $sigle, $adresse ) ); ?>">
-							<span class="cursus__num" aria-hidden="true"><?php echo esc_html( str_pad( (string) ++$i, 2, '0', STR_PAD_LEFT ) ); ?></span>
-							<span class="cursus__corps">
-								<span class="cursus__titre"><?php echo esc_html( $d['titre'] ); ?></span>
-								<span class="cursus__meta">
-									<?php if ( $d['sigle'] ) : ?><span class="cursus__code"><?php echo esc_html( $d['sigle'] ); ?></span><?php endif; ?>
-									<span><?php echo esc_html( implode( ', ', $apercu ) . ( count( $d['filieres'] ) > count( $apercu ) ? '…' : '' ) ); ?></span>
+					<li class="deps-onglet revele <?php echo 0 === $i % 2 ? 'revele--droite' : 'revele--gauche'; ?>" style="--d:<?php echo esc_attr( min( $i, 8 ) * .06 ); ?>s">
+						<details class="deps-onglet__pli">
+							<summary class="deps-onglet__bande">
+								<span class="deps-onglet__num"><span aria-hidden="true"><?php echo esc_html( str_pad( (string) ++$i, 2, '0', STR_PAD_LEFT ) ); ?></span><?php if ( $d['sigle'] ) : ?><small><?php echo esc_html( $d['sigle'] ); ?></small><?php endif; ?></span>
+								<span class="deps-onglet__icone"><?php echo sueb_icone( sueb_icone_discipline( $d['titre'] ), 34 ); // phpcs:ignore WordPress.Security.EscapeOutput -- SVG du thème ?></span>
+								<span class="deps-onglet__texte">
+									<span class="deps-onglet__nom"><?php echo esc_html( $nom_dep( $d['titre'] ) ); ?></span>
+									<span class="deps-onglet__resume"><?php echo esc_html( $pluriel( count( $noms ), 'filière', 'filières' ) ); ?><span class="deps-onglet__liste"><?php echo esc_html( ' : ' . implode( ', ', $noms ) . '.' ); ?></span></span>
 								</span>
-							</span>
-							<span class="cursus__compte"><?php echo esc_html( $pluriel( count( $d['filieres'] ), 'filière', 'filières' ) ); ?></span>
-							<span class="cursus__fleche" aria-hidden="true"><?php echo sueb_icone( 'fleche', 18 ); // phpcs:ignore WordPress.Security.EscapeOutput -- SVG du thème ?></span>
-						</a>
+								<span class="deps-onglet__tab" aria-hidden="true"><span class="deps-onglet__signe"></span></span>
+							</summary>
+							<div class="deps-onglet__corps">
+								<ul class="deps-fils"><?php array_map( $ligne_filiere, $d['filieres'] ); ?></ul>
+								<?php if ( ! $d['groupe'] ) : ?><p class="deps-onglet__lien"><a class="lien-texte" href="<?php echo esc_url( get_permalink( $d['id'] ) ); ?>">Page du département</a></p><?php endif; ?>
+							</div>
+						</details>
 					</li>
 				<?php endforeach; ?>
 			</ol>
@@ -248,7 +432,7 @@ get_header();
 			<nav class="acad-autres" aria-label="<?php echo esc_attr( 'Les autres parcours ' . $sigle ); ?>">
 				<span><?php echo esc_html( $sigle ); ?></span>
 				<?php foreach ( $tous as $cle => $p ) : if ( $cle !== $slug && isset( $offre[ $cle ][ $sigle ] ) ) : ?>
-					<a href="<?php echo esc_url( sueb_url_parcours( $cle, $sigle ) ); ?>"><?php echo esc_html( $p['court'] ); ?></a>
+					<a href="<?php echo esc_url( $url( $cle, $sigle ) ); ?>"><?php echo esc_html( $p['court'] ); ?></a>
 				<?php endif; endforeach; ?>
 				<?php if ( $etab['id'] > 0 ) : ?><a href="<?php echo esc_url( get_permalink( $etab['id'] ) ); ?>">La page de l’établissement</a><?php endif; ?>
 			</nav>
@@ -291,9 +475,9 @@ get_header();
 			<nav class="acad-autres" aria-label="<?php echo esc_attr( 'Les autres parcours ' . $sigle ); ?>">
 				<span><?php echo esc_html( $sigle ); ?></span>
 				<?php foreach ( $tous as $cle => $p ) : if ( $cle !== $slug && isset( $offre[ $cle ][ $sigle ] ) ) : ?>
-					<a href="<?php echo esc_url( sueb_url_parcours( $cle, $sigle ) ); ?>"><?php echo esc_html( $p['court'] ); ?></a>
+					<a href="<?php echo esc_url( $url( $cle, $sigle ) ); ?>"><?php echo esc_html( $p['court'] ); ?></a>
 				<?php endif; endforeach; ?>
-				<?php if ( $dep && $par_dep ) : ?><a href="<?php echo esc_url( sueb_url_parcours( $slug, $sigle ) ); ?>">Les autres départements</a><a href="<?php echo esc_url( get_permalink( $dep['id'] ) ); ?>">La page du département</a><?php endif; ?>
+				<?php if ( $dep && $par_dep ) : ?><a href="<?php echo esc_url( $url( $slug, $sigle ) ); ?>">Les autres départements</a><a href="<?php echo esc_url( get_permalink( $dep['id'] ) ); ?>">La page du département</a><?php endif; ?>
 				<?php if ( $etab['id'] > 0 ) : ?><a href="<?php echo esc_url( get_permalink( $etab['id'] ) ); ?>">La page de l’établissement</a><?php endif; ?>
 			</nav>
 		</div>

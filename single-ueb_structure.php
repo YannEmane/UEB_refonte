@@ -138,7 +138,7 @@ $reperes = array_filter( $reperes );
 		<div class="fiche-ue" style="border-radius:var(--r-carte);max-width:720px">
 			<dl>
 				<div><dt>Crédits</dt><dd><?php echo esc_html( sueb_meta( $id, 'credits' ) ?: '—' ); ?></dd></div>
-				<div><dt>Semestre</dt><dd><?php echo esc_html( sueb_meta( $id, 'semestre' ) ?: '—' ); ?></dd></div>
+				<div><dt>Semestre</dt><dd><?php $sem = sueb_semestre_annee( sueb_meta( $id, 'semestre' ) ); echo esc_html( preg_match( '/^S(\d)$/', $sem, $sm ) ? 'Semestre ' . $sm[1] : ( $sem ?: '—' ) ); ?></dd></div>
 				<div><dt>Volume</dt><dd style="font-size:1rem"><?php echo esc_html( sueb_meta( $id, 'volume' ) ?: '—' ); ?></dd></div>
 			</dl>
 			<?php if ( $syllabus ) : ?>

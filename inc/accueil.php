@@ -70,7 +70,7 @@ function sueb_arbre_formation() {
 			$syllabus     = (int) sueb_meta( $p->ID, 'syllabus' );
 			$n['code']    = (string) sueb_meta( $p->ID, 'code' );
 			$n['credits'] = (string) sueb_meta( $p->ID, 'credits' );
-			$n['semestre']= (string) sueb_meta( $p->ID, 'semestre' );
+			$n['semestre']= sueb_semestre_annee( sueb_meta( $p->ID, 'semestre' ) );
 			$n['volume']  = (string) sueb_meta( $p->ID, 'volume' );
 			$n['diplome'] = (string) sueb_meta( $p->ID, 'diplome' );
 			$n['syllabus']= $syllabus ? (string) wp_get_attachment_url( $syllabus ) : '';
